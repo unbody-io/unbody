@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "APP_NAME",
+    "env": "NODE_ENV"
+  },
+  "swagger": {
+    "active": "SWAGGER_ACTIVE",
+    "path": "SWAGGER_PATH"
+  },
+  "server": {
+    "globalPrefix": "SERVER_GLOBAL_PREFIX",
+    "hostname": "SERVER_HOSTNAME",
+    "port": "SERVER_PORT",
+    "baseUrl": "SERVER_BASE_URL"
+  },
+  "services": {
+    "redis": {
+      "uri": "REDIS_URI"
+    },
+    "mongodb": {
+      "uri": "MONGODB_URI"
+    },
+    "temporal": {
+      "address": "TEMPORALIO_ADDRESS"
+    }
+  },
+  "plugins": {
+    "resources": {
+      "webhookRegistry": {
+        "baseUrl": "PLUGINS_WEBHOOK_REGISTRY_BASE_URL"
+      },
+      "fileStorage": {
+        "rootPath": "PLUGINS_FILE_STORAGE_ROOT_PATH"
+      }
+    }
+  }
+}

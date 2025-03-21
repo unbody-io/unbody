@@ -1,0 +1,36 @@
+{
+  "app": {
+    "name": "unbody-server",
+    "env": "production"
+  },
+  "swagger": {
+    "active": "1",
+    "path": "/swagger"
+  },
+  "server": {
+    "globalPrefix": "",
+    "hostname": "0.0.0.0",
+    "port": 3000
+  },
+  "services": {
+    "redis": {
+      "uri": "redis://localhost:6379"
+    },
+    "mongodb": {
+      "uri": "mongodb://localhost:27017?replicaSet=rs0&directConnection=true"
+    },
+    "temporal": {
+      "address": "localhost:7233"
+    }
+  },
+  "plugins": {
+    "resources": {
+      "webhookRegistry": {
+        "baseUrl": "http://localhost:3000/plugins/webhooks/callback/"
+      },
+      "fileStorage": {
+        "rootPath": "/srv/unbody/plugins/storage"
+      }
+    }
+  }
+}
