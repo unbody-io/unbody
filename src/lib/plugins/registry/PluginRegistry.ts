@@ -5,6 +5,7 @@ import * as uuid from 'uuid'
 import { DatabasePluginInstance } from '../instances/DatabasePlugin'
 import { EnhancerPluginInstance } from '../instances/EnhancerPlugin'
 import { FileParserPluginInstance } from '../instances/FileParserPlugin'
+import { GenerativePluginInstance } from '../instances/GenerativePlugin'
 import { PluginInstance } from '../instances/PluginInstance'
 import { ProviderPluginInstance } from '../instances/ProviderPlugin'
 import { StoragePluginInstance } from '../instances/StoragePlugin'
@@ -45,6 +46,7 @@ export class PluginRegistry {
   storage: Record<string, LoadedPlugin> = {}
   database: Record<string, LoadedPlugin> = {}
   enhancers: Record<string, LoadedPlugin> = {}
+  generative: Record<string, LoadedPlugin> = {}
   textVectorizers: Record<string, LoadedPlugin> = {}
 
   constructor(
@@ -121,6 +123,7 @@ export class PluginRegistry {
     else if (manifest.type === 'database') this.database[alias] = loaded
     else if (manifest.type === 'text_vectorizer')
       this.textVectorizers[alias] = loaded
+    else if (manifest.type === 'generative') this.generative[alias] = loaded
     else if (manifest.type === 'enhancer') this.enhancers[alias] = loaded
   }
 
@@ -172,6 +175,8 @@ export class PluginRegistry {
         return new DatabasePluginInstance(plugin, {} as any, this.resources)
       case 'enhancer':
         return new EnhancerPluginInstance(plugin, {} as any, this.resources)
+      case 'generative':
+        return new GenerativePluginInstance(plugin, {} as any, this.resources)
       default:
         return new PluginInstance({}, plugin, this.resources)
     }
@@ -195,6 +200,10 @@ export class PluginRegistry {
 
   async getEnhancer(alias: string) {
     return this.enhancers[alias]
+  }
+
+  async getGenerative(alias: string) {
+    return this.generative[alias]
   }
 
   async getTextVectorizer(alias: string) {

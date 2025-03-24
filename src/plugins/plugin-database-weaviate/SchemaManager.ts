@@ -76,8 +76,10 @@ export class SchemaManager {
 
     if (this.config.modules?.generative) {
       config.generative = {
-        name: this.config.modules.generative.name,
-        config: this.config.modules.generative.config,
+        name: 'generative-unbody',
+        config: {
+          endpointURL: this.config.modules?.generative?.config?.endpointURL,
+        },
       }
     }
 

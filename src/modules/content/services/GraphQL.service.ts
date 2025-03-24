@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, UnprocessableEntityException } from '@nestjs/common'
+import { settle } from 'src/lib/core-utils'
 import { Unbody } from 'src/lib/core/Unbody'
 
 @Injectable()
@@ -10,10 +11,18 @@ export class GraphQLService {
     variables?: Record<string, any>
     headers?: Record<string, string>
   }) {
-    return this.unbody.services.content.execGraphQLQuery({
-      query: params.query,
-      variables: params.variables,
-      headers: params.headers,
-    })
+    const [res, err] = await settle(() =>
+      this.unbody.services.content.execGraphQLQuery({
+        query: params.query,
+        variables: params.variables,
+        headers: params.headers,
+      }),
+    )
+
+    if (err) {
+      throw new UnprocessableEntityException(err.message)
+    }
+
+    return res
   }
 }

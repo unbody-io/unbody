@@ -1,3 +1,4 @@
+import { settle } from 'src/lib/core-utils'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   ConfigureDatabaseParams,
@@ -146,7 +147,6 @@ export class WeaviateDatabase implements PluginLifecycle {
     params: ConfigureDatabaseParams,
   ): Promise<ConfigureDatabaseResult> {
     const schemaManager = new SchemaManager(this.config, this.v3, ctx)
-    await schemaManager.deleteAllSchemas()
     await schemaManager.createCollections()
   }
 
@@ -216,10 +216,22 @@ export class WeaviateDatabase implements PluginLifecycle {
     params: ExecuteQueryParams,
   ): Promise<ExecuteQueryResult> {
     const db = new Database(this.config, this.v2, this.v3, ctx)
-    const result = await db.executeQuery(params.query)
+    const [res, err] = await settle(() => db.executeQuery(params.query))
+
+    if (err) {
+      if (err['response']) {
+        return {
+          result: {
+            errors: err['response']['errors'],
+          },
+        }
+      }
+
+      throw err
+    }
 
     return {
-      result,
+      result: res,
     }
   }
 

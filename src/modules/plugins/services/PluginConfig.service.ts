@@ -24,6 +24,10 @@ export class PluginConfigService {
     }
 
     if (manifest.name === 'database-weaviate') {
+      let baseUrl =
+        this.configService.get('server.baseUrl') || 'http://localhost:3000'
+      if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1)
+
       if (!config.connection) {
         config.connection = {
           httpHost: '127.0.0.1',
@@ -33,9 +37,7 @@ export class PluginConfigService {
       }
 
       if (!config.modules?.textVectorizer) {
-        const baseUrl =
-          this.configService.get('server.baseUrl') || 'http://localhost:3000'
-        const endpointURL = `${baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl}/inference/embeddings/text/${this.settings.modules.textVectorizer.name}`
+        const endpointURL = `${baseUrl}/inference/embeddings/text/${this.settings.modules.textVectorizer.name}`
 
         config.modules = {
           ...config.modules,
@@ -43,6 +45,36 @@ export class PluginConfigService {
             name: this.settings.modules.textVectorizer.name,
             config: {
               endpointURL,
+            },
+          },
+        }
+      }
+
+      if (!config.modules?.generative) {
+        const endpointURL = `${baseUrl}/generative/`
+
+        config.modules = {
+          ...config.modules,
+          generative: {
+            name: 'generative-unbody',
+            config: {
+              endpointURL,
+            },
+          },
+        }
+      }
+
+      if (
+        !config.modules?.imageVectorizer &&
+        !!this.settings.modules.imageVectorizer
+      ) {
+        config.modules = {
+          ...config.modules,
+          imageVectorizer: {
+            name: 'img2vec-custom',
+            config: {
+              imageFields: ['blob'],
+              endpointURL: `${baseUrl}/inference/embeddings/image/${this.settings.modules.imageVectorizer.name}`,
             },
           },
         }

@@ -1,5 +1,3 @@
-import { HttpException } from '@nestjs/common'
-import { settle } from 'src/lib/core-utils'
 import { Modules } from '../../modules'
 import { Plugins } from '../../plugins'
 import { ProjectContext } from '../../project-context'
@@ -18,24 +16,11 @@ export class ContentService {
   }) {
     const database = await this._modules.database.getDatabase({})
 
-    const [res, err] = await settle(() =>
-      database.executeQuery({
-        query: params.query,
-        headers: params.headers || {},
-        variables: params.variables || {},
-      }),
-    )
-
-    if (err) {
-      if (err['response']) {
-        throw new HttpException(
-          err['response'].data || err['response']['error'],
-          err['response'].status,
-        )
-      }
-
-      throw err
-    }
+    const res = await database.executeQuery({
+      query: params.query,
+      headers: params.headers || {},
+      variables: params.variables || {},
+    })
 
     return res.result
   }

@@ -3,6 +3,7 @@ import { ProjectContext } from '../project-context'
 import { Database } from './database'
 import { Enhancer } from './enhancer'
 import { FileParsers } from './file-parsers'
+import { Generative } from './generative/Generative'
 import { Providers } from './providers'
 import { Storage } from './storage'
 import { Vectorizer } from './vectorizer'
@@ -14,6 +15,7 @@ export class Modules {
   public providers: Providers
   public database: Database
   public storage: Storage
+  public generative: Generative
 
   constructor(
     private readonly _ctx: ProjectContext,
@@ -21,6 +23,7 @@ export class Modules {
   ) {
     this.enhancer = new Enhancer(this._ctx, this._plugins)
     this.vectorizer = new Vectorizer(this._ctx, this._plugins)
+    this.generative = new Generative(this._ctx, this._plugins)
     this.fileParsers = new FileParsers(this._ctx, this._plugins)
     this.providers = new Providers(this._ctx, this._plugins)
     this.database = new Database(this._ctx, this._plugins)
