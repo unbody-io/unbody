@@ -1,0 +1,63 @@
+services:
+  mongodb:
+    restart: always
+    hostname: mongodb
+    image: mongo:4.4.6
+    command: --replSet rs0
+    volumes:
+      - mongodb_data:/data/db
+      - ./devenv/docker/mongo/docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
+    networks:
+      - unbody
+
+    ports:
+      - '27017:27017'
+
+  redis:
+    restart: always
+    hostname: redis
+    image: redis
+    ports:
+      - '6379:6379'
+
+  temporal:
+    image: temporalio/admin-tools:1.27.1-tctl-1.18.2-cli-1.3.0
+    entrypoint: ["/init.sh"]
+    ports:
+      - 7233:7233 # Server
+      - 8233:8233 # UI
+      - 60896:60896 # /metrics
+    volumes:
+      - ./devenv/docker/temporal/init.sh:/init.sh:ro
+    networks:
+      - unbody
+
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.29.0
+    restart: always
+    ports:
+      - 8080:8080
+      - 50051:50051
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - CLUSTER_HOSTNAME=node1
+      - ENABLE_MODULES=text2vec-huggingface
+      - CLUSTER_GOSSIP_BIND_PORT=7100
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    command: --host 0.0.0.0 --port 8080 --scheme http
+    networks:
+      - unbody
+
+volumes:
+  mongodb_data:
+    driver: local
+  weaviate_data:
+    driver: local
+
+networks:
+  unbody:
+    driver: bridge
