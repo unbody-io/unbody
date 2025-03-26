@@ -8,10 +8,38 @@ import {
 } from 'winston'
 import { ConfigService } from '../config'
 import { Log } from './Log'
+import * as Nest from '@nestjs/common'
+
+class UserMessageLogger {
+  private logger: Logger
+
+  constructor() {
+    this.logger = createLogger({
+      transports: [
+        new transports.Console({
+          level: 'verbose',
+          format: format.combine(
+            format.colorize({ all: true }),
+            format.printf((info) => `${info.message}`),
+          ),
+        }),
+      ],
+    })
+  }
+
+  public error(e: Error, details?: { suggestion: string }) {
+    Nest.Logger.error(e)
+    if (details) {
+      this.logger.error(`Error [${e.name}]: ${e.message}`)
+      this.logger.warn(details.suggestion)
+    }
+  }
+}
 
 @Injectable()
 export class LoggerService {
-  private logger: Logger
+  private jsonLogger: Logger
+  public userMessage: UserMessageLogger
 
   public info!: LeveledLogMethod
   public error!: LeveledLogMethod
@@ -21,16 +49,18 @@ export class LoggerService {
   public verbose!: LeveledLogMethod
 
   constructor(private config: ConfigService) {
-    this.logger = createLogger({
+    this.jsonLogger = createLogger({
       transports: [new transports.Console({ level: 'debug' })],
-      format: format.combine(format.timestamp(), this.format),
+      format: format.combine(format.timestamp(), this.formatJson),
     })
 
-    Object.keys(this.logger.levels).forEach((l) => {
+    this.userMessage = new UserMessageLogger()
+
+    Object.keys(this.jsonLogger.levels).forEach((l) => {
       const level = l as string as LogLevel
       ;(this as any)[level] = (
-        (this.logger as any)[level] || this.logger.log
-      ).bind(this.logger)
+        (this.jsonLogger as any)[level] || this.jsonLogger.log
+      ).bind(this.jsonLogger)
     })
   }
 
@@ -38,7 +68,7 @@ export class LoggerService {
     this[log.level](log)
   }
 
-  public format = format.printf(({ level, message, timestamp }) => {
+  public formatJson = format.printf(({ level, message, timestamp }) => {
     let log: any
     const msg: any = message
 
