@@ -88,7 +88,6 @@ export class Vectorizer {
       )
 
       if (text && text.length > 0) {
-        console.log(text)
         inputs.push({ path, text })
       }
     }
