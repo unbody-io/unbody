@@ -35,20 +35,24 @@ export const settings: UnbodyProjectSettingsDoc = {
       }),
       alias: 'text2vec-openai-text-embedding-3-small',
     },
-    {
-      path: require.resolve('./plugins/plugin-provider-google-drive'),
-      config: async () => ({
-        clientSecret: require(GOOGLE_DRIVE_CLIENT_SECRET_PATH),
-      }),
-      alias: 'google_drive',
-    },
-    {
-      path: require.resolve('./plugins/plugin-provider-github-issues'),
-      alias: 'github_issues',
-      config: async () => ({
-        clientSecret: require(GITHUB_CLIENT_SECRET_PATH),
-      }),
-    },
+    GOOGLE_DRIVE_CLIENT_SECRET_PATH
+      ? {
+          path: require.resolve('./plugins/plugin-provider-google-drive'),
+          config: async () => ({
+            clientSecret: require(GOOGLE_DRIVE_CLIENT_SECRET_PATH),
+          }),
+          alias: 'google_drive',
+        }
+      : null,
+    GITHUB_CLIENT_SECRET_PATH
+      ? {
+          path: require.resolve('./plugins/plugin-provider-github-issues'),
+          alias: 'github_issues',
+          config: async () => ({
+            clientSecret: require(GITHUB_CLIENT_SECRET_PATH),
+          }),
+        }
+      : null,
     {
       path: require.resolve('./plugins/plugin-file-parser-google-doc'),
       alias: 'google-doc-parser',
@@ -63,10 +67,10 @@ export const settings: UnbodyProjectSettingsDoc = {
       path: require.resolve('./plugins/plugin-storage-local'),
       alias: 'local-storage',
       config: async () => ({
-        publicRootDir: '',
-        privateRootDir: '',
-        publicBaseUrl: '',
-        privateBaseUrl: '',
+        publicRootDir: process.env.PUBLIC_ROOT_DIR,
+        privateRootDir: process.env.PRIVATE_ROOT_DIR,
+        publicBaseUrl: process.env.PUBLIC_BASE_URL,
+        privateBaseUrl: process.env.PRIVATE_BASE_URL,
       }),
     },
     {
@@ -95,7 +99,7 @@ export const settings: UnbodyProjectSettingsDoc = {
           },
         }) as StructuredOutputGeneratorConfig,
     },
-  ],
+  ].filter((it) => it !== null),
   modules: {
     fileParsers: {
       'application/vnd.google-apps.document': [{ name: 'google-doc-parser' }],
