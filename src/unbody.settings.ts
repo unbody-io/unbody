@@ -17,7 +17,7 @@ export const settings: UnbodyProjectSettingsDoc = {
         ({
           connection: {
             httpHost: '127.0.0.1',
-            httpPort: 8081,
+            httpPort: 8080,
             grpcHost: '127.0.0.1',
           },
         }) as WeaviateConfig,
