@@ -34,7 +34,12 @@ async function bootstrap() {
   )
 
   app.use(bodyParser.urlencoded({ verify: rawBody, extended: true }))
-  app.use(bodyParser.json({ verify: rawBody }))
+  app.use(
+    bodyParser.json({
+      verify: rawBody,
+      limit: 52428800, // 50MB
+    }),
+  )
 
   // setup swagger
   if (!!Number(configService.get<string>('swagger.active'))) {

@@ -69,9 +69,14 @@ export class SchemaManager {
       this.config.modules?.imageVectorizer &&
       collection.name === 'ImageBlock'
     ) {
-      config.vectorizers = weaviate.configure.vectorizer[
-        this.config.modules?.imageVectorizer!.name
-      ]({ ...(this.config.modules.imageVectorizer.config || {}) })
+      const module = this.config.modules.imageVectorizer
+      config.vectorizers = {
+        vectorIndex: weaviate.configure.vectorIndex.hnsw({}),
+        vectorizer: {
+          name: module.name,
+          config: module.config,
+        },
+      } as any
     }
 
     if (this.config.modules?.generative) {

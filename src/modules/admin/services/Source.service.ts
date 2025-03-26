@@ -141,6 +141,8 @@ export class SourceService {
   }) {
     const { source, provider } = await this._getSource(sourceId)
 
+    if (!source.connected) throw new BadRequestException('Source not connected')
+
     try {
       const res = provider.listEntrypointOptions({
         parent: body.parent as any,

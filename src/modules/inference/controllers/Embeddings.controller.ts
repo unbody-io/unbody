@@ -22,4 +22,16 @@ export class EmbeddingsController {
         .then((res) => res.embeddings.map((item) => item.embedding)),
     }
   }
+
+  @Post('/image/:model')
+  @SetMetadata(SkipFormatResponseInterceptor, true)
+  async vectorizeImage(@Param('model') model: string, @Body() body: any) {
+    return this.embeddingsService
+      .vectorizeImage({ model, image: [body.image] })
+      .then((res) => ({
+        id: body.id,
+        vector: res.vectors[0].vector,
+        dim: res.vectors[0].vector.length,
+      }))
+  }
 }

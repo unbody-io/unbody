@@ -12,4 +12,12 @@ export class EmbeddingsService {
 
     return res
   }
+
+  async vectorizeImage(params: { model: string; image: string[] }) {
+    const res = await this.unbody.modules.vectorizer.vectorizeImage({
+      image: params.image,
+    })
+
+    return res
+  }
 }

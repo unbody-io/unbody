@@ -79,6 +79,18 @@ export class PluginConfigService {
           },
         }
       }
+
+      if (!config.modules?.reranker && !!this.settings.modules.reranker) {
+        config.modules = {
+          ...config.modules,
+          reranker: {
+            name: 'reranker-custom',
+            config: {
+              endpointURL: `${baseUrl}/inference/rerank/${this.settings.modules.reranker.name}`,
+            },
+          },
+        }
+      }
     }
 
     return config

@@ -6,8 +6,10 @@ import { DatabasePluginInstance } from '../instances/DatabasePlugin'
 import { EnhancerPluginInstance } from '../instances/EnhancerPlugin'
 import { FileParserPluginInstance } from '../instances/FileParserPlugin'
 import { GenerativePluginInstance } from '../instances/GenerativePlugin'
+import { ImageVectorizerPluginInstance } from '../instances/ImageVectorizerPlugin'
 import { PluginInstance } from '../instances/PluginInstance'
 import { ProviderPluginInstance } from '../instances/ProviderPlugin'
+import { RerankerPluginInstance } from '../instances/RerankerPlugin'
 import { StoragePluginInstance } from '../instances/StoragePlugin'
 import { TextVectorizerPluginInstance } from '../instances/TextVectorizerPlugin'
 import { PluginResources } from '../resources/PluginResources'
@@ -47,7 +49,9 @@ export class PluginRegistry {
   database: Record<string, LoadedPlugin> = {}
   enhancers: Record<string, LoadedPlugin> = {}
   generative: Record<string, LoadedPlugin> = {}
+  rerankers: Record<string, LoadedPlugin> = {}
   textVectorizers: Record<string, LoadedPlugin> = {}
+  imageVectorizers: Record<string, LoadedPlugin> = {}
 
   constructor(
     private config: PluginRegistryConfig,
@@ -123,6 +127,9 @@ export class PluginRegistry {
     else if (manifest.type === 'database') this.database[alias] = loaded
     else if (manifest.type === 'text_vectorizer')
       this.textVectorizers[alias] = loaded
+    else if (manifest.type === 'image_vectorizer')
+      this.imageVectorizers[alias] = loaded
+    else if (manifest.type === 'reranker') this.rerankers[alias] = loaded
     else if (manifest.type === 'generative') this.generative[alias] = loaded
     else if (manifest.type === 'enhancer') this.enhancers[alias] = loaded
   }
@@ -171,6 +178,10 @@ export class PluginRegistry {
         return new StoragePluginInstance(plugin, {}, this.resources)
       case 'text_vectorizer':
         return new TextVectorizerPluginInstance(plugin, {}, this.resources)
+      case 'image_vectorizer':
+        return new ImageVectorizerPluginInstance(plugin, {}, this.resources)
+      case 'reranker':
+        return new RerankerPluginInstance(plugin, {}, this.resources)
       case 'database':
         return new DatabasePluginInstance(plugin, {} as any, this.resources)
       case 'enhancer':
@@ -207,6 +218,14 @@ export class PluginRegistry {
   }
 
   async getTextVectorizer(alias: string) {
-    return Object.values(this.textVectorizers).find((p) => p.alias === alias)
+    return this.textVectorizers[alias]
+  }
+
+  async getImageVectorizer(alias: string) {
+    return this.imageVectorizers[alias]
+  }
+
+  async getReranker(alias: string) {
+    return this.rerankers[alias]
   }
 }
