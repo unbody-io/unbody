@@ -13,8 +13,9 @@ import {
   StoreFileParams,
   StoreFileResult,
 } from 'src/lib/plugins-common/storage/Storage.interface'
-import { z } from 'zod'
+import { z, ZodError } from 'zod'
 import { Config, Context } from './plugin.types'
+import { configSchema } from './plugin.types'
 
 export const slugify = (
   text: string,
@@ -60,19 +61,32 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
 
   constructor() {}
 
-  initialize = async (config: Config) => {
-    this.config = config
+  initialize = async (config: Record<string, any>) => {
+    try {
+      this.config = configSchema.parse(config)
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        throw new PluginLifecycle.ConfigurationError(
+          config,
+          e.issues.map((issue) => `'${issue.path}' ${issue.message}`),
+        )
+      }
+    }
 
     if (!fs.existsSync(this.config.publicRootDir)) {
-      throw new Error(
-        `Public root directory does not exist: ${this.config.publicRootDir}`,
-      )
+      throw new PluginLifecycle.OtherError('Directory not found.', {
+        details: [
+          `Public root directory does not exist: ${this.config.publicRootDir}`,
+        ]
+      })
     }
 
     if (!fs.existsSync(this.config.privateRootDir)) {
-      throw new Error(
-        `Private root directory does not exist: ${this.config.privateRootDir}`,
-      )
+      throw new PluginLifecycle.OtherError('Directory not found.', {
+        details: [
+          `Private root directory does not exist: ${this.config.privateRootDir}`,
+        ]
+      })
     }
 
     await this._loadTree()
