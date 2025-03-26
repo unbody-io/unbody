@@ -61,11 +61,29 @@ const providers: Provider[] = [
   },
   {
     provide: TEMPORAL_CONNECTION,
-    inject: [ConfigService],
-    useFactory: async (configService: ConfigService) =>
-      temporal.Connection.connect({
-        ...configService.get('services.temporal'),
-      }),
+    inject: [ConfigService, LoggerService],
+    useFactory: async (configService: ConfigService, logger: LoggerService) => {
+      try {
+        const temporalConfig = configService.get('services.temporal')
+        return await temporal.Connection.connect({
+          ...temporalConfig,
+          connectionOptions: {
+            connectTimeout: 5000,
+          },
+        })
+      } catch (e) {
+        const temporalAddress = configService.get('services.temporal.address')
+        e.message = `Failed not connect to temporal server: ${e.message}`
+        logger.userMessage.error(e, {
+          suggestion: `Please ensure that:
+- temporal server is running 
+- The following environment variables are set correctly:
+- TEMPORAL_ADDRESS (currently set to: ${temporalAddress})
+`,
+        })
+        process.exit(1)
+      }
+    },
   },
   {
     provide: TEMPORAL_CLIENT,
