@@ -27,11 +27,50 @@ import {
   PatchRecordResult,
 } from 'src/lib/plugins-common/database'
 import { FileParserPlugin } from 'src/lib/plugins-common/file-parser'
-import weaviate, { Filters, WeaviateClient, weaviateV2 } from 'weaviate-client'
+import weaviate, {
+  Filters,
+  InternalConnectionParams,
+  WeaviateClient,
+  ClientParams,
+  weaviateV2,
+} from 'weaviate-client'
 import { z } from 'zod'
 import { Database } from './database'
-import { Config, Context } from './plugin.types'
+import { Config, Context, configSchema } from './plugin.types'
 import { SchemaManager } from './SchemaManager'
+
+const v2Client = (config: InternalConnectionParams) => {
+  try {
+    return weaviateV2.client(config)
+  } catch (e) {
+    throw new PluginLifecycle.OtherError('Failed to create v2 client', {
+      details: [
+        'Could not connect with the following configuration:',
+        `scheme: ${config.scheme}`,
+        `host: ${config.host}`,
+        `headers: ${JSON.stringify(config.headers)}`,
+        `timeout: ${config.timeout}`,
+        `skipInitChecks: ${config.skipInitChecks}`,
+        JSON.stringify(config, null, 4),
+      ],
+    })
+  }
+}
+
+const v3Client = async (config: ClientParams) => {
+  try {
+    const client = await weaviate.client(config)
+    return client
+  } catch (e) {
+    throw new PluginLifecycle.OtherError('Failed to create v3 client', {
+      details: [
+        'Could not connect with the following configuration:',
+        `host: ${config.connectionParams?.http?.host || 'undefined'}`,
+        `port: ${config.connectionParams?.http?.port || 'undefined'}`,
+      ],
+    })
+  }
+}
 
 export class WeaviateDatabase implements PluginLifecycle {
   private config: Config
@@ -40,73 +79,34 @@ export class WeaviateDatabase implements PluginLifecycle {
   private v2: ReturnType<typeof weaviateV2.client>
 
   schemas: FileParserPlugin['schemas'] = {
-    config: z.object({
-      connection: z.object({
-        httpHost: z.string().optional(),
-        httpPort: z.number().optional(),
-        httpSecure: z.boolean().optional(),
-        httpPath: z.string().optional(),
-        grpcHost: z.string().optional(),
-        grpcPort: z.number().optional(),
-        grpcSecure: z.boolean().optional(),
-        headers: z.record(z.string()).optional(),
-        skipInitChecks: z.boolean().optional(),
-        timeout: z.number().optional(),
-        auth: z
-          .union([
-            z.object({
-              username: z.string(),
-              password: z.string(),
-            }),
-            z.object({
-              apiKey: z.string(),
-            }),
-          ])
-          .optional(),
-        proxies: z.record(z.any()).optional(),
-      }),
-      modules: z.object({
-        textVectorizer: z.object({
-          name: z.string(),
-          config: z.record(z.any()).optional(),
-        }),
-        imageVectorizer: z
-          .object({
-            name: z.string(),
-            config: z.record(z.any()).optional(),
-          })
-          .optional(),
-        generative: z
-          .object({
-            name: z.string(),
-            config: z.record(z.any()).optional(),
-          })
-          .optional(),
-        reranker: z
-          .object({
-            name: z.string(),
-            config: z.record(z.any()).optional(),
-          })
-          .optional(),
-      }),
-    }),
+    config: configSchema,
   }
 
   constructor() {}
 
-  initialize = async (config: Config) => {
-    this.config = config
-    const { connection } = config
+  initialize = async (config: Record<string, any>) => {
+    try {
+      this.config = configSchema.parse(config)
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        throw new PluginLifecycle.ConfigurationError(
+          config,
+          e.issues.map((issue) => `'${issue.path}' ${issue.message}`),
+        )
+      }
+      throw e
+    }
+
+    const { connection } = this.config
     const auth = connection.auth
 
-    this.v2 = weaviateV2.client({
-      scheme: connection.httpSecure ? 'https' : 'http',
-      host: `${connection.httpHost || 'localhost'}:${connection.httpPort || '8080'}`,
-      headers: connection.headers,
-      ...(auth && 'apiKey' in auth ? { apiKey: { apiKey: auth.apiKey } } : {}),
+    this.v2 = v2Client({
+      scheme: config.connection.httpSecure ? 'https' : 'http',
+      host: `${config.connection.httpHost || 'localhost'}:${config.connection.httpPort || '8080'}`,
+      headers: config.connection.headers,
     })
 
-    this.v3 = await weaviate.client({
+    this.v3 = await v3Client({
       connectionParams: {
         http: {
           host: connection.httpHost || 'localhost',
