@@ -67,10 +67,10 @@ export const settings: UnbodyProjectSettingsDoc = {
       path: require.resolve('./plugins/plugin-storage-local'),
       alias: 'local-storage',
       config: async () => ({
-        publicRootDir: process.env.PUBLIC_ROOT_DIR,
-        privateRootDir: process.env.PRIVATE_ROOT_DIR,
-        publicBaseUrl: process.env.PUBLIC_BASE_URL,
-        privateBaseUrl: process.env.PRIVATE_BASE_URL,
+        publicRootDir: process.env.LOCAL_STORAGE_PUBLIC_ROOT_DIR,
+        privateRootDir: process.env.LOCAL_STORAGE_PRIVATE_ROOT_DIR,
+        publicBaseUrl: process.env.LOCAL_STORAGE_PUBLIC_BASE_URL,
+        privateBaseUrl: process.env.LOCAL_STORAGE_PRIVATE_BASE_URL,
       }),
     },
     {
