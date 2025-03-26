@@ -26,7 +26,7 @@ const providers: Provider[] = [
   },
   {
     provide: REDIS_CLIENT,
-    inject: [ConfigService],
+    inject: [ConfigService, LoggerService],
     useFactory: async (configService: ConfigService) =>
       redis.createClient({
         url: configService.get('services.redis.uri'),
@@ -34,9 +34,30 @@ const providers: Provider[] = [
   },
   {
     provide: IOREDIS_CLIENT,
-    inject: [ConfigService],
-    useFactory: async (configService: ConfigService) =>
-      new IORedis(configService.get<string>('services.redis.uri')!),
+    inject: [ConfigService, LoggerService],
+    useFactory: async (configService: ConfigService, logger: LoggerService) => {
+      const uri = configService.get<string>('services.redis.uri')
+      const client = new IORedis(uri!)
+      return new Promise((resolve, reject) => {
+        client.once('error', (err) => {
+          if (err.message.includes('ECONNREFUSED')) {
+            err.message = `Failed to connect to REDIS: ${err.message}`
+            logger.userMessage.error(err, {
+              suggestion: `Please ensure that:
+1. Redis is running
+2. The following environment variable is set correctly:
+- REDIS_URI
+`,
+            })
+          }
+          process.exit(1)
+        })
+
+        client.on('connect', () => {
+          resolve(client)
+        })
+      })
+    },
   },
   {
     provide: TEMPORAL_CONNECTION,
