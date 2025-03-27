@@ -16,7 +16,7 @@ export type ProcessEventWorkflowParams = {
 }
 
 export async function processEventWorkflow(params: ProcessEventWorkflowParams) {
-  const { insertRecord, updateRecord, patchRecord, getRecord } =
+  const { insertRecord, updateRecord, patchRecord, getRecord, deleteRecord } =
     proxyActivities<RecordProcessorActivities>({
       startToCloseTimeout: '10m',
       retry: {
@@ -72,7 +72,18 @@ export async function processEventWorkflow(params: ProcessEventWorkflowParams) {
     })
   }
 
-  if (event.eventName === 'created') {
+  if (event.eventName === 'deleted') {
+    const record = await getRecord({
+      sourceId,
+      recordId: event.recordId,
+    })
+    if (record)
+      await deleteRecord({
+        sourceId: params.sourceId,
+        recordId: params.event.recordId,
+        collection: record.__typename,
+      })
+  } else if (event.eventName === 'created') {
     await process('insert')
   } else if (event.eventName === 'updated') {
     const record = await getRecord({

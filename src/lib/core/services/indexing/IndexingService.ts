@@ -128,6 +128,13 @@ export class IndexingService {
     collection: string
   }) {
     const db = await this.getDatabase({})
+    const storage = await this._modules.storage.getStorage({})
+
+    await storage.deleteRecordFiles({
+      recordId: params.recordId,
+      sourceId: params.sourceId,
+    })
+
     return db.deleteRecord(params)
   }
 
