@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Req, SetMetadata } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  SetMetadata,
+} from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Request } from 'express'
 import { SkipFormatResponseInterceptor } from 'src/lib/nestjs-utils'
@@ -11,6 +18,7 @@ export class GraphQLController {
   constructor(private graphQLService: GraphQLService) {}
 
   @Post('/')
+  @HttpCode(200)
   @SetMetadata(SkipFormatResponseInterceptor, true)
   async post(@Body() body: ExecGraphQLQueryDto, @Req() req: Request) {
     const headers = req.rawHeaders.reduce((acc, curr, i) => {

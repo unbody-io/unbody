@@ -1,3 +1,4 @@
+import { GraphQLClient } from 'graphql-request'
 import * as _ from 'lodash'
 import {
   CollectionConfig,
@@ -49,6 +50,7 @@ export class Database {
 
   private _collections: Record<string, CollectionConfig>
   private _graphQLPaths: Record<string, string> = {}
+  private _graphql: GraphQLClient
 
   constructor(
     private config: Config,
@@ -57,6 +59,10 @@ export class Database {
     private ctx: Context,
   ) {
     this.schemaManager = new SchemaManager(config, v3, ctx)
+    this._graphql = new GraphQLClient(
+      `${this.v2.graphql.raw().client.host}/v1/graphql`,
+      {},
+    )
   }
 
   get collections() {
@@ -196,8 +202,18 @@ export class Database {
     }
   }
 
-  executeQuery = async (query: string) => {
-    const res = await this.v2.graphql.raw().withQuery(query).do()
+  executeQuery = async (
+    query: string,
+    options: {
+      variables?: Record<string, any>
+      headers?: Record<string, string>
+    },
+  ) => {
+    const res = await this._graphql.request(
+      query,
+      options.variables || {},
+      options.headers || {},
+    )
     return res
   }
 

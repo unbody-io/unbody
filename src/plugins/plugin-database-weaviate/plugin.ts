@@ -216,7 +216,12 @@ export class WeaviateDatabase implements PluginLifecycle {
     params: ExecuteQueryParams,
   ): Promise<ExecuteQueryResult> {
     const db = new Database(this.config, this.v2, this.v3, ctx)
-    const [res, err] = await settle(() => db.executeQuery(params.query))
+    const [res, err] = await settle(() =>
+      db.executeQuery(params.query, {
+        headers: params.headers,
+        variables: params.variables,
+      }),
+    )
 
     if (err) {
       if (err['response']) {
