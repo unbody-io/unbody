@@ -246,10 +246,14 @@ export class PluginModule
 
   async onApplicationBootstrap() {
     for (const worker of this.workers) worker.run()
+
+    this.pluginRegistry.startServices()
   }
 
   async onApplicationShutdown(signal?: string) {
     for (const worker of this.workers)
       if (worker.getState() === 'RUNNING') worker.shutdown()
+
+    await this.pluginRegistry.stopServices()
   }
 }

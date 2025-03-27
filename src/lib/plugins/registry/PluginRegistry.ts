@@ -102,6 +102,7 @@ export class PluginRegistry {
     }
 
     await runner.initialize()
+    const instance = await this.getInstance(loaded)
 
     const session = await this.models.pluginState.startSession()
     session.withTransaction(async () => {
@@ -115,7 +116,6 @@ export class PluginRegistry {
         })
         await state.save({ session })
 
-        const instance = await this.getInstance(loaded)
         await instance.runTask('bootstrap')({})
       }
     })
@@ -227,5 +227,31 @@ export class PluginRegistry {
 
   async getReranker(alias: string) {
     return this.rerankers[alias]
+  }
+
+  async startServices() {
+    for (const plugin of Object.values(this.plugins)) {
+      try {
+        if (plugin.manifest.runtime === 'service') {
+          const instance = await this.getInstance(plugin)
+          await instance.runTask('startService')({})
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  }
+
+  async stopServices() {
+    for (const plugin of Object.values(this.plugins)) {
+      try {
+        if (plugin.manifest.runtime === 'service') {
+          const instance = await this.getInstance(plugin)
+          await instance.runTask('stopService')({})
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
   }
 }
