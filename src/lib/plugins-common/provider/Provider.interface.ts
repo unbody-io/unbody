@@ -1,5 +1,6 @@
-import { string, type z } from 'zod'
-import { PluginContext } from '..'
+import { type z } from 'zod'
+import { PluginContext } from '../runtime'
+import { PluginEvent } from '../runtime/events'
 import {
   EntrypointInput,
   EntrypointListOption,
@@ -16,19 +17,47 @@ export type ProviderContextSourceData<
   state: S
   entrypoint: E
   credentials: C
-
-  dispatchEvent: (
-    event: 'updated' | 'disconnected',
-    metadata?: Record<string, any>,
-  ) => Promise<void>
 }
 
 export type ProviderPluginContext<
   S extends ProviderContextSourceData = ProviderContextSourceData,
-> = PluginContext & {
+> = Omit<PluginContext, 'dispatchEvent'> & {
   source: S
 
   tempDir: string
+  dispatchEvent: PluginContext.EventDispatcher<ProviderPlugin.Events.Event>
+}
+
+export namespace ProviderPlugin {
+  export type Context = ProviderPluginContext
+  export type SourceData = ProviderContextSourceData
+
+  export namespace Events {
+    export const EventNames = {
+      SourceUpdated: 'source_updated' as 'source_updated',
+    } as const
+
+    export type EventName = (typeof EventNames)[keyof typeof EventNames]
+
+    export type SourceUpdatedPayload = {
+      sourceId: string
+    }
+
+    export class SourceUpdated extends PluginEvent<
+      typeof EventNames.SourceUpdated,
+      SourceUpdatedPayload
+    > {
+      constructor(payload: SourceUpdatedPayload) {
+        super(Events.EventNames.SourceUpdated, payload)
+      }
+    }
+
+    export type Event = SourceUpdated
+    export type EventMap = Record<
+      typeof EventNames.SourceUpdated,
+      SourceUpdated
+    >
+  }
 }
 
 export interface ProviderPlugin<

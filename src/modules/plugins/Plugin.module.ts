@@ -1,10 +1,17 @@
-import { Module, Provider } from '@nestjs/common'
+import {
+  Inject,
+  Module,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+  Provider,
+} from '@nestjs/common'
 import {
   getConnectionToken,
   getModelToken,
   MongooseModule,
 } from '@nestjs/mongoose'
 import { Client as TemporalClient } from '@temporalio/client'
+import { Worker } from '@temporalio/worker'
 import { Model, Connection as MongooseConnection } from 'mongoose'
 import { UnbodyProjectSettingsDoc } from 'src/lib/core-types'
 import { ConfigService } from 'src/lib/nestjs-utils'
@@ -17,6 +24,7 @@ import {
 import { PluginResources } from 'src/lib/plugins/resources/PluginResources'
 import { PluginCacheStore } from 'src/lib/plugins/resources/cache-store/PluginCacheStore'
 import { PluginDatabase } from 'src/lib/plugins/resources/database/PluginDatabase'
+import { PluginEventEmitter } from 'src/lib/plugins/resources/event-emitter'
 import { PluginFileStorage } from 'src/lib/plugins/resources/file-store/PluginFileStorage'
 import {
   PluginFileCollectionSchema,
@@ -32,11 +40,15 @@ import {
   pluginWebhookCollectionSchema,
   PluginWebhookCollectionSchema,
 } from 'src/lib/plugins/resources/webhook-registry/schemas'
+import { TemporalWorker } from '../shared/lib/temporal/TemporalWorker'
 import {
   IOREDIS_CLIENT,
+  PLUGIN_EVENT_HANDLER_WORKER,
   TEMPORAL_CLIENT,
   UNBODY_SETTINGS,
 } from '../shared/tokens'
+import { PluginEventHandlerActivities } from './activities/PluginEventHandler.activities'
+import { PluginEventQueues } from './constants/PluginEventQueues'
 import { PluginController } from './controllers/Plugin.controller'
 import { WebhooksController } from './controllers/Webhooks.controller'
 import { TemporalJobSchedulerEngine } from './lib/TemporalJobSchedulerEngine'
@@ -46,6 +58,7 @@ import { PluginConfigService } from './services/PluginConfig.service'
 const providers: Provider[] = [
   PluginService,
   PluginConfigService,
+  PluginEventHandlerActivities,
   {
     provide: PluginRegistry,
     inject: [
@@ -77,6 +90,13 @@ const providers: Provider[] = [
       )
       await registry.register(settings.plugins)
       return registry
+    },
+  },
+  {
+    provide: PluginEventEmitter,
+    inject: [],
+    useFactory() {
+      return new PluginEventEmitter({})
     },
   },
   {
@@ -148,6 +168,7 @@ const providers: Provider[] = [
   {
     provide: PluginResources,
     inject: [
+      PluginEventEmitter,
       PluginFileStorage,
       PluginJobScheduler,
       PluginWebhookRegistry,
@@ -155,6 +176,7 @@ const providers: Provider[] = [
       PluginCacheStore,
     ],
     useFactory(
+      pluginEventEmitter: PluginEventEmitter,
       pluginFileStorage: PluginFileStorage,
       pluginJobScheduler: PluginJobScheduler,
       pluginWebhookRegistry: PluginWebhookRegistry,
@@ -162,6 +184,7 @@ const providers: Provider[] = [
       pluginCacheStore: PluginCacheStore,
     ) {
       return new PluginResources(
+        pluginEventEmitter,
         pluginCacheStore,
         pluginFileStorage,
         pluginJobScheduler,
@@ -170,6 +193,17 @@ const providers: Provider[] = [
       )
     },
   },
+  TemporalWorker.forFeature({
+    inject: [ConfigService],
+    provide: PLUGIN_EVENT_HANDLER_WORKER,
+    ActivityService: PluginEventHandlerActivities,
+    useFactory: (configService: ConfigService) => ({
+      debugMode: configService.isDev,
+      taskQueue: PluginEventQueues.EventHandler,
+      workflowsPath: require.resolve('./workflows/PluginEvent.workflows'),
+      maxConcurrentWorkflowTaskExecutions: 10,
+    }),
+  }),
 ]
 
 @Module({
@@ -197,6 +231,25 @@ const providers: Provider[] = [
   providers: [...providers],
   exports: [...providers],
 })
-export class PluginModule {
-  constructor() {}
+export class PluginModule
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
+  workers: Worker[] = []
+
+  constructor(
+    private pluginRegistry: PluginRegistry,
+    @Inject(PLUGIN_EVENT_HANDLER_WORKER)
+    private pluginEventHandlerWorker: Worker,
+  ) {
+    this.workers = [this.pluginEventHandlerWorker]
+  }
+
+  async onApplicationBootstrap() {
+    for (const worker of this.workers) worker.run()
+  }
+
+  async onApplicationShutdown(signal?: string) {
+    for (const worker of this.workers)
+      if (worker.getState() === 'RUNNING') worker.shutdown()
+  }
 }

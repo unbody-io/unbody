@@ -1,3 +1,4 @@
+import { PluginEvent } from 'src/lib/plugins-common'
 import {
   CacheStoreAPI,
   DatabaseAPI,
@@ -335,6 +336,14 @@ export class PluginInstance<
           tempDir: tmpDir.path,
           logger: this.config.logger || console,
           getResource: this._getResource,
+          dispatchEvent: (event: PluginEvent<any, any>) =>
+            this.resources.eventEmitter.emit(
+              'event',
+              event,
+              this.plugin.id,
+              this.plugin.alias,
+              this.plugin.manifest.type,
+            ),
         },
         params,
       )

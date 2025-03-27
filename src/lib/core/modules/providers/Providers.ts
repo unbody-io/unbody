@@ -21,7 +21,6 @@ export class Providers {
           ? {
               source: {
                 id: source.id,
-                dispatchEvent: null as any,
                 state: source.providerState || {},
                 entrypoint: source.entrypoint || {},
                 credentials: source.credentials || {},

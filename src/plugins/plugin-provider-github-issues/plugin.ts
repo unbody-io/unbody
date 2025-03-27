@@ -948,7 +948,11 @@ export class GithubIssuesProvider
           timestamp,
         })
 
-        await ctx.source.dispatchEvent('updated')
+        await ctx.dispatchEvent(
+          new ProviderPlugin.Events.SourceUpdated({
+            sourceId: ctx.source.id,
+          }),
+        )
       }
     }
   }

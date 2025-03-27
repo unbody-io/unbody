@@ -731,7 +731,11 @@ export class GoogleDriveProvider
         const token = event.headers['x-goog-channel-token']
         if (token !== secret) return
 
-        await ctx.source.dispatchEvent('updated')
+        await ctx.dispatchEvent(
+          new ProviderPlugin.Events.SourceUpdated({
+            sourceId: ctx.source.id,
+          }),
+        )
       }
     }
   }
