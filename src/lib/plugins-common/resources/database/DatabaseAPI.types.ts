@@ -23,6 +23,8 @@ export interface DatabaseCollectionAPI {
 
   findOne: mongodb.Collection['findOne']
 
+  findOneAndUpdate: mongodb.Collection['findOneAndUpdate']
+
   insertOne: mongodb.Collection['insertOne']
 
   insertMany: mongodb.Collection['insertMany']

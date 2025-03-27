@@ -51,7 +51,7 @@ export type EntrypointListOptions = {
 
 export type EntrypointFormInput = {
   type: 'form'
-  fields: Record<string, any>[]
+  fields: Record<string, any>
 }
 
 export type EntrypointInput =
