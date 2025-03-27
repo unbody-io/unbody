@@ -246,6 +246,10 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
     doc.modifiedAt = metadata.modifiedAt || params.metadata?.modifiedAt || null
     doc.tags = metadata.tags || []
     doc.toc = JSON.stringify(tableOfContents)
+    doc.blocks = blocks.map((block, index) => ({
+      ...block,
+      order: index,
+    })) as any
 
     return {
       record: doc,
