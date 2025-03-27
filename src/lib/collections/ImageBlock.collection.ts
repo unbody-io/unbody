@@ -1,5 +1,6 @@
 import { Collection, Property, ReferenceProperty } from '../core-types'
 import { GoogleDoc } from './GoogleDoc.collection'
+import { TextDocument } from './TextDocument.collection'
 import { RecordCollection } from './utils'
 
 @Collection({
@@ -152,6 +153,9 @@ export class ImageBlock {
     type: () => [
       {
         collection: GoogleDoc,
+      },
+      {
+        collection: TextDocument,
       },
     ],
     onUpdate: 'UPDATE_REFERENCE',

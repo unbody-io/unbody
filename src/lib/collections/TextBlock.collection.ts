@@ -1,5 +1,6 @@
 import { Collection, Property, ReferenceProperty } from '../core-types'
 import { GoogleDoc } from './GoogleDoc.collection'
+import { TextDocument } from './TextDocument.collection'
 import { RecordCollection } from './utils'
 
 @Collection({
@@ -75,11 +76,14 @@ export class TextBlock {
       {
         collection: GoogleDoc,
       },
+      {
+        collection: TextDocument,
+      },
     ],
     onUpdate: 'UPDATE_REFERENCE',
     onDelete: 'REMOVE_REFERENCE',
   })
-  document: Array<GoogleDoc>
+  document: Array<GoogleDoc | TextDocument>
 }
 
 export const TextBlockCollection = new RecordCollection<TextBlock>(TextBlock)
