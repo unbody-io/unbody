@@ -531,7 +531,7 @@ export class Database {
 
         if (paths.length > 0) {
           const crefs =
-            (object.properties![refProp.name] as Array<{
+            (object[refProp.name] as Array<{
               __typename: string
               id: string
             }>) || []
@@ -555,7 +555,7 @@ export class Database {
       ) as CrossReferencePropertyConfig[]
 
       for (const refProp of refProps) {
-        const crefs = object.properties![refProp.name] as Array<{
+        const crefs = object[refProp.name] as Array<{
           __typename: string
           id: string
         }>

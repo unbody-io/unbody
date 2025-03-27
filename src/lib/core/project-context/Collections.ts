@@ -170,6 +170,8 @@ export class Collections {
               property,
             }))
           },
+          onUpdate: ref.referenceOptions?.onUpdate,
+          onDelete: ref.referenceOptions?.onDelete,
         })
 
         this._collectionsMap[meta.name] = factory.collection
