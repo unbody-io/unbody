@@ -1,4 +1,9 @@
-import { GoogleDoc, ImageBlock, TextBlock } from '../../collections'
+import {
+  GoogleDoc,
+  ImageBlock,
+  TextBlock,
+  TextDocument,
+} from '../../collections'
 import {
   Collection,
   CollectionConfig,
@@ -8,7 +13,7 @@ import {
 } from '../../core-types'
 
 export class Collections {
-  static BUILTIN_COLLECTIONS = [GoogleDoc, ImageBlock, TextBlock]
+  static BUILTIN_COLLECTIONS = [GoogleDoc, TextDocument, ImageBlock, TextBlock]
 
   public collections: CollectionConfig[] = []
   public collectionMap: Record<string, CollectionConfig> = {}
