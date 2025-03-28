@@ -59,7 +59,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
     }),
   }
 
-  constructor() {}
+  constructor() { }
 
   initialize = async (config: Record<string, any>) => {
     try {
@@ -74,27 +74,24 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
     }
 
     if (!fs.existsSync(this.config.publicRootDir)) {
-      throw new PluginLifecycle.OtherError('Directory not found.', {
-        details: [
-          `Public root directory does not exist: ${this.config.publicRootDir}`,
-        ]
-      })
+      throw new PluginLifecycle.ConfigurationError(
+        this.config,
+        [`Public root directory not found: ${this.config.publicRootDir}`]
+      )
     }
 
     if (!fs.existsSync(this.config.privateRootDir)) {
-      throw new PluginLifecycle.OtherError('Directory not found.', {
-        details: [
-          `Private root directory does not exist: ${this.config.privateRootDir}`,
-        ]
-      })
+      throw new PluginLifecycle.ConfigurationError(this.config,
+        [`Private root directory not found: ${this.config.privateRootDir}`]
+      )
     }
 
     await this._loadTree()
   }
 
-  bootstrap = async (ctx: Context) => {}
+  bootstrap = async (ctx: Context) => { }
 
-  destroy = async (ctx: Context) => {}
+  destroy = async (ctx: Context) => { }
 
   storeFile = async (
     ctx: StoragePluginContext,
@@ -176,7 +173,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
       }
       const oldFile = path.join(
         this.config[
-          oldVisibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+        oldVisibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
@@ -184,7 +181,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
       )
       const newFile = path.join(
         this.config[
-          params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+        params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
@@ -208,7 +205,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
 
       const oldFile = path.join(
         this.config[
-          file.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+        file.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
@@ -216,7 +213,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
       )
       const newFile = path.join(
         this.config[
-          params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+        params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
