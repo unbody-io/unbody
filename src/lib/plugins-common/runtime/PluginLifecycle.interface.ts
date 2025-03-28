@@ -1,5 +1,33 @@
 import { PluginContext } from '.'
 
+const BaseError = Error
+export namespace PluginLifecycle {
+  export class ConfigurationError extends BaseError {
+    constructor(
+      public readonly config: Record<string, any>,
+      public readonly issues: string[],
+    ) {
+      super('Configuration error')
+      this.name = 'PluginLifecycle.ConfigurationError'
+      Object.setPrototypeOf(this, ConfigurationError.prototype)
+    }
+  }
+
+  export class OtherError extends BaseError {
+    constructor(
+      message: string,
+      public readonly additionalContext: {
+        suggestions?: string[]
+        details?: string[]
+      } = {},
+    ) {
+      super(message)
+      this.name = 'PluginLifecycle.OtherError'
+      Object.setPrototypeOf(this, OtherError.prototype)
+    }
+  }
+}
+
 export interface PluginLifecycle<
   C extends PluginContext = PluginContext,
   T extends Record<string, any> = Record<string, any>,

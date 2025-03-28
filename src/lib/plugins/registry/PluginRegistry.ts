@@ -102,6 +102,20 @@ export class PluginRegistry {
     }
 
     await runner.initialize()
+    try {
+      await runner.initialize()
+    } catch (e) {
+      throw new PluginRegistry.Error(
+        `Failed to initialize plugin '${manifest.name}'`,
+        {
+          alias,
+          path: plugin.path,
+          manifest,
+        },
+        e,
+      )
+    }
+
     const instance = await this.getInstance(loaded)
 
     const session = await this.models.pluginState.startSession()
@@ -252,6 +266,29 @@ export class PluginRegistry {
       } catch (error) {
         console.error(error)
       }
+    }
+  }
+}
+
+const BaseError = Error
+export namespace PluginRegistry {
+  export namespace Error {
+    export interface Details {
+      alias: string
+      path: string
+      manifest: PluginManifest
+    }
+  }
+
+  export class Error extends BaseError {
+    constructor(
+      message: string,
+      public readonly pluginDetails: Error.Details,
+      public readonly causedBy?: unknown,
+    ) {
+      super(message)
+      this.name = 'PluginRegistryError'
+      Object.setPrototypeOf(this, Error.prototype)
     }
   }
 }

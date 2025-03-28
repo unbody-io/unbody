@@ -14,7 +14,7 @@ import { Client as TemporalClient } from '@temporalio/client'
 import { Worker } from '@temporalio/worker'
 import { Model, Connection as MongooseConnection } from 'mongoose'
 import { UnbodyProjectSettingsDoc } from 'src/lib/core-types'
-import { ConfigService } from 'src/lib/nestjs-utils'
+import { ConfigService, LoggerService } from 'src/lib/nestjs-utils'
 import { PluginRegistry } from 'src/lib/plugins/registry/PluginRegistry'
 import {
   PluginStateCollectionDocument,
@@ -66,12 +66,14 @@ const providers: Provider[] = [
       UNBODY_SETTINGS,
       getModelToken(PluginStateCollectionSchema.name),
       PluginResources,
+      LoggerService,
     ],
     useFactory: async (
       pluginConfigService: PluginConfigService,
       settings: UnbodyProjectSettingsDoc,
       pluginStateModel: Model<PluginStateCollectionDocument>,
       pluginResources: PluginResources,
+      loggerService: LoggerService,
     ) => {
       const registry = new PluginRegistry(
         {
@@ -88,7 +90,13 @@ const providers: Provider[] = [
         },
         pluginResources,
       )
-      await registry.register(settings.plugins)
+
+      try {
+        await registry.register(settings.plugins)
+      } catch (e) {
+        loggerService.userMessage.error(e)
+        process.exit(1)
+      }
       return registry
     },
   },
