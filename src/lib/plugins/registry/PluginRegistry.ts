@@ -101,7 +101,6 @@ export class PluginRegistry {
       manifest,
     }
 
-    await runner.initialize()
     try {
       await runner.initialize()
     } catch (e) {
