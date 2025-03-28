@@ -113,5 +113,5 @@ const providers: Provider[] = [
   exports: [ConfigService, LoggerService, ...providers],
 })
 export class SharedModule {
-  constructor() {}
+  constructor() { }
 }
