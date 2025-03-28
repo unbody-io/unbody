@@ -59,7 +59,7 @@ export class PluginRegistry {
       pluginState: Model<PluginStateCollectionDocument>
     },
     private resources: PluginResources,
-  ) {}
+  ) { }
 
   async register(plugins: UnbodyProjectSettings.PluginRegistration[]) {
     for (const plugin of plugins) {
@@ -78,10 +78,10 @@ export class PluginRegistry {
 
     const config = this.config.configLoader
       ? (await this.config.configLoader(
-          plugin,
-          manifest,
-          defaultConfigLoader,
-        )) || (await defaultConfigLoader(plugin, manifest))
+        plugin,
+        manifest,
+        defaultConfigLoader,
+      )) || (await defaultConfigLoader(plugin, manifest))
       : await defaultConfigLoader(plugin, manifest)
 
     const runner = new PluginRunner({
