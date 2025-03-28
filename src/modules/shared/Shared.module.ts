@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import * as temporal from '@temporalio/client'
 import { Redis as IORedis } from 'ioredis'
 import * as redis from 'redis'
-import { ConfigService, LoggerService } from 'src/lib/nestjs-utils'
+import { ConfigService, LoggerService, UserMessage } from 'src/lib/nestjs-utils'
 import { settings } from 'src/unbody.settings'
 import {
   IOREDIS_CLIENT,
@@ -42,14 +42,14 @@ const providers: Provider[] = [
         client.once('error', (err) => {
           if (err.message.includes('ECONNREFUSED')) {
             err.message = `Failed to connect to REDIS: ${err.message}`
-            logger.userMessage({
+            logger.userMessage(UserMessage.error({
               error: err,
               suggestion: `Please ensure that:
 1. Redis is running
 2. The following environment variable is set correctly:
 - REDIS_URI
 `,
-            })
+            }))
           }
           process.exit(1)
         })
@@ -75,14 +75,14 @@ const providers: Provider[] = [
       } catch (e) {
         const temporalAddress = configService.get('services.temporal.address')
         e.message = `Failed not connect to temporal server: ${e.message}`
-        logger.userMessage({
+        logger.userMessage(UserMessage.error({
           error: e,
           suggestion: `Please ensure that:
 - temporal server is running 
 - The following environment variables are set correctly:
 - TEMPORAL_ADDRESS (currently set to: ${temporalAddress})
 `,
-        })
+        }))
         process.exit(1)
       }
     },

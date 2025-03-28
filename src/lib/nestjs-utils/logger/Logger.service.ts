@@ -35,6 +35,10 @@ class UserMessageLogger {
       this.logger.warn(suggestion)
     }
   }
+
+  public warn(message: string) {
+    Nest.Logger.warn(message)
+  }
 }
 
 @Injectable()
@@ -69,8 +73,15 @@ export class LoggerService {
     this[log.level](log)
   }
 
-  public userMessage(userMessage: UserMessage.ErrorMessage) {
-    this.userMessageLogger.error(userMessage)
+  public userMessage(userMessage: UserMessage.UserMessage) {
+    switch (userMessage.type) {
+      case "error":
+        this.userMessageLogger.error(userMessage)
+        break;
+      case "warning":
+        this.userMessageLogger.warn(userMessage.warning)
+        break;
+    }
   }
 
   public formatJson = format.printf(({ level, message, timestamp }) => {

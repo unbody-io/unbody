@@ -61,10 +61,16 @@ export class PluginRegistry {
     private resources: PluginResources,
   ) { }
 
-  async register(plugins: UnbodyProjectSettings.PluginRegistration[]) {
+  async register(plugins: UnbodyProjectSettings.PluginRegistration[]): Promise<{ registrationErrors: PluginRegistry.Error[] }> {
+    const errors = [] as PluginRegistry.Error[]
     for (const plugin of plugins) {
-      await this.registerPlugin(plugin)
+      try {
+        await this.registerPlugin(plugin)
+      } catch (e) {
+        e instanceof PluginRegistry.Error && errors.push(e)
+      }
     }
+    return { registrationErrors: errors }
   }
 
   async registerPlugin(plugin: UnbodyProjectSettings.PluginRegistration) {

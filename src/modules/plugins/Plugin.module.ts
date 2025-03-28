@@ -13,7 +13,6 @@ import {
 import { Client as TemporalClient } from '@temporalio/client'
 import { Worker } from '@temporalio/worker'
 import { Model, Connection as MongooseConnection } from 'mongoose'
-import { UnbodyProjectSettingsDoc } from 'src/lib/core-types'
 import { ConfigService, LoggerService } from 'src/lib/nestjs-utils'
 import { PluginRegistry } from 'src/lib/plugins/registry/PluginRegistry'
 import {
@@ -54,6 +53,9 @@ import { WebhooksController } from './controllers/Webhooks.controller'
 import { TemporalJobSchedulerEngine } from './lib/TemporalJobSchedulerEngine'
 import { PluginService } from './services/Plugin.service'
 import { PluginConfigService } from './services/PluginConfig.service'
+import { PluginTypes } from 'src/lib/plugins-common'
+import { UnbodyProjectSettingsDoc } from 'src/lib/core-types'
+import { UserMessage } from 'src/lib/nestjs-utils'
 
 const providers: Provider[] = [
   PluginService,
@@ -91,13 +93,42 @@ const providers: Provider[] = [
         pluginResources,
       )
 
-      try {
-        await registry.register(settings.plugins)
-      } catch (e) {
-        loggerService.userMessage({
-          error: e
-        })
-        process.exit(1)
+      const { registrationErrors } = await registry.register(
+        settings.plugins,
+      )
+      for (const error of registrationErrors) {
+        loggerService.userMessage(
+          UserMessage.error({
+            error,
+          }),
+        )
+
+        const isFatal = (() => {
+          switch (error.pluginDetails.manifest.type) {
+            // only one database is supported currently and it's required
+            case PluginTypes.Database:
+              return true
+            // only the local storage is supported currently and it's required
+            case PluginTypes.Storage:
+              return true
+            // fail if the configured text vectorizer failed to load
+            case PluginTypes.TextVectorizer:
+              return (
+                settings.modules.textVectorizer.name === error.pluginDetails.alias
+              )
+            default:
+              return false
+          }
+        })()
+
+        if (isFatal) {
+          loggerService.userMessage(
+            UserMessage.warning(
+              `Can't start server without '${error.pluginDetails.alias}' because it's an essential plugin.`,
+            ),
+          )
+          process.exit(1)
+        }
       }
       return registry
     },
@@ -242,8 +273,7 @@ const providers: Provider[] = [
   exports: [...providers],
 })
 export class PluginModule
-  implements OnApplicationBootstrap, OnApplicationShutdown
-{
+  implements OnApplicationBootstrap, OnApplicationShutdown {
   workers: Worker[] = []
 
   constructor(
