@@ -42,7 +42,8 @@ const providers: Provider[] = [
         client.once('error', (err) => {
           if (err.message.includes('ECONNREFUSED')) {
             err.message = `Failed to connect to REDIS: ${err.message}`
-            logger.userMessage.error(err, {
+            logger.userMessage({
+              error: err,
               suggestion: `Please ensure that:
 1. Redis is running
 2. The following environment variable is set correctly:
@@ -74,7 +75,8 @@ const providers: Provider[] = [
       } catch (e) {
         const temporalAddress = configService.get('services.temporal.address')
         e.message = `Failed not connect to temporal server: ${e.message}`
-        logger.userMessage.error(e, {
+        logger.userMessage({
+          error: e,
           suggestion: `Please ensure that:
 - temporal server is running 
 - The following environment variables are set correctly:

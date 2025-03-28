@@ -94,7 +94,9 @@ const providers: Provider[] = [
       try {
         await registry.register(settings.plugins)
       } catch (e) {
-        loggerService.userMessage.error(e)
+        loggerService.userMessage({
+          error: e
+        })
         process.exit(1)
       }
       return registry

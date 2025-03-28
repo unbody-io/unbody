@@ -8,6 +8,7 @@ import {
 } from 'winston'
 import { ConfigService } from '../config'
 import { Log } from './Log'
+import * as UserMessage from "./UserMessage"
 import * as Nest from '@nestjs/common'
 
 class UserMessageLogger {
@@ -27,11 +28,11 @@ class UserMessageLogger {
     })
   }
 
-  public error(e: Error, details?: { suggestion: string }) {
-    Nest.Logger.error(e)
-    if (details) {
-      this.logger.error(`Error [${e.name}]: ${e.message}`)
-      this.logger.warn(details.suggestion)
+  public error({ error, suggestion }: UserMessage.ErrorMessage) {
+    Nest.Logger.error(error)
+    if (suggestion) {
+      this.logger.error(`Error [${error.name}]: ${error.message}`)
+      this.logger.warn(suggestion)
     }
   }
 }
@@ -39,7 +40,7 @@ class UserMessageLogger {
 @Injectable()
 export class LoggerService {
   private jsonLogger: Logger
-  public userMessage: UserMessageLogger
+  private userMessageLogger: UserMessageLogger
 
   public info!: LeveledLogMethod
   public error!: LeveledLogMethod
@@ -54,7 +55,7 @@ export class LoggerService {
       format: format.combine(format.timestamp(), this.formatJson),
     })
 
-    this.userMessage = new UserMessageLogger()
+    this.userMessageLogger = new UserMessageLogger()
 
     Object.keys(this.jsonLogger.levels).forEach((l) => {
       const level = l as string as LogLevel
@@ -66,6 +67,10 @@ export class LoggerService {
 
   public log = (log: Log) => {
     this[log.level](log)
+  }
+
+  public userMessage(userMessage: UserMessage.ErrorMessage) {
+    this.userMessageLogger.error(userMessage)
   }
 
   public formatJson = format.printf(({ level, message, timestamp }) => {
