@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { UnbodyProjectSettings } from 'src/lib/core-types'
+import { UnbodyPlugins } from 'src/lib/core-types'
 import { PluginManifest, PluginType } from 'src/lib/plugins-common'
 import * as uuid from 'uuid'
 import { DatabasePluginInstance } from '../instances/DatabasePlugin'
@@ -19,10 +19,10 @@ import { PluginStateCollectionDocument } from './schemas'
 
 export type PluginRegistryConfig = {
   configLoader?: (
-    plugin: UnbodyProjectSettings.PluginRegistration,
+    plugin: UnbodyPlugins.Registration,
     manifest: PluginManifest,
     defaultLoader: (
-      plugin: UnbodyProjectSettings.PluginRegistration,
+      plugin: UnbodyPlugins.Registration,
       manifest: PluginManifest,
     ) => Promise<Record<string, any>>,
   ) =>
@@ -33,7 +33,7 @@ export type PluginRegistryConfig = {
 }
 
 const defaultConfigLoader = async (
-  plugin: UnbodyProjectSettings.PluginRegistration,
+  plugin: UnbodyPlugins.Registration,
   manifest: PluginManifest,
 ) => {
   return typeof plugin.config === 'function'
@@ -61,7 +61,7 @@ export class PluginRegistry {
     private resources: PluginResources,
   ) { }
 
-  async register(plugins: UnbodyProjectSettings.PluginRegistration[]): Promise<{ registrationErrors: PluginRegistry.Error[] }> {
+  async register(plugins: UnbodyPlugins.Registration[]): Promise<{ registrationErrors: PluginRegistry.Error[] }> {
     const errors = [] as PluginRegistry.Error[]
     for (const plugin of plugins) {
       try {
@@ -73,7 +73,7 @@ export class PluginRegistry {
     return { registrationErrors: errors }
   }
 
-  async registerPlugin(plugin: UnbodyProjectSettings.PluginRegistration) {
+  async registerPlugin(plugin: UnbodyPlugins.Registration) {
     const id = uuid.v5(plugin.alias, uuid.v5.URL)
 
     const manifest = await new PluginRunner({

@@ -30,7 +30,7 @@ export class Enhancer {
       return this._collectionPipelines[collection]
     }
 
-    const pipelines = this._ctx.settings.modules.enhancement?.pipelines || []
+    const pipelines = this._ctx.settings.enhancement?.pipelines || []
 
     const collectionPipelines = pipelines.filter(
       (pipeline) => pipeline.collection === collection,

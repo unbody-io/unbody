@@ -1,8 +1,8 @@
 import { CollectionConfig } from './collection'
 
 export namespace CoreTypes {
-  export namespace ProjectSettings {
-    export type PluginRegistration = {
+  export namespace Plugins {
+    export type Registration = {
       path: string
       alias: string
       config?:
@@ -11,7 +11,9 @@ export namespace CoreTypes {
         | (() => Promise<Record<string, any>>)
         | undefined
     }
+  }
 
+  export namespace ProjectSettings {
     export type ModuleConfig<
       T extends Record<string, any> = Record<string, any>,
     > = {
@@ -60,19 +62,14 @@ export namespace CoreTypes {
     }
 
     export type Document = {
-      plugins: PluginRegistration[]
-
-      modules: {
-        textVectorizer: ModuleConfig
-        imageVectorizer?: ModuleConfig
-        reranker?: ModuleConfig
-        generative?: ModuleConfig
-        enhancement?: Enhancement.Settings
-        fileParsers: {
-          [mimeType: string]: ModuleConfig | ModuleConfig[] | undefined
-        }
+      textVectorizer: ModuleConfig
+      imageVectorizer?: ModuleConfig
+      reranker?: ModuleConfig
+      generative?: ModuleConfig
+      enhancement?: Enhancement.Settings
+      fileParsers: {
+        [mimeType: string]: ModuleConfig | ModuleConfig[] | undefined
       }
-
       customSchema?: {
         collections: CollectionConfig[]
         extend?: CollectionConfig[]
@@ -137,6 +134,8 @@ export namespace CoreTypes {
     }
   }
 }
+
+export import UnbodyPlugins = CoreTypes.Plugins
 
 export import UnbodyProjectDoc = CoreTypes.Project.Document
 export import UnbodyProjectState = CoreTypes.Project.State

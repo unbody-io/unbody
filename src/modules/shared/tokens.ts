@@ -4,6 +4,7 @@ export const IOREDIS_CLIENT = Symbol()
 export const TEMPORAL_CONNECTION = Symbol()
 export const TEMPORAL_CLIENT = Symbol()
 
+export const UNBODY_PLUGINS = Symbol()
 export const UNBODY_SETTINGS = Symbol()
 
 export const INDEXING_WORKER = Symbol()

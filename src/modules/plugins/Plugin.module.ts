@@ -64,18 +64,20 @@ const providers: Provider[] = [
   {
     provide: PluginRegistry,
     inject: [
+      PluginService,
       PluginConfigService,
-      UNBODY_SETTINGS,
       getModelToken(PluginStateCollectionSchema.name),
       PluginResources,
       LoggerService,
+      UNBODY_SETTINGS,
     ],
     useFactory: async (
+      pluginService: PluginService,
       pluginConfigService: PluginConfigService,
-      settings: UnbodyProjectSettingsDoc,
       pluginStateModel: Model<PluginStateCollectionDocument>,
       pluginResources: PluginResources,
       loggerService: LoggerService,
+      projectSettings: UnbodyProjectSettingsDoc,
     ) => {
       const registry = new PluginRegistry(
         {
@@ -94,7 +96,7 @@ const providers: Provider[] = [
       )
 
       const { registrationErrors } = await registry.register(
-        settings.plugins,
+        pluginService.getPlugins(),
       )
       for (const error of registrationErrors) {
         loggerService.userMessage(
@@ -114,7 +116,7 @@ const providers: Provider[] = [
             // fail if the configured text vectorizer failed to load
             case PluginTypes.TextVectorizer:
               return (
-                settings.modules.textVectorizer.name === error.pluginDetails.alias
+                projectSettings.textVectorizer.name === error.pluginDetails.alias
               )
             default:
               return false

@@ -48,7 +48,7 @@ export class Vectorizer {
   }
 
   async vectorizeObjects(record: Record<string, any>) {
-    const vectorizeImages = !!this._ctx.settings.modules.imageVectorizer
+    const vectorizeImages = !!this._ctx.settings.imageVectorizer
 
     const objects = this._ctx.collections.getObjectPaths(record)
 
@@ -181,7 +181,7 @@ export class Vectorizer {
     if (this._textVectorizer) return this._textVectorizer
 
     const plugin = await this.plugins.registry.getTextVectorizer(
-      this._ctx.settings.modules.textVectorizer.name,
+      this._ctx.settings.textVectorizer.name,
     )
     if (!plugin) return null
 
@@ -197,7 +197,7 @@ export class Vectorizer {
   async getImageVectorizer() {
     if (this._imageVectorizer) return this._imageVectorizer
 
-    const config = this._ctx.settings.modules.imageVectorizer
+    const config = this._ctx.settings.imageVectorizer
     if (!config) return null
 
     const plugin = await this.plugins.registry.getImageVectorizer(config.name)

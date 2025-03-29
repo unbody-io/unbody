@@ -60,7 +60,7 @@ export class Generative {
   }
 
   async getGenerative(params: { alias?: string; model?: string }) {
-    const config = this._ctx.settings.modules.generative
+    const config = this._ctx.settings.generative
     if (!config) throw new Error('generative module not configured')
 
     if (params.alias) return this._getPlugin(params.alias)

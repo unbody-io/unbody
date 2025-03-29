@@ -1,8 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import {
-  UnbodyProjectSettings,
-  UnbodyProjectSettingsDoc,
-} from 'src/lib/core-types'
+import { UnbodyPlugins, UnbodyProjectSettingsDoc } from 'src/lib/core-types'
 import { ConfigService } from 'src/lib/nestjs-utils'
 import { PluginManifest } from 'src/lib/plugins-common'
 import { UNBODY_SETTINGS } from 'src/modules/shared/tokens'
@@ -15,7 +12,7 @@ export class PluginConfigService {
   ) {}
 
   async loadPluginConfig(
-    plugin: UnbodyProjectSettings.PluginRegistration,
+    plugin: UnbodyPlugins.Registration,
     manifest: PluginManifest,
     _config: Record<string, any> | undefined,
   ) {
@@ -37,12 +34,12 @@ export class PluginConfigService {
       }
 
       if (!config.modules?.textVectorizer) {
-        const endpointURL = `${baseUrl}/inference/embeddings/text/${this.settings.modules.textVectorizer.name}`
+        const endpointURL = `${baseUrl}/inference/embeddings/text/${this.settings.textVectorizer.name}`
 
         config.modules = {
           ...config.modules,
           textVectorizer: {
-            name: this.settings.modules.textVectorizer.name,
+            name: this.settings.textVectorizer.name,
             config: {
               endpointURL,
             },
@@ -64,29 +61,26 @@ export class PluginConfigService {
         }
       }
 
-      if (
-        !config.modules?.imageVectorizer &&
-        !!this.settings.modules.imageVectorizer
-      ) {
+      if (!config.modules?.imageVectorizer && !!this.settings.imageVectorizer) {
         config.modules = {
           ...config.modules,
           imageVectorizer: {
             name: 'img2vec-custom',
             config: {
               imageFields: ['blob'],
-              endpointURL: `${baseUrl}/inference/embeddings/image/${this.settings.modules.imageVectorizer.name}`,
+              endpointURL: `${baseUrl}/inference/embeddings/image/${this.settings.imageVectorizer.name}`,
             },
           },
         }
       }
 
-      if (!config.modules?.reranker && !!this.settings.modules.reranker) {
+      if (!config.modules?.reranker && !!this.settings.reranker) {
         config.modules = {
           ...config.modules,
           reranker: {
             name: 'reranker-custom',
             config: {
-              endpointURL: `${baseUrl}/inference/rerank/${this.settings.modules.reranker.name}`,
+              endpointURL: `${baseUrl}/inference/rerank/${this.settings.reranker.name}`,
             },
           },
         }

@@ -18,7 +18,7 @@ export class Reranker {
       options:
         (params.params.options
           ? params.params.options
-          : this._ctx.settings.modules.reranker?.options) || {},
+          : this._ctx.settings.reranker?.options) || {},
     })
 
     return result
@@ -32,7 +32,7 @@ export class Reranker {
       return new RerankerPluginInstance(plugin, {}, this.plugins.resources)
     }
 
-    const conf = this._ctx.settings.modules.reranker
+    const conf = this._ctx.settings.reranker
     if (!conf) return null
 
     const plugin = await this.plugins.registry.getReranker(conf.name)

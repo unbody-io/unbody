@@ -11,7 +11,7 @@ export class FileParsers {
   async getParsersByMimeType({ mimeType }: { mimeType: string }) {
     const { settings } = this._ctx
 
-    const configs = Object.entries(settings.modules.fileParsers || {})
+    const configs = Object.entries(settings.fileParsers || {})
     const map = configs.find(([pattern]) =>
       new RegExp(pattern).test(mimeType),
     )?.[1]
