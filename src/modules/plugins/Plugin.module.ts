@@ -102,6 +102,9 @@ const providers: Provider[] = [
         loggerService.userMessage(
           UserMessage.error({
             error,
+            suggestion: pluginService.getRegistrationErrorSuggestion(
+              error.pluginDetails.alias,
+            ),
           }),
         )
 
