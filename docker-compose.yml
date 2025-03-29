@@ -34,7 +34,9 @@ services:
       - unbody
 
   weaviate:
-    image: cr.weaviate.io/semitechnologies/weaviate:1.29.0
+    build:
+      dockerfile: ./devenv/docker/weaviate/Dockerfile
+    image: weaviate:unbody
     restart: always
     ports:
       - 8080:8080
@@ -46,6 +48,7 @@ services:
       - CLUSTER_HOSTNAME=node1
       - ENABLE_MODULES=text2vec-huggingface
       - CLUSTER_GOSSIP_BIND_PORT=7100
+      - ENABLE_MODULES=text2vec-huggingface,generative-unbody,img2vec-custom,reranker-custom
     volumes:
       - weaviate_data:/var/lib/weaviate
     command: --host 0.0.0.0 --port 8080 --scheme http
