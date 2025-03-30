@@ -15,6 +15,10 @@ export namespace Database {
   export const weaviate = 'database-weaviate' as const
 }
 
+export namespace Provider {
+  export const localFolder = 'provider-local-folder' as const
+}
+
 export namespace TextVectorizer {
   export namespace OpenAI {
     export const embeddingAda002 = 'text2vec-openai-ada-002' as const
@@ -150,6 +154,11 @@ const multi2vecCoherePlugin = ({
 }
 
 export const plugins: Record<Alias, Registration> = [
+  {
+    path: pluginPath('plugin-provider-local-folder'),
+    alias: Provider.localFolder,
+    config: async () => ({}),
+  },
   {
     path: pluginPath('plugin-database-weaviate'),
     alias: Database.weaviate,
