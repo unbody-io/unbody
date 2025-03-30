@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import {
   ApplicationFailure,
   Client as TemporalClient,
+  WorkflowFailedError,
 } from '@temporalio/client'
 import { Model } from 'mongoose'
 import { UnbodySourceDoc } from 'src/lib/core-types'
@@ -14,6 +15,8 @@ import type {
   DeleteSourceResourcesWorkflowParams,
   IndexSourceWorkflowParams,
 } from '../workflows/indexing.workflows'
+import { Result } from 'src/lib/core-utils/result'
+import { IndexingFailures, IndexingFailure } from '../types/index'
 
 @Injectable()
 export class IndexingService {
@@ -25,7 +28,9 @@ export class IndexingService {
     private sourceModel: Model<SourceSchemaClass>,
   ) {}
 
-  async scheduleIndexingJob(params: IndexSourceWorkflowParams) {
+  async scheduleIndexingJob(
+    params: IndexSourceWorkflowParams,
+  ): Promise<Result<any, IndexingFailure>> {
     const { executions } =
       await this.temporal.workflowService.listWorkflowExecutions({
         namespace: 'default',
@@ -49,7 +54,20 @@ export class IndexingService {
       },
     })
 
-    return handle.result()
+    try {
+      const result = await handle.result()
+      return Result.ok(result)
+    } catch (error) {
+      if (
+        error instanceof WorkflowFailedError &&
+        error.cause instanceof ApplicationFailure &&
+        error.cause.type === IndexingFailures.SOURCE_BUSY
+      ) {
+        return Result.err(IndexingFailures.SOURCE_BUSY)
+      }
+
+      throw error
+    }
   }
 
   async scheduleDeleteSourceJob({ sourceId }: { sourceId: string }) {

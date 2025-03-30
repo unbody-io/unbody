@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { UnbodySourceDoc } from 'src/lib/core-types'
@@ -11,6 +15,8 @@ import { ListEntrypointOptionsDto } from '../dto/ListEntrypointOptions.dto'
 import { SetEntrypointDto } from '../dto/SetEntrypoint.dto'
 import { VerifySourceConnectionDto } from '../dto/VerifySourceConnection.dto'
 import { SourceSchemaClass } from '../schemas/Source.schema'
+import { IndexingFailures } from 'src/modules/indexing/types'
+import { Result } from 'src/lib/core-utils/result'
 
 @Injectable()
 export class SourceService {
@@ -180,10 +186,22 @@ export class SourceService {
   async initSource({ sourceId }: { sourceId: string }) {
     const { source, provider } = await this._getSource(sourceId)
 
-    return this.indexingService.scheduleIndexingJob({
+    const result = await this.indexingService.scheduleIndexingJob({
       sourceId,
       type: 'init',
       jobId: uuid.v4(),
+    })
+
+    return Result.match(result, {
+      ok: (value) => value,
+      err: (failure) => {
+        switch (failure) {
+          case IndexingFailures.SOURCE_BUSY:
+            throw new BadRequestException(
+              'This source is already being indexed.',
+            )
+        }
+      },
     })
   }
 

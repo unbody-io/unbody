@@ -17,6 +17,7 @@ import {
 } from 'src/lib/plugins-common/provider'
 import { IndexingActivities } from '../activities/Indexing.activities'
 import { ProcessEventWorkflowParams } from './ProcessRecord.workflows'
+import { IndexingFailures } from '../types'
 
 export type SchedulerLockWorkflowParams = {
   current?: string | null
@@ -94,7 +95,7 @@ export async function indexSourceWorkflow(params: IndexSourceWorkflowParams) {
   } = proxyActivities<IndexingActivities>({
     startToCloseTimeout: '10m',
     retry: {
-      nonRetryableErrorTypes: ['SOURCE_BUSY'],
+      nonRetryableErrorTypes: [IndexingFailures.SOURCE_BUSY],
     },
   })
 
@@ -119,7 +120,7 @@ export async function indexSourceWorkflow(params: IndexSourceWorkflowParams) {
         } else {
           throw new ApplicationFailure(
             'Source is busy, set "force" to true to reindex',
-            'SOURCE_BUSY',
+            IndexingFailures.SOURCE_BUSY,
           )
         }
       }
