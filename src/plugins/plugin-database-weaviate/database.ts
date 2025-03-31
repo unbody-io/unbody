@@ -214,7 +214,9 @@ export class Database {
       options.variables || {},
       options.headers || {},
     )
-    return res
+    return {
+      data: res,
+    }
   }
 
   getRecord = async (

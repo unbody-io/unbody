@@ -28,10 +28,10 @@ import {
 } from 'src/lib/plugins-common/database'
 import { FileParserPlugin } from 'src/lib/plugins-common/file-parser'
 import weaviate, {
+  ClientParams,
   Filters,
   InternalConnectionParams,
   WeaviateClient,
-  ClientParams,
   weaviateV2,
 } from 'weaviate-client'
 import { z } from 'zod'
