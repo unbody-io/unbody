@@ -55,6 +55,17 @@ services:
     networks:
       - unbody
 
+  file-server:
+    image: python:3.9-slim
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./devenv/docker/file-server/files:/app/files
+    command: >
+      sh -c "cd /app/files && mkdir -p public private && python -m http.server 5555"
+    networks:
+      - unbody
+
 volumes:
   mongodb_data:
     driver: local
