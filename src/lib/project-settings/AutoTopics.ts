@@ -1,23 +1,30 @@
 export class AutoTopics {
   static OpenAI = {
-    GPT3_5Turbo: 'autotopics-openai-gpt-3.5-turbo',
-    GPT4o: 'autotopics-openai-gpt-4o',
-    GPT4oMini: 'autotopics-openai-gpt-4o-mini',
+    GPT3_5Turbo: 'openai-gpt-3.5-turbo',
+    GPT4o: 'openai-gpt-4o',
+    GPT4oMini: 'openai-gpt-4o-mini',
   }
 
-  constructor(public name: string) {}
+  private static defaultOptions = {
+    model: AutoTopics.OpenAI.GPT4oMini,
+  }
+
+  constructor(public options: { model: string } = AutoTopics.defaultOptions) {}
 
   toJSON = () => {
     return {
-      name: this.name,
+      name: 'enhancer-topic-extractor',
+      options: {
+        model: this.options.model,
+      },
     }
   }
 
   static fromJSON = (data: any) => {
-    if (!data?.name) {
-      throw new Error('Invalid AutoTopics model')
+    if (!data?.options?.model) {
+      throw new Error('Invalid AutoTopics: model is required')
     }
 
-    return new AutoTopics(data.name)
+    return new AutoTopics({ model: data.options.model })
   }
 }

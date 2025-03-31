@@ -12,7 +12,7 @@ import { QnA } from './QnA'
 import { Reranker } from './Reranker'
 import { Spellcheck } from './Spellcheck'
 import { TextVectorizer } from './TextVectorizer'
-
+import { CoreTypes, UnbodyProjectSettingsDoc } from '../core-types'
 type Module =
   | typeof TextVectorizer
   | typeof ImageVectorizer
@@ -33,7 +33,7 @@ const moduleKeys = [
   'textVectorizer',
   'imageVectorizer',
   'qnaProvider',
-  'generativeSearch',
+  'generative',
   'reranker',
   'spellcheck',
   'pdfParser',
@@ -55,7 +55,7 @@ const module2Key = (module: any) => {
     case QnA:
       return 'qnaProvider'
     case Generative:
-      return 'generativeSearch'
+      return 'generative'
     case Reranker:
       return 'reranker'
     case Spellcheck:
@@ -97,7 +97,7 @@ const key2Module = (key: string) => {
       return ImageVectorizer
     case 'qnaProvider':
       return QnA
-    case 'generativeSearch':
+    case 'generative':
       return Generative
     case 'reranker':
       return Reranker
@@ -127,24 +127,30 @@ const key2Module = (key: string) => {
   }
 }
 
-export class ProjectSettings {
-  private textVectorizer: TextVectorizer | null = null
-  private imageVectorizer: ImageVectorizer | null = null
-  private qnaProvider: QnA | null = null
-  private generativeSearch: Generative | null = null
-  private reranker: Reranker | null = null
-  private spellcheck: Spellcheck | null = null
+const defaultFileParsers = {
+  'image/.*': [{ name: 'file-parser-image' }],
+  'text/markdown': [{ name: 'file-parser-markdown' }],
+  'application/vnd.google-apps.document': [{ name: 'file-parser-google-doc' }],
+}
 
-  private pdfParser: PdfParser | null = null
+export class ProjectSettings {
+  private textVectorizer: TextVectorizer = new TextVectorizer(
+    TextVectorizer.OpenAI.Ada002,
+  )
+  private imageVectorizer: ImageVectorizer | null = null
+  private generative: Generative = new Generative(Generative.OpenAI.GPT4o)
+  private reranker: Reranker | null = null
+    // = new Reranker(Reranker.Cohere.MultilingualV3)
 
   private autoSummary: AutoSummary | null = null
-  private autoEntities: AutoEntities | null = null
-  private autoKeywords: AutoKeywords | null = null
-  private autoTopics: AutoTopics | null = null
   private autoVision: AutoVision | null = null
 
-  private customSchema: CustomSchema | null = null
-  private enhancement: Enhancement | null = null
+  private customSchema: CustomSchema = new CustomSchema()
+  private enhancement: Enhancement = new Enhancement()
+  private fileParsers: Record<
+    string,
+    CoreTypes.ProjectSettings.ModuleConfig[]
+  > = defaultFileParsers
 
   constructor() {
     this.set(new TextVectorizer(TextVectorizer.Contextionary.Default))
@@ -162,17 +168,18 @@ export class ProjectSettings {
     return this
   }
 
-  toJSON = () => {
-    const json: Record<string, any> = {}
-
-    for (const key of moduleKeys) {
-      const conf = (this as any)[key] as any
-      if (conf) {
-        json[key] = conf.toJSON()
-      }
+  toJSON = (): UnbodyProjectSettingsDoc => {
+    return {
+      textVectorizer: this.textVectorizer.toJSON(),
+      fileParsers: this.fileParsers,
+      enhancement: { pipelines: [] },
+      customSchema: { collections: [] },
+      imageVectorizer: this.imageVectorizer?.toJSON(),
+      reranker: this.reranker?.toJSON(),
+      generative: this.generative?.toJSON(),
+      autoSummary: this.autoSummary?.toJSON(),
+      autoVision: this.autoVision?.toJSON(),
     }
-
-    return json
   }
 
   static fromJSON = (data: any) => {

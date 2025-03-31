@@ -1,7 +1,7 @@
 export class TextVectorizer {
   static OpenAI = {
     Ada002: 'text2vec-openai-ada-002',
-    TextEmbedding3Large: 'text2vec-openai-text-embedding-3-large',
+    TextEmbedding3Large: 'text2vec-openai-3-large',
     TextEmbedding3Small: 'text2vec-openai-text-embedding-3-small',
   }
 

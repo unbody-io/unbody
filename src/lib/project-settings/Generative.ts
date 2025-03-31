@@ -19,7 +19,7 @@ export class Generative {
     OpenMixtral8x7b: 'open-mixtral-8x7b',
   }
 
-  public name = 'generative-unbody'
+  public name = 'generative-openai-gpt-4o'
   public options: {
     model: string
   } = {} as any

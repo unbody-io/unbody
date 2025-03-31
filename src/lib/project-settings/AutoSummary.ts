@@ -1,27 +1,34 @@
 export class AutoSummary {
   static OpenAI = {
-    GPT3_5Turbo: 'autosum-openai-gpt-3.5-turbo',
-    GPT4o: 'autosum-openai-gpt-4o',
-    GPT4oMini: 'autosum-openai-gpt-4o-mini',
+    GPT3_5Turbo: 'openai-gpt-3.5-turbo',
+    GPT4o: 'openai-gpt-4o',
+    GPT4oMini: 'openai-gpt-4o-mini',
   }
 
   static Cohere = {
-    CommandR: 'autosum-cohere-command-r',
+    CommandR: 'cohere-command-r',
   }
 
-  constructor(public name: string) {}
+  private static defaultOptions = {
+    model: AutoSummary.OpenAI.GPT4o,
+  }
+
+  constructor(public options: { model: string } = AutoSummary.defaultOptions) {}
 
   toJSON = () => {
     return {
-      name: this.name,
+      name: 'enhancer-summarizer',
+      options: {
+        model: this.options.model,
+      },
     }
   }
 
   static fromJSON = (data: any) => {
-    if (!data?.name) {
-      throw new Error('Invalid AutoSummary model')
+    if (!data?.options?.model) {
+      return new AutoSummary()
     }
 
-    return new AutoSummary(data.name)
+    return new AutoSummary({ model: data.options.model })
   }
 }

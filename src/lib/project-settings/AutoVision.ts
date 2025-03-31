@@ -1,23 +1,30 @@
 export class AutoVision {
   static OpenAI = {
-    GPT4o: 'autovision-openai-gpt-4o',
-    GPT4oMini: 'autovision-openai-gpt-4o-mini',
-    GPT4Turbo: 'autovision-openai-gpt-4-turbo',
+    GPT4o: 'openai-gpt-4o',
+    GPT4oMini: 'openai-gpt-4o-mini',
+    GPT4Turbo: 'openai-gpt-4-turbo',
   }
 
-  constructor(public name: string) {}
+  private static defaultOptions = {
+    model: AutoVision.OpenAI.GPT4o,
+  }
+
+  constructor(public options: { model: string } = AutoVision.defaultOptions) {}
 
   toJSON = () => {
     return {
-      name: this.name,
+      name: 'enhancer-structured-output-generator',
+      options: {
+        model: this.options.model,
+      },
     }
   }
 
   static fromJSON = (data: any) => {
-    if (!data?.name) {
-      throw new Error('Invalid AutoVision model')
+    if (!data?.options?.model) {
+      throw new Error('Invalid AutoVision: model is required')
     }
 
-    return new AutoVision(data.name)
+    return new AutoVision({ model: data.options.model })
   }
 }

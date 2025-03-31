@@ -1,23 +1,30 @@
 export class AutoEntities {
   static OpenAI = {
-    GPT3_5Turbo: 'autoentities-openai-gpt-3.5-turbo',
-    GPT4o: 'autoentities-openai-gpt-4o',
-    GPT4oMini: 'autoentities-openai-gpt-4o-mini',
+    GPT3_5Turbo: 'openai-gpt-3.5-turbo',
+    GPT4o: 'openai-gpt-4o',
+    GPT4oMini: 'openai-gpt-4o-mini',
   }
 
-  constructor(public name: string) {}
+  private static defaultOptions = {
+    model: AutoEntities.OpenAI.GPT4oMini,
+  }
+
+  constructor(public options: { model: string } = AutoEntities.defaultOptions) {}
 
   toJSON = () => {
     return {
-      name: this.name,
+      name: 'enhancer-entity-extractor',
+      options: {
+        model: this.options.model,
+      },
     }
   }
 
   static fromJSON = (data: any) => {
-    if (!data?.name) {
-      throw new Error('Invalid AutoEntities model')
+    if (!data?.options?.model) {
+      throw new Error('Invalid AutoEntities: model is required')
     }
 
-    return new AutoEntities(data.name)
+    return new AutoEntities({ model: data.options.model })
   }
 }

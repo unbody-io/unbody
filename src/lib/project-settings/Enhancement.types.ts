@@ -1,4 +1,4 @@
-import { JsonSerializable } from '../common.types'
+import { JsonSerializable } from '../core-utils/types'
 
 export type GraphQLRecordType = {
   __typename: string

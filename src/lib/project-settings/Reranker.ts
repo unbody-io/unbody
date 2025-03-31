@@ -1,9 +1,9 @@
 export class Reranker {
   static Cohere = {
-    MultilingualV3: 'reranker-cohere-multilingual-v3.0',
-    MultilingualV2: 'reranker-cohere-multilingual-v2.0',
-    EnglishV3: 'reranker-cohere-english-v3.0',
-    EnglishV2: 'reranker-cohere-english-v2.0',
+    MultilingualV3: 'reranker-cohere-rerank-multilingual-v3.0',
+    MultilingualV2: 'reranker-cohere-rerank-multilingual-v2.0',
+    EnglishV3: 'reranker-cohere-rerank-english-v3.0',
+    EnglishV2: 'reranker-cohere-rerank-english-v2.0',
   }
 
   static Transformers = {
