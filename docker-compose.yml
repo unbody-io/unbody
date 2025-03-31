@@ -54,6 +54,10 @@ services:
     command: --host 0.0.0.0 --port 8080 --scheme http
     networks:
       - unbody
+    extra_hosts:
+      # allow weaviate to access services on host
+      # via the host.docker.internal hostname
+      - 'host.docker.internal:host-gateway'
 
   file-server:
     image: python:3.9-slim
