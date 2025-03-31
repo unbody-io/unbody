@@ -12,4 +12,4 @@ export const FILE_PARSER_WORKER = Symbol()
 export const RECORD_PROCESSOR_WORKER = Symbol()
 export const ENHANCEMENT_WORKER = Symbol()
 
-export const PLUGIN_EVENT_HANDLER_WORKER = Symbol()
+export const PLUGIN_TASK_QUEUE_WORKER = Symbol()

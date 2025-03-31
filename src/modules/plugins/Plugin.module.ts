@@ -13,7 +13,9 @@ import {
 import { Client as TemporalClient } from '@temporalio/client'
 import { Worker } from '@temporalio/worker'
 import { Model, Connection as MongooseConnection } from 'mongoose'
-import { ConfigService, LoggerService } from 'src/lib/nestjs-utils'
+import { UnbodyProjectSettingsDoc } from 'src/lib/core-types'
+import { ConfigService, LoggerService, UserMessage } from 'src/lib/nestjs-utils'
+import { PluginTypes } from 'src/lib/plugins-common'
 import { PluginRegistry } from 'src/lib/plugins/registry/PluginRegistry'
 import {
   PluginStateCollectionDocument,
@@ -42,25 +44,22 @@ import {
 import { TemporalWorker } from '../shared/lib/temporal/TemporalWorker'
 import {
   IOREDIS_CLIENT,
-  PLUGIN_EVENT_HANDLER_WORKER,
+  PLUGIN_TASK_QUEUE_WORKER,
   TEMPORAL_CLIENT,
   UNBODY_SETTINGS,
 } from '../shared/tokens'
-import { PluginEventHandlerActivities } from './activities/PluginEventHandler.activities'
-import { PluginEventQueues } from './constants/PluginEventQueues'
+import { PluginTaskQueueActivities } from './activities/PluginTaskQueue.activities'
+import { PluginTaskQueues } from './constants/PluginTaskQueues'
 import { PluginController } from './controllers/Plugin.controller'
 import { WebhooksController } from './controllers/Webhooks.controller'
 import { TemporalJobSchedulerEngine } from './lib/TemporalJobSchedulerEngine'
 import { PluginService } from './services/Plugin.service'
 import { PluginConfigService } from './services/PluginConfig.service'
-import { PluginTypes } from 'src/lib/plugins-common'
-import { UnbodyProjectSettingsDoc } from 'src/lib/core-types'
-import { UserMessage } from 'src/lib/nestjs-utils'
 
 const providers: Provider[] = [
   PluginService,
   PluginConfigService,
-  PluginEventHandlerActivities,
+  PluginTaskQueueActivities,
   {
     provide: PluginRegistry,
     inject: [
@@ -119,7 +118,8 @@ const providers: Provider[] = [
             // fail if the configured text vectorizer failed to load
             case PluginTypes.TextVectorizer:
               return (
-                projectSettings.textVectorizer.name === error.pluginDetails.alias
+                projectSettings.textVectorizer.name ===
+                error.pluginDetails.alias
               )
             default:
               return false
@@ -241,12 +241,12 @@ const providers: Provider[] = [
   },
   TemporalWorker.forFeature({
     inject: [ConfigService],
-    provide: PLUGIN_EVENT_HANDLER_WORKER,
-    ActivityService: PluginEventHandlerActivities,
+    provide: PLUGIN_TASK_QUEUE_WORKER,
+    ActivityService: PluginTaskQueueActivities,
     useFactory: (configService: ConfigService) => ({
       debugMode: configService.isDev,
-      taskQueue: PluginEventQueues.EventHandler,
-      workflowsPath: require.resolve('./workflows/PluginEvent.workflows'),
+      taskQueue: PluginTaskQueues.JobHandler,
+      workflowsPath: require.resolve('./workflows/PluginTask.workflows'),
       maxConcurrentWorkflowTaskExecutions: 10,
     }),
   }),
@@ -278,12 +278,13 @@ const providers: Provider[] = [
   exports: [...providers],
 })
 export class PluginModule
-  implements OnApplicationBootstrap, OnApplicationShutdown {
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   workers: Worker[] = []
 
   constructor(
     private pluginRegistry: PluginRegistry,
-    @Inject(PLUGIN_EVENT_HANDLER_WORKER)
+    @Inject(PLUGIN_TASK_QUEUE_WORKER)
     private pluginEventHandlerWorker: Worker,
   ) {
     this.workers = [this.pluginEventHandlerWorker]

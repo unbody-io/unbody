@@ -7,7 +7,6 @@ import { PluginContext, PluginLifecycle } from '../../lib/plugins-common'
 import {
   ConnectParams,
   ConnectResult,
-  FileNotFoundException,
   GetRecordMetadataParams,
   GetRecordMetadataResult,
   GetRecordParams,
@@ -18,7 +17,6 @@ import {
   HandleSourceUpdateResult,
   InitSourceParams,
   InitSourceResult,
-  InvalidEntrypointException,
   ListEntrypointOptionsParams,
   ListEntrypointOptionsResult,
   ProcessRecordParams,
@@ -185,7 +183,9 @@ export class LocalFolderProvider
     )
 
     if (!entrypoint)
-      throw new InvalidEntrypointException('Entrypoint is required')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Entrypoint is required',
+      )
 
     return {
       entrypoint,
@@ -204,7 +204,9 @@ export class LocalFolderProvider
     entrypoint: SourceEntrypoint | undefined,
   ): Promise<{ entrypoint: SourceEntrypoint }> => {
     if (!entrypoint)
-      throw new InvalidEntrypointException('Entrypoint is required')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Entrypoint is required',
+      )
 
     const { directory, maxDepth } = entrypoint
 
@@ -214,20 +216,26 @@ export class LocalFolderProvider
 
     if (err) {
       if (err instanceof z.ZodError) {
-        throw new InvalidEntrypointException(err.message)
+        throw new ProviderPlugin.Exceptions.InvalidEntrypoint(err.message)
       }
 
-      throw new InvalidEntrypointException(err.message)
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(err.message)
     }
 
     if (!path.isAbsolute(parsed.directory))
-      throw new InvalidEntrypointException('Directory must be an absolute path')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Directory must be an absolute path',
+      )
 
     if (!fs.existsSync(parsed.directory))
-      throw new InvalidEntrypointException('Directory does not exist')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Directory does not exist',
+      )
 
     if (!fs.lstatSync(parsed.directory).isDirectory())
-      throw new InvalidEntrypointException('Directory must be a directory')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Directory must be a directory',
+      )
 
     return {
       entrypoint: {
@@ -388,12 +396,14 @@ export class LocalFolderProvider
       { sort: ['desc'] },
     )
 
-    if (!event) throw new FileNotFoundException("Record doesn't exist")
+    if (!event)
+      throw new ProviderPlugin.Exceptions.FileNotFound("Record doesn't exist")
 
     const filename = path.join(ctx.source.entrypoint.directory, event.filename)
     const [stats, err] = await settle(() => fs.promises.stat(filename))
 
-    if (err) throw new FileNotFoundException("Record doesn't exist")
+    if (err)
+      throw new ProviderPlugin.Exceptions.FileNotFound("Record doesn't exist")
 
     const metadata = await getFileMetadata(
       ctx.source.entrypoint.directory,
@@ -423,11 +433,13 @@ export class LocalFolderProvider
       },
     )
 
-    if (!event) throw new FileNotFoundException("Record doesn't exist")
+    if (!event)
+      throw new ProviderPlugin.Exceptions.FileNotFound("Record doesn't exist")
     const filename = path.join(ctx.source.entrypoint.directory, event.filename)
 
     const [stats, statsErr] = await settle(() => fs.promises.stat(filename))
-    if (statsErr) throw new FileNotFoundException("Record doesn't exist")
+    if (statsErr)
+      throw new ProviderPlugin.Exceptions.FileNotFound("Record doesn't exist")
 
     const metadata = await getFileMetadata(
       ctx.source.entrypoint.directory,
@@ -553,10 +565,14 @@ export class LocalFolderProvider
         directory: source.entrypoint.directory,
       },
       async (event) => {
+        const date = new Date()
+        date.setMilliseconds(0)
+
         await eventsCollection.insertOne(event)
         await ctx.dispatchEvent(
           new ProviderPlugin.Events.SourceUpdated({
             sourceId: sourceId,
+            idempotencyKey: uuid.v5(date.toJSON(), uuid.v5.URL),
           }),
         )
       },

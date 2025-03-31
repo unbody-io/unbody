@@ -24,11 +24,8 @@ import {
   IndexingEvent,
   InitSourceParams,
   InitSourceResult,
-  InvalidConnectionException,
-  InvalidEntrypointException,
   ListEntrypointOptionsParams,
   ListEntrypointOptionsResult,
-  NotConnectedException,
   ProcessRecordParams,
   ProcessRecordResult,
   ProviderPlugin,
@@ -168,10 +165,12 @@ export class GoogleDriveProvider
     const { entrypoint } = params
 
     if (!entrypoint || entrypoint.type !== 'option' || !entrypoint.option?.id)
-      throw new InvalidEntrypointException('Invalid entrypoint')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid entrypoint',
+      )
 
     if (!ctx.source.credentials || !ctx.source.credentials.refreshToken) {
-      throw new NotConnectedException('')
+      throw new ProviderPlugin.Exceptions.NotConnected('')
     }
 
     const auth = await this._getAuth(ctx.source)
@@ -188,7 +187,7 @@ export class GoogleDriveProvider
       const error = err as gaxios.GaxiosError
 
       if (error.response && error.status === 404)
-        throw new InvalidEntrypointException(
+        throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
           'Invalid entrypoint: file not found',
         )
 
@@ -198,7 +197,9 @@ export class GoogleDriveProvider
     const file = res.data
 
     if (file.mimeType !== 'application/vnd.google-apps.folder')
-      throw new InvalidEntrypointException('Invalid entrypoint: not a folder')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid entrypoint: not a folder',
+      )
 
     return {
       entrypoint: {
@@ -216,11 +217,13 @@ export class GoogleDriveProvider
     const entrypoint = params.entrypoint || ctx.source.entrypoint
 
     if (!entrypoint || !entrypoint.id || !entrypoint.driveId) {
-      throw new InvalidEntrypointException('Invalid entrypoint')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid entrypoint',
+      )
     }
 
     if (!ctx.source.credentials || !ctx.source.credentials.refreshToken) {
-      throw new NotConnectedException('')
+      throw new ProviderPlugin.Exceptions.NotConnected('')
     }
 
     const auth = await this._getAuth(ctx.source)
@@ -237,7 +240,7 @@ export class GoogleDriveProvider
       const error = err as gaxios.GaxiosError
 
       if (error.response && error.status === 404)
-        throw new InvalidEntrypointException(
+        throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
           'Invalid entrypoint: file not found',
         )
 
@@ -247,10 +250,12 @@ export class GoogleDriveProvider
     const file = res.data
 
     if (file.mimeType !== 'application/vnd.google-apps.folder')
-      throw new InvalidEntrypointException('Invalid entrypoint: not a folder')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid entrypoint: not a folder',
+      )
 
     if (file.trashed)
-      throw new InvalidEntrypointException(
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
         'Invalid entrypoint: folder is deleted',
       )
 
@@ -298,7 +303,7 @@ export class GoogleDriveProvider
         const error = err as gaxios.GaxiosError
 
         if (error.response?.data?.error) {
-          throw new InvalidConnectionException(
+          throw new ProviderPlugin.Exceptions.InvalidConnection(
             `${error.response.data.error} - ${error.response.data.error_description}`,
           )
         }
@@ -380,7 +385,8 @@ export class GoogleDriveProvider
     const activities: driveactivity_v2.Schema$DriveActivity[] = []
     let nextPageToken: string = ''
 
-    if (!ctx.source.entrypoint.id) throw new InvalidEntrypointException('')
+    if (!ctx.source.entrypoint.id)
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint('')
 
     if (!ctx.source.state.lastEventTimestamp) {
       return {
@@ -683,7 +689,7 @@ export class GoogleDriveProvider
           error.response?.status >= 400 &&
           error.response?.status < 500
         ) {
-          throw new InvalidConnectionException(
+          throw new ProviderPlugin.Exceptions.InvalidConnection(
             `${error.response.data.error} - ${error.response.data.error_description}`,
           )
         }
@@ -733,6 +739,7 @@ export class GoogleDriveProvider
 
         await ctx.dispatchEvent(
           new ProviderPlugin.Events.SourceUpdated({
+            idempotencyKey: uuid.v4(),
             sourceId: ctx.source.id,
           }),
         )

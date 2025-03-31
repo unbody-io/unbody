@@ -3,6 +3,7 @@ import * as crypto from 'crypto'
 import { ObjectId } from 'mongodb'
 import { App, Octokit, RequestError } from 'octokit'
 import { settle } from 'src/lib/core-utils'
+import * as uuid from 'uuid'
 import { z } from 'zod'
 import {
   PluginContext,
@@ -12,7 +13,6 @@ import {
 import {
   ConnectParams,
   ConnectResult,
-  EntrypointAccessDeniedException,
   EntrypointListOption,
   GetRecordMetadataParams,
   GetRecordMetadataResult,
@@ -25,8 +25,6 @@ import {
   IndexingEvent,
   InitSourceParams,
   InitSourceResult,
-  InvalidConnectionException,
-  InvalidEntrypointException,
   ListEntrypointOptionsParams,
   ListEntrypointOptionsResult,
   ProcessRecordParams,
@@ -240,15 +238,18 @@ export class GithubIssuesProvider
       !entrypoint.option?.extra?.installationId ||
       !entrypoint.option?.extra?.accountId
     )
-      throw new InvalidEntrypointException('Invalid entrypoint')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid entrypoint',
+      )
 
     const client = await this._getClient(ctx.source)
 
     const handleError = (err: Error) => {
       if (err instanceof RequestError) {
-        console.log(JSON.stringify(err.response))
         if (err.status === 404)
-          throw new EntrypointAccessDeniedException(err.message)
+          throw new ProviderPlugin.Exceptions.EntrypointAccessDenied(
+            err.message,
+          )
       }
 
       throw err
@@ -269,10 +270,12 @@ export class GithubIssuesProvider
       if (
         res?.data?.id !== parseInt(entrypoint.option.extra.installationId, 10)
       )
-        throw new InvalidEntrypointException('Invalid installation ID')
+        throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+          'Invalid installation ID',
+        )
 
       if (res?.data?.app_id !== parseInt(this.config.clientSecret.appId, 10))
-        throw new InvalidEntrypointException('Invalid App ID')
+        throw new ProviderPlugin.Exceptions.InvalidEntrypoint('Invalid App ID')
     }
 
     const [_res, err] = await settle(() =>
@@ -287,7 +290,9 @@ export class GithubIssuesProvider
     if (err) handleError(err)
 
     if (res?.data?.id !== parseInt(entrypoint.option.id, 10))
-      throw new InvalidEntrypointException('Invalid repository ID')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid repository ID',
+      )
 
     return {
       entrypoint: {
@@ -306,15 +311,18 @@ export class GithubIssuesProvider
     const { entrypoint } = ctx.source
 
     if (!entrypoint || !entrypoint.id || !entrypoint.installationId)
-      throw new InvalidEntrypointException('Invalid entrypoint')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid entrypoint',
+      )
 
     const client = await this._getClient(ctx.source)
 
     const handleError = (err: Error) => {
       if (err instanceof RequestError) {
-        console.log(JSON.stringify(err.response))
         if (err.status === 404)
-          throw new EntrypointAccessDeniedException(err.message)
+          throw new ProviderPlugin.Exceptions.EntrypointAccessDenied(
+            err.message,
+          )
       }
 
       throw err
@@ -333,10 +341,12 @@ export class GithubIssuesProvider
       const res = _res as any
 
       if (res?.data?.id !== entrypoint.installationId)
-        throw new InvalidEntrypointException('Invalid installation ID')
+        throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+          'Invalid installation ID',
+        )
 
       if (res?.data?.app_id !== parseInt(this.config.clientSecret.appId, 10))
-        throw new InvalidEntrypointException('Invalid App ID')
+        throw new ProviderPlugin.Exceptions.InvalidEntrypoint('Invalid App ID')
     }
 
     const [_res, err] = await settle(() =>
@@ -351,7 +361,9 @@ export class GithubIssuesProvider
     if (err) handleError(err)
 
     if (res?.data?.id !== entrypoint.id)
-      throw new InvalidEntrypointException('Invalid repository ID')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid repository ID',
+      )
 
     return {
       entrypoint,
@@ -397,7 +409,7 @@ export class GithubIssuesProvider
           error.response?.status >= 400 &&
           error.response?.status < 500
         )
-          throw new InvalidConnectionException(error.message)
+          throw new ProviderPlugin.Exceptions.InvalidConnection(error.message)
 
         throw err
       }
@@ -950,6 +962,7 @@ export class GithubIssuesProvider
 
         await ctx.dispatchEvent(
           new ProviderPlugin.Events.SourceUpdated({
+            idempotencyKey: uuid.v5(event.timestamp.toJSON(), uuid.v5.URL),
             sourceId: ctx.source.id,
           }),
         )
@@ -969,9 +982,11 @@ export class GithubIssuesProvider
 
   private _getInstallation = async (source: SourceData) => {
     if (!source.credentials?.token)
-      throw new InvalidConnectionException('Invalid token')
+      throw new ProviderPlugin.Exceptions.InvalidConnection('Invalid token')
     if (!source.entrypoint?.repo || !source.entrypoint?.owner)
-      throw new InvalidEntrypointException('Invalid entrypoint')
+      throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
+        'Invalid entrypoint',
+      )
 
     return new Octokit({
       auth: {

@@ -59,9 +59,11 @@ export class PluginRegistry {
       pluginState: Model<PluginStateCollectionDocument>
     },
     private resources: PluginResources,
-  ) { }
+  ) {}
 
-  async register(plugins: UnbodyPlugins.Registration[]): Promise<{ registrationErrors: PluginRegistry.Error[] }> {
+  async register(
+    plugins: UnbodyPlugins.Registration[],
+  ): Promise<{ registrationErrors: PluginRegistry.Error[] }> {
     const errors = [] as PluginRegistry.Error[]
     for (const plugin of plugins) {
       try {
@@ -84,10 +86,10 @@ export class PluginRegistry {
 
     const config = this.config.configLoader
       ? (await this.config.configLoader(
-        plugin,
-        manifest,
-        defaultConfigLoader,
-      )) || (await defaultConfigLoader(plugin, manifest))
+          plugin,
+          manifest,
+          defaultConfigLoader,
+        )) || (await defaultConfigLoader(plugin, manifest))
       : await defaultConfigLoader(plugin, manifest)
 
     const runner = new PluginRunner({
@@ -210,6 +212,10 @@ export class PluginRegistry {
       default:
         return new PluginInstance({}, plugin, this.resources)
     }
+  }
+
+  async getPluginById(id: string) {
+    return Object.values(this.plugins).find((plugin) => plugin.id === id)
   }
 
   async getStorage() {

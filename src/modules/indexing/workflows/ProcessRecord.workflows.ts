@@ -123,7 +123,7 @@ export async function processRecordWorkflow(
   } = proxyActivities<RecordProcessorActivities>({
     startToCloseTimeout: '10m',
     retry: {
-      nonRetryableErrorTypes: ['UNSUPPORTED_MIME_TYPE'],
+      nonRetryableErrorTypes: ['unsupported_mime_type'],
     },
   })
 
@@ -134,7 +134,7 @@ export async function processRecordWorkflow(
     if (parsers.length === 0) {
       throw new ApplicationFailure(
         `No parser found for "${params.event.metadata.mimeType}"`,
-        'UNSUPPORTED_MIME_TYPE',
+        'unsupported_mime_type',
       )
     }
   }

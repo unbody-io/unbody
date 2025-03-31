@@ -296,6 +296,12 @@ export class IndexingService {
       visibility: 'private',
     })
 
+    if (!result.fileReference.isExternal) {
+      const key = result.fileReference.key
+      const fs = provider.fileStorage
+      await fs.delete(key)
+    }
+
     return file
   }
 

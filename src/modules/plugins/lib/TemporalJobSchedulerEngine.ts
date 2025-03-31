@@ -5,6 +5,8 @@ import {
   JobSchedulerJobConfig,
   JobSchedulerJobInfo,
 } from 'src/lib/plugins/resources/job-scheduler/JobSchedulerEngine'
+import { PluginTaskQueues } from '../constants/PluginTaskQueues'
+import { HandlePluginJobParams } from '../workflows/PluginTask.workflows'
 
 export class TemporalJobSchedulerEngine implements JobSchedulerEngine {
   constructor(private temporal: Client) {}
@@ -14,14 +16,17 @@ export class TemporalJobSchedulerEngine implements JobSchedulerEngine {
   ): Promise<JobSchedulerJobInfo> => {
     await this.temporal.schedule.create({
       scheduleId: job.id,
+      state: {
+        triggerImmediately: true,
+      },
       action: {
         type: 'startWorkflow',
-        taskQueue: 'unbody-plugins-task-queue',
+        taskQueue: PluginTaskQueues.JobHandler,
         workflowType: 'handlePluginJobWorkflow',
         args: [
           {
-            id: job.id,
-          },
+            job,
+          } satisfies HandlePluginJobParams,
         ],
         retry: {
           initialInterval: job.retryDelay,
@@ -29,8 +34,11 @@ export class TemporalJobSchedulerEngine implements JobSchedulerEngine {
           backoffCoefficient: job.backoffFactor,
         },
       },
-      policies: {},
+      policies: {
+        overlap: 'BUFFER_ONE',
+      },
       spec: {
+        startAt: new Date(job.schedule),
         intervals: job.interval
           ? [
               {
@@ -62,29 +70,64 @@ export class TemporalJobSchedulerEngine implements JobSchedulerEngine {
 
   getInfo = async (jobId: string): Promise<JobSchedulerJobInfo> => {
     const handle = this.temporal.schedule.getHandle(jobId)
-    const description = await handle.describe()
-    const { info, state, action, policies } = description
+    const [description, describeErr] = await settle(() => handle.describe())
 
-    const workflow = await this.temporal.workflow
-      .getHandle(action.workflowId)
-      .describe()
+    if (describeErr) {
+      if (describeErr instanceof ScheduleNotFoundError) {
+        throw new Error('Schedule not found')
+      }
+      throw describeErr
+    }
+
+    const { info } = description
+
+    let workflowStatus: JobSchedulerJobInfo['status'] = 'scheduled'
+    let workflowStartTime: Date | undefined
+    let workflowCloseTime: Date | undefined
+
+    const recentAction = info.recentActions?.[0]
+    if (recentAction) {
+      const [workflow, workflowErr] = await settle(() =>
+        this.temporal.workflow
+          .getHandle(recentAction.action.workflow.workflowId)
+          .describe(),
+      )
+
+      if (!workflowErr && workflow) {
+        workflowStartTime = workflow.startTime
+        workflowCloseTime = workflow.closeTime
+
+        if (
+          ['CANCELLED', 'COMPLETED', 'TERMINATED'].includes(
+            workflow.status.name,
+          )
+        ) {
+          workflowStatus = 'completed'
+        } else if (workflow.status.name === 'FAILED') {
+          workflowStatus = 'failed'
+        } else if (workflow.status.name === 'RUNNING') {
+          workflowStatus = 'running'
+        }
+      }
+    }
+
+    if (info.nextActionTimes.length === 0) {
+      workflowStatus = workflowStatus === 'failed' ? 'failed' : 'completed'
+    } else if (
+      info.nextActionTimes.length > 0 &&
+      workflowStatus !== 'running'
+    ) {
+      workflowStatus = 'scheduled'
+    }
 
     return {
       id: jobId,
       createdAt: info.createdAt,
-      status: ['CANCELLED', 'COMPLETED', 'TERMINATED'].includes(
-        workflow.status.name,
-      )
-        ? 'completed'
-        : workflow.status.name === 'FAILED'
-          ? 'failed'
-          : workflow.status.name === 'RUNNING'
-            ? 'running'
-            : 'scheduled',
-      nextRunAt: info.nextActionTimes[0],
-      lastRunAt: workflow.startTime,
-      lastFinishedAt: workflow.closeTime,
-      retries: info.recentActions.length,
+      status: workflowStatus,
+      nextRunAt: info.nextActionTimes?.[0],
+      lastRunAt: workflowStartTime,
+      lastFinishedAt: workflowCloseTime,
+      retries: 0,
       error: undefined,
     }
   }

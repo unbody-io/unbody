@@ -11,7 +11,10 @@ import {
   workflowInfo,
 } from '@temporalio/workflow'
 import { UnbodySourceDoc } from 'src/lib/core-types'
-import { IndexingEvent } from 'src/lib/plugins-common/provider'
+import {
+  IndexingEvent,
+  InitSourceResult,
+} from 'src/lib/plugins-common/provider'
 import { IndexingActivities } from '../activities/Indexing.activities'
 import { ProcessEventWorkflowParams } from './ProcessRecord.workflows'
 
@@ -181,7 +184,13 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
     proxyActivities<IndexingActivities>({
       startToCloseTimeout: '10m',
       retry: {
-        nonRetryableErrorTypes: ['task_id_not_found'],
+        nonRetryableErrorTypes: [
+          'task_id_not_found',
+          'source_not_found',
+          'provider_not_found',
+          'provider_not_connected',
+          'provider_invalid_connection',
+        ],
       },
     })
 
@@ -190,17 +199,7 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
     jobId: params.jobId,
   })
 
-  let res = await initSource({ sourceId: params.sourceId })
-
-  while (res.status === 'pending') {
-    if (!res.taskId) {
-      throw new ApplicationFailure('Task ID not found', 'task_id_not_found')
-    }
-
-    await sleep('10 seconds')
-    res = await initSource({ sourceId: params.sourceId, taskId: res.taskId })
-  }
-
+  let res: InitSourceResult<any> | undefined
   let finished = false
   const results: {
     event: IndexingEvent
@@ -208,6 +207,21 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
     status: 'success' | 'error'
     error?: string
   }[] = []
+
+  res = await initSource({ sourceId: params.sourceId })
+
+  while (res.status === 'pending') {
+    if (!res.taskId) {
+      throw new ApplicationFailure('Task ID not found', 'task_id_not_found')
+    }
+
+    await sleep('10 seconds')
+
+    res = await initSource({
+      sourceId: params.sourceId,
+      taskId: res.taskId,
+    })
+  }
 
   setHandler(queryIndexingJobStatus, () => {
     return {
@@ -272,7 +286,7 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
 
   await onSourceInitFinished({
     sourceId: params.sourceId,
-    sourceState: res.sourceState,
+    sourceState: res?.sourceState,
   })
 
   finished = true
@@ -285,7 +299,13 @@ export async function updateSourceWorkflow(params: IndexSourceWorkflowParams) {
     proxyActivities<IndexingActivities>({
       startToCloseTimeout: '10m',
       retry: {
-        nonRetryableErrorTypes: [],
+        nonRetryableErrorTypes: [
+          'task_id_not_found',
+          'source_not_found',
+          'provider_not_found',
+          'provider_not_connected',
+          'provider_invalid_connection',
+        ],
       },
     })
 
@@ -331,7 +351,7 @@ export async function updateSourceWorkflow(params: IndexSourceWorkflowParams) {
         (batch + 1) * batchSize,
       )
 
-      const workflowResults = await Promise.allSettled(
+      await Promise.allSettled(
         events.map(async (event) => {
           await executeChild('processEventWorkflow', {
             workflowId: `${params.jobId}:${event.eventName}:${event.recordId}`,

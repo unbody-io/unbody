@@ -66,13 +66,6 @@ export class SourceService {
     return { source: doc, provider }
   }
 
-  private async getSource(sourceId: string) {
-    const source = await this.sourceModel.findById(sourceId)
-    if (!source) throw new BadRequestException('Source not found')
-
-    return source
-  }
-
   async connect({
     sourceId,
     body,
@@ -163,10 +156,16 @@ export class SourceService {
   }) {
     const { source, provider } = await this._getSource(sourceId)
 
+    if (source.state !== 'idle' || source.initialized)
+      throw new BadRequestException(
+        'Cannot set entrypoint while source is already initialized or being indexed.',
+      )
+
     try {
       const res = await provider.handleEntrypointUpdate({
         entrypoint: body.entrypoint as any,
       })
+
       await source.updateOne({
         entrypoint: res.entrypoint,
         entrypointOptions: body.entrypoint,

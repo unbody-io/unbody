@@ -8,6 +8,7 @@ import {
 import { Model } from 'mongoose'
 import { UnbodySourceDoc, UnbodySourceStates } from 'src/lib/core-types'
 import { settle } from 'src/lib/core-utils'
+import { Providers } from 'src/lib/core/modules/providers'
 import { Unbody } from 'src/lib/core/Unbody'
 import { HandleSourceUpdateParams } from 'src/lib/plugins-common/provider'
 import { SourceSchemaClass } from 'src/modules/admin/schemas/Source.schema'
@@ -148,13 +149,27 @@ export class IndexingActivities {
       },
     )
 
-    const res = await this.unbody.services.indexing.initSource({
-      source,
-      provider: source.provider,
-      ...(params.taskId ? { taskId: params.taskId } : {}),
-    })
+    try {
+      const res = await this.unbody.services.indexing.initSource({
+        source,
+        provider: source.provider,
+        ...(params.taskId ? { taskId: params.taskId } : {}),
+      })
 
-    return res
+      return res
+    } catch (error) {
+      if (error instanceof Providers.Exceptions.ProviderNotFound)
+        throw new ApplicationFailure(error.message, 'provider_not_found')
+      else if (error instanceof Providers.Exceptions.NotConnected)
+        throw new ApplicationFailure(error.message, 'provider_not_connected')
+      else if (error instanceof Providers.Exceptions.InvalidConnection)
+        throw new ApplicationFailure(
+          error.message,
+          'provider_invalid_connection',
+        )
+
+      throw error
+    }
   }
 
   async handleSourceUpdate(
@@ -175,13 +190,27 @@ export class IndexingActivities {
       },
     )
 
-    const res = await this.unbody.services.indexing.handleSourceUpdate({
-      source,
-      provider: source.provider,
-      ...params,
-    })
+    try {
+      const res = await this.unbody.services.indexing.handleSourceUpdate({
+        source,
+        provider: source.provider,
+        ...params,
+      })
 
-    return res
+      return res
+    } catch (error) {
+      if (error instanceof Providers.Exceptions.ProviderNotFound)
+        throw new ApplicationFailure(error.message, 'provider_not_found')
+      else if (error instanceof Providers.Exceptions.NotConnected)
+        throw new ApplicationFailure(error.message, 'provider_not_connected')
+      else if (error instanceof Providers.Exceptions.InvalidConnection)
+        throw new ApplicationFailure(
+          error.message,
+          'provider_invalid_connection',
+        )
+
+      throw error
+    }
   }
 
   async onSourceInitFinished({

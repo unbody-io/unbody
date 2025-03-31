@@ -1,6 +1,6 @@
 import { GraphqlResponseError } from '@octokit/graphql'
 import { settle } from 'src/lib/core-utils'
-import { FileNotFoundException } from 'src/lib/plugins-common/provider'
+import { ProviderPlugin } from 'src/lib/plugins-common/provider'
 
 const call = async <T = any>(fn: () => Promise<T>) => {
   const [res, err] = await settle<T, GraphqlResponseError<T>>(() => fn())
@@ -10,7 +10,7 @@ const call = async <T = any>(fn: () => Promise<T>) => {
       const types = (err.errors || []).map((error) => error.type)
 
       if (types.includes('NOT_FOUND'))
-        throw new FileNotFoundException(err.message)
+        throw new ProviderPlugin.Exceptions.FileNotFound(err.message)
 
       throw err
     } else throw err

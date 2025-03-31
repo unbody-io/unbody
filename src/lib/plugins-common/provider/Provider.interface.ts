@@ -41,6 +41,7 @@ export namespace ProviderPlugin {
 
     export type SourceUpdatedPayload = {
       sourceId: string
+      idempotencyKey: string
     }
 
     export class SourceUpdated extends PluginEvent<
@@ -48,7 +49,7 @@ export namespace ProviderPlugin {
       SourceUpdatedPayload
     > {
       constructor(payload: SourceUpdatedPayload) {
-        super(Events.EventNames.SourceUpdated, payload)
+        super(Events.EventNames.SourceUpdated, payload, payload.idempotencyKey)
       }
     }
 
@@ -57,6 +58,17 @@ export namespace ProviderPlugin {
       typeof EventNames.SourceUpdated,
       SourceUpdated
     >
+  }
+
+  export namespace Exceptions {
+    class BaseError extends Error {}
+
+    export class InvalidEntrypoint extends BaseError {}
+    export class EntrypointAccessDenied extends BaseError {}
+    export class InvalidConnection extends BaseError {}
+    export class NotConnected extends BaseError {}
+    export class FileNotFound extends BaseError {}
+    export class ProviderRequest extends BaseError {}
   }
 }
 

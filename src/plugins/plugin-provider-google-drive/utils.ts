@@ -2,7 +2,7 @@ import { drive_v3, google } from 'googleapis'
 import { ReadStream, WriteStream, createWriteStream } from 'node:fs'
 import { join } from 'node:path'
 import _slugify from 'slugify'
-import { FileNotFoundException } from '../../lib/plugins-common/provider'
+import { ProviderPlugin } from 'src/lib/plugins-common/provider'
 import { GOOGLE_DRIVE_FOLDER_MIME_TYPE } from './shared'
 
 const slugify = (text: string, options?: Parameters<typeof _slugify>[1] | {}) =>
@@ -173,7 +173,9 @@ export const getFileMetadata = async (params: {
   })
 
   if (file.trashed)
-    throw new FileNotFoundException(`File not found: ${params.fileId}`)
+    throw new ProviderPlugin.Exceptions.FileNotFound(
+      `File not found: ${params.fileId}`,
+    )
 
   return generateFileMetadata({ file })
 }
