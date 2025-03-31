@@ -162,6 +162,28 @@ export class ImageBlock {
     onDelete: 'REMOVE_REFERENCE',
   })
   document: Array<GoogleDoc>
+
+  @Property({
+    type: 'text',
+    required: false,
+    vectorize: true,
+  })
+  autoCaption?: string
+
+  @Property({
+    type: 'text',
+    array: true,
+    required: false,
+    vectorize: true,
+  })
+  autoTypes?: string[]
+
+  @Property({
+    type: 'text',
+    required: false,
+    vectorize: true,
+  })
+  autoOCR?: string
 }
 
 export const ImageBlockCollection = new RecordCollection<ImageBlock>(ImageBlock)

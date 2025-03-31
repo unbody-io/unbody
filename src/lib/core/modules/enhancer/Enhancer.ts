@@ -13,6 +13,7 @@ import { z } from 'zod'
 import { Plugins } from '../../plugins/Plugins'
 import { ProjectContext } from '../../project-context'
 import { EnhancerPipelineState } from './EnhancerPipelineState'
+import { AutoEnhancement } from './auto-enhancement/AutoEnhancement'
 
 export class Enhancer {
   private _collectionPipelines: Record<
@@ -32,13 +33,21 @@ export class Enhancer {
 
     const pipelines = this._ctx.settings.enhancement?.pipelines || []
 
-    const collectionPipelines = pipelines.filter(
+    const customPipelines = pipelines.filter(
       (pipeline) => pipeline.collection === collection,
     )
 
-    this._collectionPipelines[collection] = collectionPipelines
+    const autoEnhancementPipelines = new AutoEnhancement(
+      collection,
+      this._ctx.settings,
+    ).pipelines
 
-    return collectionPipelines
+    this._collectionPipelines[collection] = [
+      ...autoEnhancementPipelines,
+      ...customPipelines,
+    ]
+
+    return this._collectionPipelines[collection]
   }
 
   runPipeline = async (params: {
@@ -135,6 +144,7 @@ export class Enhancer {
     )
 
     if (argsError) {
+      argsError.message = `Failed to evaluate args: ${argsError.message}`
       state.onStepError(step.name, argsError)
 
       if (step.onFailure !== 'continue') {
@@ -164,6 +174,7 @@ export class Enhancer {
     )
 
     if (err) {
+      err.message = `Failed to run: ${err.message}`
       state.onStepError(step.name, err)
 
       if (step.onFailure !== 'continue') {
@@ -190,6 +201,7 @@ export class Enhancer {
     )
 
     if (outputError) {
+      outputError.message = `Failed to evaluate output: ${outputError.message}`
       state.onStepError(step.name, outputError)
 
       if (step.onFailure !== 'continue') {

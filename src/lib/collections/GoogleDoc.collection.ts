@@ -164,6 +164,13 @@ export class GoogleDoc {
     onUpdate: 'CASCADE',
   })
   blocks: Array<ImageBlock | TextBlock>
+
+  @Property({
+    type: 'text',
+    required: false,
+    vectorize: true,
+  })
+  autoSummary?: string
 }
 
 export const GoogleDocCollection = new RecordCollection<GoogleDoc>(GoogleDoc)

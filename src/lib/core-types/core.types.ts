@@ -67,6 +67,8 @@ export namespace CoreTypes {
       reranker?: ModuleConfig
       generative?: ModuleConfig
       enhancement?: Enhancement.Settings
+      autoSummary?: ModuleConfig
+      autoVision?: ModuleConfig
       fileParsers: {
         [mimeType: string]: ModuleConfig | ModuleConfig[] | undefined
       }

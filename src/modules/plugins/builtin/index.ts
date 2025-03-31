@@ -1,11 +1,11 @@
 import type { Config as WeaviateConfig } from 'src/plugins/plugin-database-weaviate/plugin.types'
 import type { Config as SummarizerConfig } from 'src/plugins/plugin-enhancer-summarizer/plugin.types'
+import type { Config as LocalStorageConfig } from 'src/plugins/plugin-storage-local/plugin.types'
 import type {
   Config as Text2VecOpenAIConfig,
   Model as Text2VecOpenAIModel,
 } from 'src/plugins/plugin-text2vec-openai/plugin.types'
 import { UnbodyPlugins } from '../../../lib/core-types'
-import type { Config as LocalStorageConfig } from 'src/plugins/plugin-storage-local/plugin.types'
 
 export namespace Database {
   export const weaviate = 'database-weaviate' as const
@@ -22,6 +22,7 @@ export namespace TextVectorizer {
 export namespace FileParser {
   export const image = 'file-parser-image' as const
   export const googleDoc = 'file-parser-google-doc' as const
+  export const markdown = 'file-parser-markdown' as const
 }
 
 export namespace Storage {
@@ -30,6 +31,12 @@ export namespace Storage {
 
 export namespace Enhancer {
   export const summarizer = 'enhancer-summarizer' as const
+  export const structuredOutputGenerator =
+    'enhancer-structured-output-generator' as const
+}
+
+export namespace DataProvider {
+  export const localFolder = 'local_folder' as const
 }
 
 export namespace Defaults {
@@ -45,8 +52,11 @@ const aliases = [
   TextVectorizer.OpenAI.embedding3Small,
   FileParser.image,
   FileParser.googleDoc,
+  FileParser.markdown,
   Storage.local,
   Enhancer.summarizer,
+  Enhancer.structuredOutputGenerator,
+  DataProvider.localFolder,
 ] as const
 
 type Alias = (typeof aliases)[number]
@@ -129,9 +139,19 @@ export const plugins: Record<Alias, Registration> = [
     model: 'text-embedding-3-small',
   }),
   {
+    path: pluginPath('plugin-provider-local-folder'),
+    alias: DataProvider.localFolder,
+    config: {},
+  },
+  {
     path: pluginPath('plugin-file-parser-image'),
     alias: FileParser.image,
     config: async () => ({}),
+  },
+  {
+    path: pluginPath('plugin-file-parser-markdown'),
+    alias: FileParser.markdown,
+    config: {},
   },
   {
     path: pluginPath('plugin-storage-local'),
@@ -153,6 +173,23 @@ export const plugins: Record<Alias, Registration> = [
   {
     path: pluginPath('plugin-enhancer-summarizer'),
     alias: Enhancer.summarizer,
+    config: async () =>
+      ({
+        clientSecret: {
+          openai: {
+            apiKey: OPENAI_API_KEY,
+            project: OPENAI_PROJECT,
+            organization: OPENAI_ORGANIZATION,
+          },
+        },
+      }) as SummarizerConfig,
+    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+  - OPENAI_API_KEY
+  `,
+  },
+  {
+    path: pluginPath('plugin-enhancer-structured-output-generator'),
+    alias: Enhancer.structuredOutputGenerator,
     config: async () =>
       ({
         clientSecret: {
