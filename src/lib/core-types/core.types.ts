@@ -73,7 +73,7 @@ export namespace CoreTypes {
         [mimeType: string]: ModuleConfig | ModuleConfig[] | undefined
       }
       customSchema?: {
-        collections: CollectionConfig[]
+        collections?: CollectionConfig[]
         extend?: CollectionConfig[]
       }
     }
