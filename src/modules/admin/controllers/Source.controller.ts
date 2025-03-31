@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { ConnectSourceDto } from '../dto/ConnectSource.dto'
 import { CreateSourceDto } from '../dto/CreateSource.dto'
@@ -11,6 +11,11 @@ import { SourceService } from '../services/Source.service'
 @Controller('/admin/projects/:projectId/sources')
 export class SourceController {
   constructor(private sourceService: SourceService) {}
+
+  @Get('/')
+  async listSources() {
+    return this.sourceService.listSources()
+  }
 
   @Post('/')
   async create(@Body() body: CreateSourceDto) {

@@ -210,4 +210,22 @@ export class SourceService {
       jobId: uuid.v4(),
     })
   }
+
+  async listSources(): Promise<UnbodySourceDoc[]> {
+    const sources = await this.sourceModel.find({})
+    return sources.map((source) => {
+      const json = source.toJSON({ virtuals: true })
+      return {
+        id: json._id,
+        name: json.name,
+        provider: json.provider,
+        state: json.state,
+        connected: json.connected,
+        initialized: json.initialized,
+        entrypoint: json.entrypoint,
+        createdAt: json.createdAt.toJSON(),
+        updatedAt: json.updatedAt.toJSON(),
+      }
+    })
+  }
 }
