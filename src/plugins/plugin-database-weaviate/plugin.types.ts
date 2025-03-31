@@ -1,23 +1,24 @@
 import { DatabasePluginContext } from 'src/lib/plugins-common/database'
-import type { ConnectToCustomOptions } from 'weaviate-client'
 import { z } from 'zod'
 
 export const configSchema = z.object({
   connection: z.object({
     httpHost: z.string().optional(),
-    httpPort: z.number().optional(),
+    httpPort: z.number({ coerce: true }).optional(),
     httpSecure: z.boolean().optional(),
     httpPath: z.string().optional(),
     grpcHost: z.string().optional(),
-    grpcPort: z.number().optional(),
+    grpcPort: z.number({ coerce: true }).optional(),
     grpcSecure: z.boolean().optional(),
     headers: z.record(z.string()).optional(),
     skipInitChecks: z.boolean().optional(),
-    timeout: z.object({
-      query: z.number().optional(),
-      insert: z.number().optional(),
-      init: z.number().optional(),
-    }).optional(),
+    timeout: z
+      .object({
+        query: z.number({ coerce: true }).optional(),
+        insert: z.number({ coerce: true }).optional(),
+        init: z.number({ coerce: true }).optional(),
+      })
+      .optional(),
     auth: z
       .union([
         z.object({
