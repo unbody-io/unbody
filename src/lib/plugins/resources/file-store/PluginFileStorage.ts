@@ -44,17 +44,19 @@ export class PluginFileStorage {
         : undefined
 
       const files = await this.models.PluginFile.create(
-        {
-          pluginId,
-          key: params.key,
-          options: params.options || {},
-          metadata: params.options?.metadata || {},
-          expiresAt: expiresAt,
+        [
+          {
+            pluginId,
+            key: params.key,
+            options: params.options || {},
+            metadata: params.options?.metadata || {},
+            expiresAt: expiresAt,
 
-          payload: {
-            filename,
+            payload: {
+              filename,
+            },
           },
-        },
+        ],
         { session },
       )
 
