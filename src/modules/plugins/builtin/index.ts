@@ -1,5 +1,9 @@
 import type { Config as WeaviateConfig } from 'src/plugins/plugin-database-weaviate/plugin.types'
 import type { Config as SummarizerConfig } from 'src/plugins/plugin-enhancer-summarizer/plugin.types'
+import type {
+  Config as Multi2VecCohereConfig,
+  Model as Multi2VecCohereModel,
+} from 'src/plugins/plugin-multi2vec-cohere/plugin.types'
 import type { Config as LocalStorageConfig } from 'src/plugins/plugin-storage-local/plugin.types'
 import type {
   Config as Text2VecOpenAIConfig,
@@ -16,6 +20,18 @@ export namespace TextVectorizer {
     export const embeddingAda002 = 'text2vec-openai-ada-002' as const
     export const embedding3Large = 'text2vec-openai-3-large' as const
     export const embedding3Small = 'text2vec-openai-3-small' as const
+  }
+}
+
+export namespace MultimodalVectorizer {
+  export namespace Cohere {
+    export const EnglishV3 = 'multi2vec-cohere-embed-english-v3.0' as const
+    export const EnglishLightV3 =
+      'multi2vec-cohere-embed-english-light-v3.0' as const
+    export const MultilingualV3 =
+      'multi2vec-cohere-embed-multilingual-v3.0' as const
+    export const MultilingualLightV3 =
+      'multi2vec-cohere-embed-multilingual-light-v3.0' as const
   }
 }
 
@@ -50,6 +66,10 @@ const aliases = [
   TextVectorizer.OpenAI.embeddingAda002,
   TextVectorizer.OpenAI.embedding3Large,
   TextVectorizer.OpenAI.embedding3Small,
+  MultimodalVectorizer.Cohere.EnglishV3,
+  MultimodalVectorizer.Cohere.EnglishLightV3,
+  MultimodalVectorizer.Cohere.MultilingualV3,
+  MultimodalVectorizer.Cohere.MultilingualLightV3,
   FileParser.image,
   FileParser.googleDoc,
   FileParser.markdown,
@@ -102,6 +122,33 @@ const text2VecOpenAIPlugin = ({
   }
 }
 
+const COHERE_API_KEY = process.env.COHERE_API_KEY || ''
+
+const multi2vecCoherePlugin = ({
+  alias,
+  model,
+}: {
+  alias: Alias
+  model: Multi2VecCohereModel
+}) => {
+  return {
+    path: pluginPath('plugin-multi2vec-cohere'),
+    config: async () =>
+      ({
+        clientSecret: {
+          apiKey: COHERE_API_KEY,
+        },
+        options: {
+          model,
+        },
+      }) satisfies Multi2VecCohereConfig,
+    alias,
+    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+  - COHERE_API_KEY
+  `,
+  }
+}
+
 export const plugins: Record<Alias, Registration> = [
   {
     path: pluginPath('plugin-database-weaviate'),
@@ -137,6 +184,22 @@ export const plugins: Record<Alias, Registration> = [
   text2VecOpenAIPlugin({
     alias: TextVectorizer.OpenAI.embedding3Small,
     model: 'text-embedding-3-small',
+  }),
+  multi2vecCoherePlugin({
+    alias: MultimodalVectorizer.Cohere.EnglishV3,
+    model: 'embed-english-v3.0',
+  }),
+  multi2vecCoherePlugin({
+    alias: MultimodalVectorizer.Cohere.EnglishLightV3,
+    model: 'embed-english-light-v3.0',
+  }),
+  multi2vecCoherePlugin({
+    alias: MultimodalVectorizer.Cohere.MultilingualV3,
+    model: 'embed-multilingual-v3.0',
+  }),
+  multi2vecCoherePlugin({
+    alias: MultimodalVectorizer.Cohere.MultilingualLightV3,
+    model: 'embed-multilingual-light-v3.0',
   }),
   {
     path: pluginPath('plugin-provider-local-folder'),
