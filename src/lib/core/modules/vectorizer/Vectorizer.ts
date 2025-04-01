@@ -299,22 +299,26 @@ export class Vectorizer {
     const config = this._ctx.settings.imageVectorizer
     if (!config) return null
 
-    let plugin = await this.plugins.registry.getImageVectorizer(config.name)
-    if (plugin) {
+    let img2vecPlugin = await this.plugins.registry.getImageVectorizer(
+      config.name,
+    )
+    if (img2vecPlugin) {
       this._imageVectorizer = new ImageVectorizerPluginInstance(
-        plugin,
+        img2vecPlugin,
         {},
         this.plugins.resources,
       )
 
-      this._imageVectorizer
+      return this._imageVectorizer
     }
 
-    plugin = await this.plugins.registry.getMultimodalVectorizer(config.name)
-    if (!plugin) return null
+    const multi2vecPlugin = await this.plugins.registry.getMultimodalVectorizer(
+      config.name,
+    )
+    if (!multi2vecPlugin) return null
 
     this._imageVectorizer = new MultimodalVectorizerPluginInstance(
-      plugin,
+      multi2vecPlugin,
       {},
       this.plugins.resources,
     )
@@ -323,7 +327,10 @@ export class Vectorizer {
   }
 
   async getMultimodalVectorizer(alias: string) {
-    let plugin = await this.plugins.registry.getMultimodalVectorizer(alias)
+    if (this._multimodalVectorizer) return this._multimodalVectorizer
+
+    const plugin = await this.plugins.registry.getMultimodalVectorizer(alias)
+
     if (plugin) {
       this._multimodalVectorizer = new MultimodalVectorizerPluginInstance(
         plugin,

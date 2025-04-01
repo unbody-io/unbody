@@ -80,17 +80,22 @@ export class SchemaManager {
         vectorizer,
       } as any
 
-      if (this.config.modules.imageVectorizer?.multimodal) {
-        const textProps = collection.properties
-          .filter((prop) => prop.type === 'text' && prop.vectorize !== false)
-          .map((prop) => prop.name)
-        const imageProps = collection.properties
-          .filter((prop) => prop.type === 'blob')
-          .map((prop) => prop.name)
+      const textProps = collection.properties
+        .filter((prop) => prop.type === 'text' && prop.vectorize !== false)
+        .map((prop) => prop.name)
+      const imageProps = collection.properties
+        .filter((prop) => prop.type === 'blob')
+        .map((prop) => prop.name)
 
+      if (this.config.modules.imageVectorizer?.multimodal) {
         vectorizer.config = {
           ...vectorizer.config,
           textFields: textProps,
+          imageFields: imageProps,
+        }
+      } else {
+        vectorizer.config = {
+          ...vectorizer.config,
           imageFields: imageProps,
         }
       }
