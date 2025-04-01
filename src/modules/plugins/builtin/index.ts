@@ -10,101 +10,10 @@ import type {
   Model as Text2VecOpenAIModel,
 } from 'src/plugins/plugin-text2vec-openai/plugin.types'
 import { UnbodyPlugins } from '../../../lib/core-types'
-
-export namespace Database {
-  export const weaviate = 'database-weaviate' as const
-}
-
-export namespace Provider {
-  export const localFolder = 'provider-local-folder' as const
-}
-
-export namespace TextVectorizer {
-  export namespace OpenAI {
-    export const embeddingAda002 = 'text2vec-openai-ada-002' as const
-    export const embedding3Large = 'text2vec-openai-3-large' as const
-    export const embedding3Small = 'text2vec-openai-3-small' as const
-  }
-}
-
-export namespace MultimodalVectorizer {
-  export namespace Cohere {
-    export const EnglishV3 = 'multi2vec-cohere-embed-english-v3.0' as const
-    export const EnglishLightV3 =
-      'multi2vec-cohere-embed-english-light-v3.0' as const
-    export const MultilingualV3 =
-      'multi2vec-cohere-embed-multilingual-v3.0' as const
-    export const MultilingualLightV3 =
-      'multi2vec-cohere-embed-multilingual-light-v3.0' as const
-  }
-}
-
-export namespace ImageVectorizer {
-  export const neural = 'img2vec-neural' as const
-}
-
-export namespace FileParser {
-  export const image = 'file-parser-image' as const
-  export const googleDoc = 'file-parser-google-doc' as const
-  export const markdown = 'file-parser-markdown' as const
-}
-
-export namespace Storage {
-  export const local = 'local-storage' as const
-}
-
-export namespace Enhancer {
-  export const summarizer = 'enhancer-summarizer' as const
-  export const structuredOutputGenerator =
-    'enhancer-structured-output-generator' as const
-}
-
-export namespace DataProvider {
-  export const localFolder = 'local_folder' as const
-}
-
-export namespace Defaults {
-  export const database = Database.weaviate
-  export const textVectorizer = TextVectorizer.OpenAI.embeddingAda002
-  export const storage = Storage.local
-}
-
-export namespace Reranker {
-  export namespace Cohere {
-    export const englishV3 = 'reranker-cohere-rerank-english-v3.0' as const
-  }
-}
-
-export namespace Generative {
-  export namespace OpenAI {
-    export const gpt4o = 'generative-openai-gpt-4o' as const
-  }
-}
-
-const aliases = [
-  Database.weaviate,
-  TextVectorizer.OpenAI.embeddingAda002,
-  TextVectorizer.OpenAI.embedding3Large,
-  TextVectorizer.OpenAI.embedding3Small,
-  MultimodalVectorizer.Cohere.EnglishV3,
-  MultimodalVectorizer.Cohere.EnglishLightV3,
-  MultimodalVectorizer.Cohere.MultilingualV3,
-  MultimodalVectorizer.Cohere.MultilingualLightV3,
-  FileParser.image,
-  FileParser.googleDoc,
-  FileParser.markdown,
-  Storage.local,
-  Enhancer.summarizer,
-  Enhancer.structuredOutputGenerator,
-  DataProvider.localFolder,
-  ImageVectorizer.neural,
-  Reranker.Cohere.englishV3,
-] as const
-
-type Alias = (typeof aliases)[number]
+import * as BuiltinPlugin from 'src/lib/plugins/builtin'
 
 interface Registration extends UnbodyPlugins.Registration {
-  alias: Alias
+  alias: BuiltinPlugin.Alias
   errorResolutionSuggestion?: string
 }
 
@@ -120,7 +29,7 @@ const text2VecOpenAIPlugin = ({
   alias,
   model,
 }: {
-  alias: Alias
+  alias: BuiltinPlugin.Alias
   model: Text2VecOpenAIModel
 }) => {
   return {
@@ -150,7 +59,7 @@ const multi2vecCoherePlugin = ({
   alias,
   model,
 }: {
-  alias: Alias
+  alias: BuiltinPlugin.Alias
   model: Multi2VecCohereModel
 }) => {
   return {
@@ -171,15 +80,15 @@ const multi2vecCoherePlugin = ({
   }
 }
 
-export const plugins: Record<Alias, Registration> = [
+export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
   {
     path: pluginPath('plugin-provider-local-folder'),
-    alias: Provider.localFolder,
+    alias: BuiltinPlugin.Provider.localFolder,
     config: async () => ({}),
   },
   {
     path: pluginPath('plugin-database-weaviate'),
-    alias: Database.weaviate,
+    alias: BuiltinPlugin.Database.weaviate,
     config: async () => {
       const defaultHost = '127.0.0.1'
       const defaultPort = 8080
@@ -201,14 +110,14 @@ export const plugins: Record<Alias, Registration> = [
   `,
   },
   {
-    alias: ImageVectorizer.neural,
+    alias: BuiltinPlugin.ImageVectorizer.neural,
     path: pluginPath('plugin-img2vec-neural'),
     config: async () => ({
-      baseURL: process.env.IMG2VEC_BASE_URL
+      baseURL: process.env.IMG2VEC_BASE_URL,
     }),
   },
   {
-    alias: Reranker.Cohere.englishV3,
+    alias: BuiltinPlugin.Reranker.Cohere.englishV3,
     path: pluginPath('plugin-reranker-cohere'),
     config: async () => ({
       clientSecret: {
@@ -217,7 +126,7 @@ export const plugins: Record<Alias, Registration> = [
     }),
   },
   {
-    alias: Generative.OpenAI.gpt4o,
+    alias: BuiltinPlugin.Generative.OpenAI.gpt4o,
     path: pluginPath('plugin-generative-openai'),
     config: async () => ({
       clientSecret: {
@@ -231,56 +140,56 @@ export const plugins: Record<Alias, Registration> = [
   `,
   },
   text2VecOpenAIPlugin({
-    alias: TextVectorizer.OpenAI.embeddingAda002,
+    alias: BuiltinPlugin.TextVectorizer.OpenAI.embeddingAda002,
     model: 'text-embedding-ada-002',
   }),
   text2VecOpenAIPlugin({
-    alias: TextVectorizer.OpenAI.embedding3Large,
+    alias: BuiltinPlugin.TextVectorizer.OpenAI.embedding3Large,
     model: 'text-embedding-3-large',
   }),
   text2VecOpenAIPlugin({
-    alias: TextVectorizer.OpenAI.embedding3Small,
+    alias: BuiltinPlugin.TextVectorizer.OpenAI.embedding3Small,
     model: 'text-embedding-3-small',
   }),
   multi2vecCoherePlugin({
-    alias: MultimodalVectorizer.Cohere.EnglishV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.EnglishV3,
     model: 'embed-english-v3.0',
   }),
   multi2vecCoherePlugin({
-    alias: MultimodalVectorizer.Cohere.EnglishLightV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.EnglishLightV3,
     model: 'embed-english-light-v3.0',
   }),
   multi2vecCoherePlugin({
-    alias: MultimodalVectorizer.Cohere.MultilingualV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.MultilingualV3,
     model: 'embed-multilingual-v3.0',
   }),
   multi2vecCoherePlugin({
-    alias: MultimodalVectorizer.Cohere.MultilingualLightV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.MultilingualLightV3,
     model: 'embed-multilingual-light-v3.0',
   }),
   {
     path: pluginPath('plugin-provider-local-folder'),
-    alias: DataProvider.localFolder,
+    alias: BuiltinPlugin.DataProvider.localFolder,
     config: {},
   },
   {
     path: pluginPath('plugin-file-parser-google-doc'),
-    alias: FileParser.googleDoc,
+    alias: BuiltinPlugin.FileParser.googleDoc,
     config: async () => ({}),
   },
   {
     path: pluginPath('plugin-file-parser-image'),
-    alias: FileParser.image,
+    alias: BuiltinPlugin.FileParser.image,
     config: async () => ({}),
   },
   {
     path: pluginPath('plugin-file-parser-markdown'),
-    alias: FileParser.markdown,
+    alias: BuiltinPlugin.FileParser.markdown,
     config: {},
   },
   {
     path: pluginPath('plugin-storage-local'),
-    alias: Storage.local,
+    alias: BuiltinPlugin.Storage.local,
     config: async () =>
       ({
         publicRootDir: process.env.LOCAL_STORAGE_PUBLIC_ROOT_DIR,
@@ -297,7 +206,7 @@ export const plugins: Record<Alias, Registration> = [
   },
   {
     path: pluginPath('plugin-enhancer-summarizer'),
-    alias: Enhancer.summarizer,
+    alias: BuiltinPlugin.Enhancer.summarizer,
     config: async () =>
       ({
         clientSecret: {
@@ -314,7 +223,7 @@ export const plugins: Record<Alias, Registration> = [
   },
   {
     path: pluginPath('plugin-enhancer-structured-output-generator'),
-    alias: Enhancer.structuredOutputGenerator,
+    alias: BuiltinPlugin.Enhancer.structuredOutputGenerator,
     config: async () =>
       ({
         clientSecret: {
@@ -336,9 +245,9 @@ export const plugins: Record<Alias, Registration> = [
       [plugin.alias]: plugin,
     }
   },
-  {} as Record<Alias, Registration>,
+  {} as Record<BuiltinPlugin.Alias, Registration>,
 )
 
-export function isBuiltInPlugin(alias: string): alias is Alias {
-  return aliases.includes(alias as Alias)
+export function isBuiltInPlugin(alias: string): alias is BuiltinPlugin.Alias {
+  return BuiltinPlugin.aliases.includes(alias as BuiltinPlugin.Alias)
 }
