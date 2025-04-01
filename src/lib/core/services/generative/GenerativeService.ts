@@ -34,7 +34,7 @@ export class GenerativeService {
     if (varsError)
       throw new Error(`failed to process vars: ${varsError.message}`)
 
-    const messages = await module.processMessages(params.params, vars)
+    const messages = await module.processMessages(validated as any, vars)
     const generative = await module.getGenerative({ model: validated.model })
     const [res, err] = await settle(() =>
       generative.generateText({

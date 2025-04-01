@@ -88,7 +88,7 @@ export class Generative {
         validated.model = this._ctx.settings.generative.options.model
       }
 
-      return params
+      return validated
     } catch (error) {
       const message = error.errors ? error.errors.join('\n') : error.message
       throw new Error(`validation error: ${message}`)
