@@ -73,7 +73,8 @@ export class CohereMultimodalVectorizer
               model,
               texts: params.texts,
               embedding_types: ['float'],
-              input_type: 'search_document',
+              input_type:
+                params.type === 'query' ? 'search_query' : 'search_document',
               truncate: 'END',
             })
             .then((res) => res.data.embeddings.float)

@@ -38,7 +38,7 @@ export class Vectorizer {
 
     if (vectorizer.type === PluginTypes.MultimodalVectorizer)
       return vectorizer
-        .vectorize({ images: encoded, texts: [] })
+        .vectorize({ images: encoded, texts: [], type: 'object' })
         .then((res) => {
           return {
             vectors: res.vectors.image.map((vector) => ({ vector })),
@@ -55,6 +55,7 @@ export class Vectorizer {
     params: {
       texts?: string[]
       images?: string[]
+      type?: 'object' | 'query'
     }
   }) {
     const vectorizer = await this.getMultimodalVectorizer(alias)
@@ -63,8 +64,9 @@ export class Vectorizer {
     const encoded = await this._encodeImage(params.images || [])
 
     return await vectorizer.vectorize({
-      texts: params.texts || [],
       images: encoded,
+      texts: params.texts || [],
+      type: params.type || 'object',
     })
   }
 
@@ -214,6 +216,7 @@ export class Vectorizer {
           } = await vectorizer.vectorize({
             texts: input.texts || [],
             images: encodedImages,
+            type: 'object',
           })
 
           const combined = this.combineVectors([...text, ...image])

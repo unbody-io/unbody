@@ -21,6 +21,7 @@ export type VectorizeParams<
 > = {
   texts: string[]
   images: string[]
+  type: 'object' | 'query'
 
   options?: T
 }

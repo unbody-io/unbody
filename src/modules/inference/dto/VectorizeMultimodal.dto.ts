@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import {
   IsArray,
+  IsEnum,
   IsNumber,
   IsObject,
   IsOptional,
@@ -55,6 +56,11 @@ export class VectorizeMultimodalDto {
   @IsNumber({}, { each: true })
   @IsOptional()
   weights: number[] = []
+
+  @ApiProperty({})
+  @IsEnum(['object', 'query'])
+  @IsOptional()
+  type: 'object' | 'query' = 'query'
 
   @ApiProperty({})
   @IsObject()
