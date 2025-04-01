@@ -14,6 +14,7 @@ export class PluginConfigService {
   async loadPluginConfig(
     plugin: UnbodyPlugins.Registration,
     manifest: PluginManifest,
+    getPluginManifest: (alias: string) => Promise<PluginManifest | null>,
     _config: Record<string, any> | undefined,
   ) {
     const config = {
@@ -62,15 +63,24 @@ export class PluginConfigService {
       }
 
       if (!config.modules?.imageVectorizer && !!this.settings.imageVectorizer) {
-        config.modules = {
-          ...config.modules,
-          imageVectorizer: {
-            name: 'img2vec-custom',
-            config: {
-              imageFields: ['blob'],
-              endpointURL: `${baseUrl}/inference/embeddings/image/${this.settings.imageVectorizer.name}`,
+        const vectorizerName = this.settings.imageVectorizer.name
+        if (plugin) {
+          const vectorizerManifest = await getPluginManifest(vectorizerName)
+          const isMultimodal =
+            vectorizerManifest &&
+            vectorizerManifest.type === 'multimodal_vectorizer'
+          const endpointURL = `${baseUrl}/inference/embeddings/${isMultimodal ? 'multimodal' : 'image'}/${vectorizerName}`
+          const name = isMultimodal ? 'multi2vec-custom' : 'img2vec-custom'
+          config.modules = {
+            ...config.modules,
+            imageVectorizer: {
+              name: name,
+              multimodal: isMultimodal,
+              config: {
+                endpointURL: endpointURL,
+              },
             },
-          },
+          }
         }
       }
 

@@ -52,6 +52,7 @@ export class SchemaManager {
         indexPropertyLength: true,
       }),
       vectorizers: {
+        ...({} as any),
         vectorizer: {
           name: 'text2vec-huggingface',
           config: {
@@ -60,7 +61,7 @@ export class SchemaManager {
           },
         },
         vectorIndex: weaviate.configure.vectorIndex.hnsw({}),
-      } as any,
+      },
       properties: [],
       references: [],
     }
@@ -70,13 +71,29 @@ export class SchemaManager {
       collection.name === 'ImageBlock'
     ) {
       const module = this.config.modules.imageVectorizer
+      const vectorizer = {
+        name: module.name,
+        config: module.config,
+      }
       config.vectorizers = {
         vectorIndex: weaviate.configure.vectorIndex.hnsw({}),
-        vectorizer: {
-          name: module.name,
-          config: module.config,
-        },
+        vectorizer,
       } as any
+
+      if (this.config.modules.imageVectorizer?.multimodal) {
+        const textProps = collection.properties
+          .filter((prop) => prop.type === 'text' && prop.vectorize !== false)
+          .map((prop) => prop.name)
+        const imageProps = collection.properties
+          .filter((prop) => prop.type === 'blob')
+          .map((prop) => prop.name)
+
+        vectorizer.config = {
+          ...vectorizer.config,
+          textFields: textProps,
+          imageFields: imageProps,
+        }
+      }
     }
 
     if (this.config.modules?.generative) {

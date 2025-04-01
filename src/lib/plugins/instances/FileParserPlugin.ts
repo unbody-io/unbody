@@ -1,3 +1,4 @@
+import { PluginTypes } from 'src/lib/plugins-common'
 import { FileParserPlugin } from 'src/lib/plugins-common/file-parser'
 import { PluginResources } from '../resources/PluginResources'
 import { LoadedPlugin } from '../shared.types'
@@ -21,6 +22,10 @@ export class FileParserPluginInstance extends PluginInstance<FileParserPluginIns
     protected resources: PluginResources,
   ) {
     super(config, plugin, resources, FileParserPluginInstance.methods)
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.FileParser
   }
 }
 

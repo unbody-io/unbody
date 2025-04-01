@@ -80,10 +80,16 @@ const providers: Provider[] = [
     ) => {
       const registry = new PluginRegistry(
         {
-          async configLoader(plugin, manifest, defaultLoader) {
+          async configLoader(
+            plugin,
+            manifest,
+            getPluginManifest,
+            defaultLoader,
+          ) {
             return pluginConfigService.loadPluginConfig(
               plugin,
               manifest,
+              getPluginManifest,
               await defaultLoader(plugin, manifest),
             )
           },

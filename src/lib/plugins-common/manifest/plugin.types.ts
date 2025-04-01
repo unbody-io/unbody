@@ -8,6 +8,7 @@ export const PluginTypes = {
   Generative: 'generative' as 'generative',
   TextVectorizer: 'text_vectorizer' as 'text_vectorizer',
   ImageVectorizer: 'image_vectorizer' as 'image_vectorizer',
+  MultimodalVectorizer: 'multimodal_vectorizer' as 'multimodal_vectorizer',
 } as const
 
 export type PluginType = (typeof PluginTypes)[keyof typeof PluginTypes]

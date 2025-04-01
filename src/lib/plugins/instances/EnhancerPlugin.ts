@@ -1,3 +1,4 @@
+import { PluginTypes } from 'src/lib/plugins-common'
 import {
   EnhancerPlugin,
   EnhancerPluginContext,
@@ -21,6 +22,10 @@ export class EnhancerPluginInstance extends PluginInstance<EnhancerPluginInstanc
     protected resources: PluginResources,
   ) {
     super(config, plugin, resources, EnhancerPluginInstance.methods)
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.Enhancer
   }
 
   protected override _runTask = <

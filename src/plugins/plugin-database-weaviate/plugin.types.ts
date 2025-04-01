@@ -44,6 +44,7 @@ export const configSchema = z.object({
         .object({
           name: z.string(),
           config: z.record(z.any()).optional(),
+          multimodal: z.boolean().optional(),
         })
         .optional(),
       generative: z

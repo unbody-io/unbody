@@ -1,3 +1,4 @@
+import { PluginTypes } from 'src/lib/plugins-common'
 import { StoragePlugin } from 'src/lib/plugins-common/storage'
 import { PluginResources } from '../resources/PluginResources'
 import { LoadedPlugin } from '../shared.types'
@@ -25,6 +26,10 @@ export class StoragePluginInstance extends PluginInstance<StoragePluginInstanceC
     protected resources: PluginResources,
   ) {
     super(config, plugin, resources, StoragePluginInstance.methods)
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.Storage
   }
 }
 

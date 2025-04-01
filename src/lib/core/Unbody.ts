@@ -69,7 +69,10 @@ export class Unbody {
     }
 
     const imageVectorizer = () => {
-      const plugins = Object.keys(pluginRegistry.imageVectorizers)
+      const plugins = [
+        ...Object.keys(pluginRegistry.imageVectorizers),
+        ...Object.keys(pluginRegistry.multimodalVectorizers),
+      ]
 
       if (plugins.length === 0) {
         return z.undefined({ message: 'No available reranker plugins found' })

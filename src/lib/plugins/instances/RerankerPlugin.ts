@@ -1,3 +1,4 @@
+import { PluginTypes } from 'src/lib/plugins-common'
 import { RerankerPlugin } from 'src/lib/plugins-common/reranker/Reranker.interface'
 import { PluginResources } from '../resources/PluginResources'
 import { LoadedPlugin } from '../shared.types'
@@ -18,6 +19,10 @@ export class RerankerPluginInstance extends PluginInstance<RerankerPluginInstanc
     protected resources: PluginResources,
   ) {
     super(config, plugin, resources, RerankerPluginInstance.methods)
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.Reranker
   }
 }
 

@@ -42,6 +42,10 @@ export class PluginInstance<
     }
   }
 
+  get type() {
+    return this.plugin.manifest.type
+  }
+
   get fileStorage() {
     const pluginId = this.plugin.id
 

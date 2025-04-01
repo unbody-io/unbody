@@ -1,3 +1,4 @@
+import { PluginTypes } from 'src/lib/plugins-common'
 import { GenerativePlugin } from 'src/lib/plugins-common/generative'
 import { PluginResources } from '../resources/PluginResources'
 import { LoadedPlugin } from '../shared.types'
@@ -21,6 +22,10 @@ export class GenerativePluginInstance extends PluginInstance<GenerativePluginIns
     protected resources: PluginResources,
   ) {
     super(config, plugin, resources, GenerativePluginInstance.methods)
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.Generative
   }
 
   async getDefaultOptions() {

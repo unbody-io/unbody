@@ -16,11 +16,13 @@ import { PluginResources } from '../resources/PluginResources'
 import { PluginRunner } from '../runner/LocalPluginRunner'
 import { LoadedPlugin } from '../shared.types'
 import { PluginStateCollectionDocument } from './schemas'
+import { MultimodalVectorizerPluginInstance } from '../instances/MultimodalVectorizerPlugin'
 
 export type PluginRegistryConfig = {
   configLoader?: (
     plugin: UnbodyPlugins.Registration,
     manifest: PluginManifest,
+    getManifest: (alias: string) => Promise<PluginManifest | null>,
     defaultLoader: (
       plugin: UnbodyPlugins.Registration,
       manifest: PluginManifest,
@@ -42,6 +44,8 @@ const defaultConfigLoader = async (
 }
 
 export class PluginRegistry {
+  private _manifests: Record<string, PluginManifest> = {}
+
   plugins: Record<string, LoadedPlugin> = {}
   providers: Record<string, LoadedPlugin> = {}
   fileParsers: Record<string, LoadedPlugin> = {}
@@ -52,6 +56,7 @@ export class PluginRegistry {
   rerankers: Record<string, LoadedPlugin> = {}
   textVectorizers: Record<string, LoadedPlugin> = {}
   imageVectorizers: Record<string, LoadedPlugin> = {}
+  multimodalVectorizers: Record<string, LoadedPlugin> = {}
 
   constructor(
     private config: PluginRegistryConfig,
@@ -67,12 +72,30 @@ export class PluginRegistry {
     const errors = [] as PluginRegistry.Error[]
     for (const plugin of plugins) {
       try {
+        const id = uuid.v5(plugin.alias, uuid.v5.URL)
+        const manifest = await new PluginRunner({
+          pluginId: id,
+          pluginPath: plugin.path,
+          pluginConfig: {},
+        }).getManifest()
+
+        this._manifests[plugin.alias] = manifest
+      } catch (e) {
+        e instanceof PluginRegistry.Error && errors.push(e)
+      }
+    }
+    for (const plugin of plugins) {
+      try {
         await this.registerPlugin(plugin)
       } catch (e) {
         e instanceof PluginRegistry.Error && errors.push(e)
       }
     }
     return { registrationErrors: errors }
+  }
+
+  async getManifest(alias: string) {
+    return this._manifests[alias]
   }
 
   async registerPlugin(plugin: UnbodyPlugins.Registration) {
@@ -84,10 +107,13 @@ export class PluginRegistry {
       pluginConfig: {},
     }).getManifest()
 
+    this._manifests[plugin.alias] = manifest
+
     const config = this.config.configLoader
       ? (await this.config.configLoader(
           plugin,
           manifest,
+          this.getManifest.bind(this),
           defaultConfigLoader,
         )) || (await defaultConfigLoader(plugin, manifest))
       : await defaultConfigLoader(plugin, manifest)
@@ -150,6 +176,8 @@ export class PluginRegistry {
       this.textVectorizers[alias] = loaded
     else if (manifest.type === 'image_vectorizer')
       this.imageVectorizers[alias] = loaded
+    else if (manifest.type === 'multimodal_vectorizer')
+      this.multimodalVectorizers[alias] = loaded
     else if (manifest.type === 'reranker') this.rerankers[alias] = loaded
     else if (manifest.type === 'generative') this.generative[alias] = loaded
     else if (manifest.type === 'enhancer') this.enhancers[alias] = loaded
@@ -201,6 +229,12 @@ export class PluginRegistry {
         return new TextVectorizerPluginInstance(plugin, {}, this.resources)
       case 'image_vectorizer':
         return new ImageVectorizerPluginInstance(plugin, {}, this.resources)
+      case 'multimodal_vectorizer':
+        return new MultimodalVectorizerPluginInstance(
+          plugin,
+          {},
+          this.resources,
+        )
       case 'reranker':
         return new RerankerPluginInstance(plugin, {}, this.resources)
       case 'database':
@@ -248,6 +282,10 @@ export class PluginRegistry {
 
   async getImageVectorizer(alias: string) {
     return this.imageVectorizers[alias]
+  }
+
+  async getMultimodalVectorizer(alias: string) {
+    return this.multimodalVectorizers[alias]
   }
 
   async getReranker(alias: string) {

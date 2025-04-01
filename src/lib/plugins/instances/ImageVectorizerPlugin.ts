@@ -6,6 +6,7 @@ import {
   PluginInstanceBaseConfig,
   PluginInstanceMethods,
 } from './PluginInstance'
+import { PluginTypes } from 'src/lib/plugins-common'
 
 export type ImageVectorizerPluginInstanceConfig = PluginInstanceBaseConfig & {}
 
@@ -18,6 +19,10 @@ export class ImageVectorizerPluginInstance extends PluginInstance<ImageVectorize
     protected resources: PluginResources,
   ) {
     super(config, plugin, resources, ImageVectorizerPluginInstance.methods)
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.ImageVectorizer
   }
 }
 

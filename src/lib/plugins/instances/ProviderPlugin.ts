@@ -1,3 +1,4 @@
+import { PluginTypes } from 'src/lib/plugins-common'
 import {
   ProviderPlugin,
   ProviderPluginContext,
@@ -51,6 +52,10 @@ export class ProviderPluginInstance extends PluginInstance<ProviderPluginInstanc
       { ...context, source: this.config.source },
       params,
     )
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.Provider
   }
 }
 

@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'src/lib/core-types'
+import { PluginTypes } from 'src/lib/plugins-common'
 import {
   DatabasePlugin,
   DatabasePluginContext,
@@ -37,6 +38,10 @@ export class DatabasePluginInstance extends PluginInstance<DatabasePluginInstanc
     protected resources: PluginResources,
   ) {
     super(config, plugin, resources, DatabasePluginInstance.methods)
+  }
+
+  get type() {
+    return this.plugin.manifest.type as typeof PluginTypes.Database
   }
 
   protected override _runTask = <

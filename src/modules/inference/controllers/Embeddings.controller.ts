@@ -1,5 +1,14 @@
-import { Body, Controller, Param, Post, SetMetadata } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  SetMetadata,
+} from '@nestjs/common'
 import { SkipFormatResponseInterceptor } from 'src/lib/nestjs-utils'
+import { VectorizeMultimodalDto } from '../dto/VectorizeMultimodal.dto'
 import { VectorizeTextDto } from '../dto/VectorizeText.dto'
 import { EmbeddingsService } from '../services/Embeddings.service'
 
@@ -32,6 +41,25 @@ export class EmbeddingsController {
         id: body.id,
         vector: res.vectors[0].vector,
         dim: res.vectors[0].vector.length,
+      }))
+  }
+
+  @Post('/multimodal/:model')
+  @HttpCode(HttpStatus.OK)
+  @SetMetadata(SkipFormatResponseInterceptor, true)
+  async multimodal(
+    @Param('model') model: string,
+    @Body() body: VectorizeMultimodalDto,
+  ) {
+    return this.embeddingsService
+      .vectorizeMultimodal({
+        model,
+        params: body,
+      })
+      .then((res) => ({
+        textVectors: res.vectors.text,
+        imageVectors: res.vectors.image,
+        combinedVectors: res.vectors.combined,
       }))
   }
 }
