@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import * as sharp from 'sharp'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   MultimodalVectorizerPlugin,
@@ -7,6 +8,8 @@ import {
 } from 'src/lib/plugins-common/multimodal-vectorizer'
 import { z } from 'zod'
 import { Config, Context } from './plugin.types'
+
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024 // 3MB
 
 const vectorizeOptionsSchema = z.object({
   model: z
@@ -80,10 +83,12 @@ export class CohereMultimodalVectorizer
 
     if (params.images.length > 0) {
       for (const image of params.images) {
+        const encoded = await this._formatImage(image)
+
         const res = await this.client
           .post('/v2/embed', {
             model,
-            images: [`data:image/png;base64,${image}`],
+            images: [encoded],
             embedding_types: ['float'],
             input_type: 'image',
           })
@@ -100,5 +105,39 @@ export class CohereMultimodalVectorizer
         combined: null as any,
       },
     }
+  }
+
+  private _formatImage = async (image: string) => {
+    let buffer = Buffer.from(image, 'base64')
+    let sharpImage = sharp(buffer)
+
+    let format = await sharpImage.metadata().then((meta) => meta.format)
+    if (!format) return image
+
+    buffer = await sharpImage
+      .toFormat('jpeg')
+      .jpeg({
+        quality: 80,
+        force: true,
+      })
+      .toBuffer()
+    sharpImage = sharp(buffer)
+
+    const metadata = await sharpImage.metadata()
+    format = metadata.format!
+    let size = metadata.size!
+    while (size > MAX_IMAGE_SIZE) {
+      const reduceBy = size / MAX_IMAGE_SIZE
+      sharpImage = sharpImage.resize({
+        height: Math.floor(metadata.height! / reduceBy),
+        width: Math.floor(metadata.width! / reduceBy),
+      })
+      buffer = await sharpImage.toBuffer()
+      sharpImage = sharp(buffer)
+      size = (await sharpImage.metadata()).size!
+    }
+
+    const encoded = buffer.toString('base64')
+    return `data:image/jpeg;base64,${encoded}`
   }
 }
