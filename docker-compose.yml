@@ -48,7 +48,7 @@ services:
       - CLUSTER_HOSTNAME=node1
       - ENABLE_MODULES=text2vec-huggingface
       - CLUSTER_GOSSIP_BIND_PORT=7100
-      - ENABLE_MODULES=text2vec-huggingface,generative-unbody,img2vec-custom,reranker-custom
+      - ENABLE_MODULES=text2vec-huggingface,generative-unbody,img2vec-custom,reranker-custom,multi2vec-custom
     volumes:
       - weaviate_data:/var/lib/weaviate
     command: --host 0.0.0.0 --port 8080 --scheme http
