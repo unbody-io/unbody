@@ -60,6 +60,7 @@ export class GenerativeService {
         }),
         options: {
           ...validated.params,
+          model: validated.model,
         },
       }),
     )
