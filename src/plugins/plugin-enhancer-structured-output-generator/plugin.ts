@@ -2,6 +2,7 @@ import { ChatMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
 import axios from 'axios'
+import * as sharp from 'sharp'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   EnhanceParams,
@@ -11,6 +12,46 @@ import {
 } from 'src/lib/plugins-common/enhancer'
 import { z } from 'zod'
 import { Config, Context, EnhancerArgs, EnhancerResult } from './plugin.types'
+
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024 // 3MB
+
+const reduceImageSize = async (image: Buffer) => {
+  let sharpImage = sharp(image)
+  let format = await sharpImage.metadata().then((meta) => meta.format)
+  if (!format || !['png', 'jpg', 'jpeg', 'webp', 'avif'].includes(format))
+    return null
+
+  sharpImage = sharp(
+    await sharpImage
+      .toFormat('jpeg')
+      .jpeg({
+        quality: 80,
+        force: true,
+      })
+      .toBuffer(),
+  )
+
+  const metadata = await sharpImage.metadata()
+  format = metadata.format!
+  let size = metadata.size!
+
+  while (size > MAX_IMAGE_SIZE) {
+    const reduceBy = size / MAX_IMAGE_SIZE
+    const width = Math.floor(metadata.width! / reduceBy)
+    const height = Math.floor(metadata.height! / reduceBy)
+
+    sharpImage = sharpImage.resize({
+      width: Math.floor(width),
+      height: Math.floor(height),
+    })
+
+    sharpImage = sharp(await sharpImage.toBuffer())
+
+    size = (await sharpImage.metadata()).size!
+  }
+
+  return sharpImage
+}
 
 const configSchema = z.object({
   clientSecret: z.object({
@@ -52,11 +93,15 @@ const downloadImage = async (url: string) => {
 
   return axios
     .get(url, { responseType: 'arraybuffer', timeout: 10000 })
-    .then((response) => {
-      return Buffer.from(response.data, 'binary').toString('base64')
-    })
-    .then((base64) => {
-      return 'data:image/jpeg;base64,' + base64
+    .then(async (response) => {
+      const buffer = Buffer.from(response.data, 'binary')
+      const image = await reduceImageSize(buffer)
+      if (!image) return url
+
+      const encoded = buffer.toString('base64')
+      const metadata = await image.metadata()
+      const format = (metadata.format || 'png').toLowerCase()
+      return `data:image/${format};base64,${encoded}`
     })
 }
 
@@ -112,7 +157,13 @@ export class Summarizer implements PluginLifecycle, EnhancerPlugin {
       }),
     )
 
-    const messages: ChatMessage[] = []
+    const messages: ChatMessage[] = [
+      new ChatMessage({
+        role: 'system',
+        content:
+          'Extract the information requested by the user in JSON format.',
+      }),
+    ]
 
     messages.push(new ChatMessage(args.prompt, 'user'))
     images.forEach((img) => {
@@ -157,7 +208,9 @@ export class Summarizer implements PluginLifecycle, EnhancerPlugin {
     ]
 
     const output = await model
-      .withStructuredOutput(args.schema)
+      .withStructuredOutput(args.schema, {
+        method: 'jsonMode',
+      })
       .invoke(
         await ChatPromptTemplate.fromMessages(messages).formatMessages({}),
         { callbacks },
