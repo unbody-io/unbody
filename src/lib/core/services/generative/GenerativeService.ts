@@ -21,11 +21,7 @@ export class GenerativeService {
   }) {
     const module = this._modules.generative
 
-    const [validated, validationError] = await settle(() =>
-      module.validateParams(params.params),
-    )
-    if (validationError)
-      throw new Error(`validation error: ${validationError.message}`)
+    const validated = await module.validateParams(params.params)
 
     const [vars, varsError] = await settle(() =>
       module.processVars(params.params),

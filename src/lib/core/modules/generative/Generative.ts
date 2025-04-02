@@ -8,6 +8,7 @@ import { ProjectContext } from '../../project-context'
 import { Formatters } from './formatters/Formatters'
 import { GenerateTextParams } from './types'
 import { GenerateTextInput, validateParams } from './utils'
+import { z } from 'zod'
 
 export class Generative {
   formatters: Formatters
@@ -90,8 +91,14 @@ export class Generative {
 
       return validated
     } catch (error) {
-      const message = error.errors ? error.errors.join('\n') : error.message
-      throw new Error(`validation error: ${message}`)
+      if (error instanceof z.ZodError) {
+        throw new Error(
+          error.issues
+            .map((issue) => `"${issue.path.join(',')}": "${issue.message}"`)
+            .join(', '),
+        )
+      }
+      throw error
     }
   }
 
