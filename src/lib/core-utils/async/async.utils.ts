@@ -12,7 +12,7 @@ export const settle = async <R, E = Error>(
 
 export const settleSync = <R, E = Error>(
   func: () => R,
-): [R | undefined, E | undefined] => {
+): [R, undefined] | [undefined, E] => {
   try {
     return [func(), undefined]
   } catch (error) {
