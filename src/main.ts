@@ -13,7 +13,11 @@ const rawBody = (req: any, res: any, buf: Buffer, encoding: any) => {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: '*',
+    },
+  })
   app.enableShutdownHooks()
 
   app.use(helmet({}))
