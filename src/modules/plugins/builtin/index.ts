@@ -83,7 +83,7 @@ const multi2vecCoherePlugin = ({
 export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
   {
     path: pluginPath('plugin-provider-local-folder'),
-    alias: BuiltinPlugin.Provider.localFolder,
+    alias: BuiltinPlugin.DataProvider.localFolder,
     config: async () => ({}),
   },
   {
@@ -110,7 +110,7 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
   `,
   },
   {
-    alias: BuiltinPlugin.ImageVectorizer.neural,
+    alias: BuiltinPlugin.ImageVectorizer.Img2Vec.neural,
     path: pluginPath('plugin-img2vec-neural'),
     config: async () => ({
       baseURL: process.env.IMG2VEC_BASE_URL,
