@@ -13,7 +13,9 @@ import {
 import { Client as TemporalClient } from '@temporalio/client'
 import { Worker } from '@temporalio/worker'
 import { Model, Connection as MongooseConnection } from 'mongoose'
+import * as path from 'path'
 import { UnbodyProjectSettingsDoc } from 'src/lib/core-types'
+import { settleSync } from 'src/lib/core-utils'
 import { ConfigService, LoggerService, UserMessage } from 'src/lib/nestjs-utils'
 import { PluginTypes } from 'src/lib/plugins-common'
 import { PluginRegistry } from 'src/lib/plugins/registry/PluginRegistry'
@@ -153,15 +155,47 @@ const providers: Provider[] = [
   },
   {
     provide: PluginFileStorage,
-    inject: [ConfigService, getModelToken(PluginFileCollectionSchema.name)],
-    useFactory(configService: ConfigService, PluginFileModel) {
+    inject: [
+      ConfigService,
+      LoggerService,
+      getModelToken(PluginFileCollectionSchema.name),
+    ],
+    useFactory(
+      configService: ConfigService,
+      loggerService: LoggerService,
+      PluginFileModel,
+    ) {
       const config = configService.get<{
         rootPath: string
       }>('plugins.resources.fileStorage')
 
+      const [rootPath, err] = settleSync(() => {
+        const rootPath = config?.rootPath
+        if (!rootPath) throw new Error('Missing rootPath')
+
+        if (path.isAbsolute(rootPath)) return rootPath
+        const resolvedPath = path.resolve(process.cwd(), rootPath)
+
+        return resolvedPath
+      })
+
+      if (err) {
+        loggerService.userMessage(
+          UserMessage.error({
+            error: err,
+            suggestion: [
+              'Please ensure that the following environment variable is set correctly and points to an absolute path:',
+              '- PLUGINS_FILE_STORAGE_ROOT_PATH',
+            ].join('\n'),
+          }),
+        )
+
+        process.exit(1)
+      }
+
       return new PluginFileStorage(
         {
-          rootPath: config?.rootPath || '/',
+          rootPath: rootPath,
         },
         {
           PluginFile: PluginFileModel,

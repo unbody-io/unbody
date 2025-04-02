@@ -29,7 +29,7 @@
         "baseUrl": "http://localhost:3000/plugins/webhooks/callback/"
       },
       "fileStorage": {
-        "rootPath": "/srv/unbody/plugins/storage"
+        "rootPath": "./devenv/storage/plugins"
       }
     }
   }
