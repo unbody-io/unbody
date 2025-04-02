@@ -1,7 +1,12 @@
+require('dotenv').config({
+  path: ['.env', '.env.local'],
+} satisfies DotenvConfigOptions)
+
 import { ValidationPipe } from '@nestjs/common'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import * as bodyParser from 'body-parser'
+import type { DotenvConfigOptions } from 'dotenv'
 import helmet from 'helmet'
 import { AppModule } from './App.module'
 import { ConfigService, FormatResponseInterceptor } from './lib/nestjs-utils'

@@ -39,6 +39,7 @@
     "class-validator": "^0.14.1",
     "config": "^3.3.12",
     "css": "^3.0.0",
+    "dotenv": "^16.4.7",
     "front-matter": "^4.0.2",
     "googleapis": "^144.0.0",
     "helmet": "^8.0.0",
