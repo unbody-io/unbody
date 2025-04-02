@@ -23,7 +23,7 @@ services:
 
   temporal:
     image: temporalio/admin-tools:1.27.1-tctl-1.18.2-cli-1.3.0
-    entrypoint: ["/init.sh"]
+    entrypoint: ['/init.sh']
     ports:
       - 7233:7233 # Server
       - 8233:8233 # UI
@@ -64,14 +64,14 @@ services:
     ports:
       - 3456:8080
     networks:
-        - unbody
+      - unbody
     environment:
-        ENABLE_CUDA: "0"
+      ENABLE_CUDA: '0'
 
   file-server:
     image: python:3.9-slim
     ports:
-      - "5555:5555"
+      - '5555:5555'
     volumes:
       - ./devenv/docker/file-server/files:/app/files
     command: >
