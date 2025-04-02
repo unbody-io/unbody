@@ -4,9 +4,16 @@ import {
   ImageVectorizer,
   Generative,
   Enhancer,
+  MultimodalVectorizer,
 } from '../plugins/builtin'
 
-export { TextVectorizer, ImageVectorizer, Generative, Enhancer }
+export {
+  TextVectorizer,
+  MultimodalVectorizer,
+  ImageVectorizer,
+  Generative,
+  Enhancer,
+}
 
 const defaultFileParsers = {
   'image/.*': [{ name: 'file-parser-image' }],
@@ -51,7 +58,9 @@ export class ProjectSettings {
   }
 
   withImageVectorizer(
-    pluginAlias: ImageVectorizer.Alias = ImageVectorizer.Img2Vec.neural,
+    pluginAlias:
+      | ImageVectorizer.Alias
+      | MultimodalVectorizer.Alias = ImageVectorizer.Img2Vec.neural,
   ) {
     this.settingsDoc.imageVectorizer = { name: pluginAlias }
     return this
