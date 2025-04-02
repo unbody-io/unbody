@@ -83,7 +83,7 @@ const multi2vecCoherePlugin = ({
 export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
   {
     path: pluginPath('plugin-provider-local-folder'),
-    alias: BuiltinPlugin.DataProvider.localFolder,
+    alias: BuiltinPlugin.DataSourceProvider.localFolder,
     config: async () => ({}),
   },
   {
@@ -126,7 +126,7 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
     }),
   },
   {
-    alias: BuiltinPlugin.Generative.OpenAI.gpt4o,
+    alias: BuiltinPlugin.Generative.openAI,
     path: pluginPath('plugin-generative-openai'),
     config: async () => ({
       clientSecret: {
@@ -152,24 +152,24 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
     model: 'text-embedding-3-small',
   }),
   multi2vecCoherePlugin({
-    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.EnglishV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.englishV3,
     model: 'embed-english-v3.0',
   }),
   multi2vecCoherePlugin({
-    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.EnglishLightV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.englishLightV3,
     model: 'embed-english-light-v3.0',
   }),
   multi2vecCoherePlugin({
-    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.MultilingualV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.multilingualV3,
     model: 'embed-multilingual-v3.0',
   }),
   multi2vecCoherePlugin({
-    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.MultilingualLightV3,
+    alias: BuiltinPlugin.MultimodalVectorizer.Cohere.multilingualLightV3,
     model: 'embed-multilingual-light-v3.0',
   }),
   {
     path: pluginPath('plugin-provider-local-folder'),
-    alias: BuiltinPlugin.DataProvider.localFolder,
+    alias: BuiltinPlugin.DataSourceProvider.localFolder,
     config: {},
   },
   {
