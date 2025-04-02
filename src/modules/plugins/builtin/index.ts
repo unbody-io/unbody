@@ -39,6 +39,10 @@ export namespace MultimodalVectorizer {
   }
 }
 
+export namespace ImageVectorizer {
+  export const neural = 'img2vec-neural' as const
+}
+
 export namespace FileParser {
   export const image = 'file-parser-image' as const
   export const googleDoc = 'file-parser-google-doc' as const
@@ -65,6 +69,18 @@ export namespace Defaults {
   export const storage = Storage.local
 }
 
+export namespace Reranker {
+  export namespace Cohere {
+    export const englishV3 = 'reranker-cohere-rerank-english-v3.0' as const
+  }
+}
+
+export namespace Generative {
+  export namespace OpenAI {
+    export const gpt4o = 'generative-openai-gpt-4o' as const
+  }
+}
+
 const aliases = [
   Database.weaviate,
   TextVectorizer.OpenAI.embeddingAda002,
@@ -81,6 +97,8 @@ const aliases = [
   Enhancer.summarizer,
   Enhancer.structuredOutputGenerator,
   DataProvider.localFolder,
+  ImageVectorizer.neural,
+  Reranker.Cohere.englishV3,
 ] as const
 
 type Alias = (typeof aliases)[number]
@@ -182,6 +200,36 @@ export const plugins: Record<Alias, Registration> = [
   - PLUGIN_DATABASE_WEAVIATE_GRPC_HOST
   `,
   },
+  {
+    alias: ImageVectorizer.neural,
+    path: pluginPath('plugin-img2vec-neural'),
+    config: async () => ({
+      baseURL: process.env.IMG2VEC_BASE_URL
+    }),
+  },
+  {
+    alias: Reranker.Cohere.englishV3,
+    path: pluginPath('plugin-reranker-cohere'),
+    config: async () => ({
+      clientSecret: {
+        apiKey: 'something',
+      },
+    }),
+  },
+  {
+    alias: Generative.OpenAI.gpt4o,
+    path: pluginPath('plugin-generative-openai'),
+    config: async () => ({
+      clientSecret: {
+        apiKey: OPENAI_API_KEY,
+        project: OPENAI_PROJECT,
+        organization: OPENAI_ORGANIZATION,
+      },
+    }),
+    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+  - OPENAI_API_KEY
+  `,
+  },
   text2VecOpenAIPlugin({
     alias: TextVectorizer.OpenAI.embeddingAda002,
     model: 'text-embedding-ada-002',
@@ -214,6 +262,11 @@ export const plugins: Record<Alias, Registration> = [
     path: pluginPath('plugin-provider-local-folder'),
     alias: DataProvider.localFolder,
     config: {},
+  },
+  {
+    path: pluginPath('plugin-file-parser-google-doc'),
+    alias: FileParser.googleDoc,
+    config: async () => ({}),
   },
   {
     path: pluginPath('plugin-file-parser-image'),
