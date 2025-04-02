@@ -33,7 +33,7 @@
     "@temporalio/workflow": "^1.11.7",
     "@thellimist/bottleneck": "^2.19.8",
     "acorn": "^8.14.1",
-    "axios": "^1.7.9",
+    "axios": "^1.8.4",
     "chokidar": "^4.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
