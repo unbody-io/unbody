@@ -1,12 +1,18 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common'
 import { GenerativeService } from '../services/Generative.service'
 
-@Controller('/generative')
+@Controller('')
 export class GenerativeController {
   constructor(private generativeService: GenerativeService) {}
 
   @HttpCode(200)
-  @Post('/chat/completions')
+  @Post('/content/generative/chat/completions')
+  async _chatCompletion(@Body() body: any) {
+    return this.chatCompletion(body)
+  }
+
+  @HttpCode(200)
+  @Post('/generative/chat/completions')
   async chatCompletion(@Body() body: any) {
     // @TODO: handle cancellation
     const signal = new AbortController().signal
@@ -20,7 +26,7 @@ export class GenerativeController {
   }
 
   @HttpCode(200)
-  @Post('/generate/text')
+  @Post('/generative/generate/text')
   async text(@Body() body: any) {
     // @TODO: handle cancellation
     const signal = new AbortController().signal
