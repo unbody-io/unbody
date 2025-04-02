@@ -59,6 +59,15 @@ services:
       # via the host.docker.internal hostname
       - 'host.docker.internal:host-gateway'
 
+  img2vec-neural:
+    image: semitechnologies/img2vec-pytorch:resnet50
+    ports:
+      - 3456:8080
+    networks:
+        - unbody
+    environment:
+        ENABLE_CUDA: "0"
+
   file-server:
     image: python:3.9-slim
     ports:
