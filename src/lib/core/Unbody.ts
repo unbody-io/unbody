@@ -50,7 +50,7 @@ export class Unbody {
       const plugins = Object.keys(pluginRegistry.textVectorizers)
 
       if (plugins.length === 0) {
-        return z.undefined({ message: 'No available reranker plugins found' })
+        return z.undefined({ message: 'No available textVectorizer plugins found' })
       }
 
       return z.object({
@@ -75,7 +75,7 @@ export class Unbody {
       ]
 
       if (plugins.length === 0) {
-        return z.undefined({ message: 'No available reranker plugins found' })
+        return z.undefined({ message: 'No available imageVectorizer plugins found' })
       }
 
       return z.object({
