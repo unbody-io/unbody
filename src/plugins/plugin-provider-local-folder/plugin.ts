@@ -276,7 +276,7 @@ export class LocalFolderProvider
 
     const eventsCollection = await this._eventsCollection(ctx)
     await eventsCollection.deleteMany({ sourceId: ctx.source.id })
-    await eventsCollection.insertMany(events)
+    if (events.length > 0) await eventsCollection.insertMany(events)
 
     return {
       status: 'ready',
