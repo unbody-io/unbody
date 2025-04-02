@@ -1,17 +1,17 @@
-import { UnbodyProjectSettingsDoc } from './lib/core-types'
+import {
+  AutoSummary,
+  AutoVision,
+  Generative,
+  ImageVectorizer,
+  ProjectSettings,
+} from './lib/project-settings/'
 
-export const settings: UnbodyProjectSettingsDoc = {
-  fileParsers: {
-    'image/.*': [{ name: 'file-parser-image' }],
-    'text/markdown': [{ name: 'file-parser-markdown' }],
-  },
-  textVectorizer: {
-    name: 'text2vec-openai-ada-002',
-  },
-  enhancement: {
-    pipelines: [],
-  },
-  customSchema: {
-    collections: [],
-  },
-}
+const settings = new ProjectSettings()
+  .withImageVectorizer(ImageVectorizer.Img2Vec.neural)
+  .withGenerative(Generative.OpenAI.gpt4o)
+  .withAutoSummary(AutoSummary.OpenAI.gpt4o)
+  .withAutoVision(AutoVision.OpenAI.gpt4o)
+  .toJSON()
+
+console.log(settings)
+export { settings }
