@@ -81,6 +81,6 @@ export type GenerateTextOptionsBase = {
   presencePenalty?: number
   frequencyPenalty?: number
 
-  schema?: z.ZodObject<any, any, any>
+  schema?: z.ZodObject<any, any, any> | Record<string, any>
   responseFormat?: 'text' | 'json_object' | 'json_schema'
 }

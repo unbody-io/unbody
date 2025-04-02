@@ -7,7 +7,7 @@ import { Plugins } from '../../plugins'
 import { ProjectContext } from '../../project-context'
 import { Formatters } from './formatters/Formatters'
 import { GenerateTextParams } from './types'
-import { validateParams } from './utils'
+import { GenerateTextInput, validateParams } from './utils'
 
 export class Generative {
   formatters: Formatters
@@ -137,14 +137,17 @@ export class Generative {
   }
 
   async processMessages(
-    params: GenerateTextParams,
+    params: GenerateTextInput,
     vars: Record<string, any>,
-  ): Promise<GenerateTextParams['messages']> {
-    const prompt = params.prompt
+  ): Promise<Exclude<GenerateTextInput, { type: 'prompt' }>['messages']> {
+    const prompt = params.type === 'prompt' && params.prompt
     const properties =
-      params.properties && params.properties.length > 0 && params.properties
+      params.type === 'prompt' &&
+      params.properties &&
+      params.properties.length > 0 &&
+      params.properties
 
-    if (!prompt) {
+    if (params.type !== 'prompt') {
       return Promise.all(
         params.messages.map((msg) =>
           this.formatMessage(params.data, vars, msg),
@@ -152,7 +155,7 @@ export class Generative {
       ).then((res) => res.flat())
     }
 
-    if (!properties) {
+    if (prompt && !properties) {
       return await this.formatMessage(params.data, vars, {
         role: 'user',
         type: 'text',
@@ -166,12 +169,18 @@ export class Generative {
       if (Array.isArray(data)) {
         data = params.data.map((obj: any) =>
           Object.fromEntries(
-            properties.map((p) => [p, this.resolveExpr(obj || {}, p)]),
+            (params.properties || []).map((p) => [
+              p,
+              this.resolveExpr(obj || {}, p),
+            ]),
           ),
         )
       } else {
         data = Object.fromEntries(
-          properties.map((p) => [p, this.resolveExpr(params.data || {}, p)]),
+          (params.properties || []).map((p) => [
+            p,
+            this.resolveExpr(params.data || {}, p),
+          ]),
         )
       }
     }
@@ -181,15 +190,17 @@ export class Generative {
         role: 'user',
         type: 'text',
         content: `${data ? JSON.stringify(data) + '\n\n' : ''}${prompt}`,
-      } as GenerateTextParams['messages'][0],
+      },
     ]
   }
 
   private formatMessage = async (
     data: any,
     vars: Record<string, any>,
-    message: GenerateTextParams['messages'][0],
-  ): Promise<GenerateTextParams['messages'][0][]> => {
+    message: Exclude<GenerateTextInput, { type: 'prompt' }>['messages'][0],
+  ): Promise<
+    Exclude<GenerateTextInput, { type: 'prompt' }>['messages'][0][]
+  > => {
     const text =
       !message.type || message.type === 'text'
         ? message.content

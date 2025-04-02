@@ -1,67 +1,115 @@
-import * as yup from 'yup'
+import { z } from 'zod'
 import { GenerateTextParams } from './types'
 
-const promptValidationSchema = yup.object({
-  prompt: yup.string().optional(),
-  properties: yup.array().of(yup.string()).optional(),
-
-  model: yup.string(),
-  params: yup.mixed().optional().default({}),
-  data: yup.mixed().default([]),
+const promptSchema = z.object({
+  type: z.literal('prompt'),
+  prompt: z.string().optional(),
+  properties: z.array(z.string()).optional(),
+  model: z.string().optional(),
+  params: z.record(z.any()).optional().default({}),
+  data: z
+    .union([z.array(z.record(z.any())), z.record(z.any())])
+    .optional()
+    .default([])
+    .transform((data) => transformData(data)),
 })
 
-const validationSchema = yup.object({
-  model: yup.string(),
-  params: yup.mixed().optional().default({}),
-  data: yup.mixed().default([]),
-  vars: yup
-    .array()
-    .of(
-      yup.object({
-        name: yup.string().required(),
-        expression: yup.string().required(),
-        formatter: yup.string().required().oneOf(['jq', 'jsonpath']),
+const validationSchema = z.object({
+  type: z.literal('messages'),
+  model: z.string().optional(),
+  params: z.record(z.any()).optional().default({}),
+  data: z
+    .union([z.array(z.record(z.any())), z.record(z.any())])
+    .optional()
+    .default([])
+    .transform((data) => transformData(data)),
+  vars: z
+    .array(
+      z.object({
+        name: z.string(),
+        expression: z.string(),
+        formatter: z.enum(['jq', 'jsonpath']),
       }),
     )
     .optional()
     .default([]),
-  messages: yup
-    .array()
-    .required()
+  messages: z
+    .array(
+      z.union([
+        z.string(),
+        z.object({
+          name: z.string().optional(),
+          role: z
+            .enum(['user', 'system', 'assistant'])
+            .optional()
+            .default('user'),
+          type: z.enum(['text', 'image']).optional().default('text'),
+          content: z
+            .union([z.string(), z.object({ url: z.string() })])
+            .default(''),
+        }),
+      ]),
+    )
     .min(1)
-    .of(
-      yup.object({
-        name: yup.string().optional(),
-        role: yup
-          .string()
-          .optional()
-          .oneOf(['user', 'system', 'assistant'])
-          .default('user'),
-        type: yup.string().optional().oneOf(['text', 'image']).default('text'),
-        content: yup
-          .string()
-          .required()
-          .when('type', {
-            is: 'image',
-            then: () =>
-              yup.object({
-                url: yup.string().required(),
-              }),
-          }),
-      }),
-    ),
-  responseFormat: yup
+    .transform((messages, ctx) => {
+      return messages.map((msg, index) => {
+        if (typeof msg === 'string') {
+          return {
+            name: undefined,
+            role: 'user' as 'user',
+            type: 'text' as 'text',
+            content: msg,
+          }
+        }
+
+        if (!msg.type || msg.type === 'text') {
+          if (typeof msg.content !== 'string') {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Message content must be a string`,
+              path: [index, 'content'],
+              fatal: true,
+            })
+          }
+
+          return {
+            ...msg,
+            type: 'text' as 'text',
+            content: typeof msg.content === 'string' ? msg.content : '',
+          }
+        }
+
+        if (msg.type === 'image') {
+          return {
+            ...msg,
+            type: 'image' as 'image',
+            content: {
+              url:
+                typeof msg.content === 'string' ? msg.content : msg.content.url,
+            },
+          }
+        }
+
+        return {
+          name: msg.name || undefined,
+          type: msg.type || 'text',
+          role: msg.role || 'user',
+          content: typeof msg.content === 'string' ? msg.content : '',
+        }
+      })
+    }),
+  responseFormat: z
     .object({
-      type: yup.string().required().oneOf(['json_object', 'json_schema']),
-      schema: yup.object().when('type', {
-        is: 'json_object',
-        then: () => yup.object({}).optional().strict(true),
-        otherwise: () => yup.object({}).required().strict(true),
-      }),
+      type: z.enum(['json_object', 'json_schema', 'text']).default('text'),
+      schema: z.record(z.any()).optional().default({}),
     })
     .optional()
-    .default(undefined),
+    .default({
+      type: 'text',
+    }),
 })
+
+const schema = z.discriminatedUnion('type', [promptSchema, validationSchema])
 
 const transformData = (
   data: any,
@@ -106,64 +154,11 @@ const transformData = (
 
 export const validateParams = (params: GenerateTextParams) => {
   let transformed = params || {}
-  transformed.data = transformData(params?.data || [])
 
-  const reqType = transformed.prompt ? 'prompt' : 'messages'
+  const type = transformed.prompt ? 'prompt' : 'messages'
+  const valid = schema.parse({ type, ...transformed })
 
-  if (
-    reqType === 'prompt' &&
-    transformed.messages &&
-    Array.isArray(transformed.messages)
-  ) {
-    throw new Error(`"prompt" and "messages" can't be used together`)
-  }
-
-  if (
-    reqType === 'messages' &&
-    transformed.messages &&
-    Array.isArray(transformed.messages)
-  ) {
-    transformed.messages = transformed.messages.map(
-      (msg: string | Record<string, any>) => {
-        if (typeof msg === 'string')
-          return {
-            type: 'text',
-            content: msg,
-          }
-
-        if (!msg.type || msg.type === 'text') {
-          return {
-            ...msg,
-            type: 'text',
-            content: msg.content as any as string,
-          }
-        }
-
-        if (msg.type === 'image') {
-          return {
-            ...msg,
-            type: 'image',
-            content: {
-              url: msg.content?.url || (msg.content as string),
-            },
-          }
-        }
-
-        return {
-          ...msg,
-          type: msg.type || 'text',
-          role: msg.role || 'user',
-          content: msg.content as any as string,
-        }
-      },
-    )
-  }
-
-  return (
-    reqType === 'prompt' ? promptValidationSchema : validationSchema
-  ).validateSync(transformed, {
-    stripUnknown: true,
-    abortEarly: false,
-    recursive: true,
-  })
+  return valid
 }
+
+export type GenerateTextInput = z.infer<typeof schema>

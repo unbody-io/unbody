@@ -34,7 +34,7 @@ export class GenerativeService {
     if (varsError)
       throw new Error(`failed to process vars: ${varsError.message}`)
 
-    const messages = await module.processMessages(validated as any, vars)
+    const messages = await module.processMessages(validated, vars)
     const generative = await module.getGenerative({ model: validated.model })
     const [res, err] = await settle(() =>
       generative.generateText({
@@ -42,7 +42,7 @@ export class GenerativeService {
         messages: messages.map((msg) => {
           if (msg.type === 'image') {
             return {
-              type: 'image',
+              type: msg.type,
               name: msg.name,
               role: msg.role || 'user',
               content: {
@@ -52,7 +52,7 @@ export class GenerativeService {
           }
 
           return {
-            type: 'text',
+            type: msg.type,
             name: msg.name,
             content: msg.content,
             role: msg.role || 'user',
@@ -61,6 +61,14 @@ export class GenerativeService {
         options: {
           ...validated.params,
           model: validated.model,
+          responseFormat:
+            validated.type === 'messages'
+              ? validated.responseFormat?.type
+              : 'text',
+          schema:
+            validated.type === 'messages'
+              ? validated.responseFormat?.schema
+              : undefined,
         },
       }),
     )
