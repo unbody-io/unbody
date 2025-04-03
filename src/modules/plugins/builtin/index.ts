@@ -47,7 +47,7 @@ const text2VecOpenAIPlugin = ({
         },
       }) satisfies Text2VecOpenAIConfig,
     alias,
-    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+    errorResolutionSuggestion: `Please check if the following environment variables are set correctly:
   - OPENAI_API_KEY
   `,
   }
@@ -74,7 +74,7 @@ const multi2vecCoherePlugin = ({
         },
       }) satisfies Multi2VecCohereConfig,
     alias,
-    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+    errorResolutionSuggestion: `Please check if the following environment variables are set correctly:
   - COHERE_API_KEY
   `,
   }
@@ -135,7 +135,7 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
         organization: OPENAI_ORGANIZATION,
       },
     }),
-    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+    errorResolutionSuggestion: `Please check if the following environment variables are set correctly:
   - OPENAI_API_KEY
   `,
   },
@@ -197,7 +197,7 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
         publicBaseUrl: process.env.LOCAL_STORAGE_PUBLIC_BASE_URL,
         privateBaseUrl: process.env.LOCAL_STORAGE_PRIVATE_BASE_URL,
       }) as LocalStorageConfig,
-    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly, and that the corresponding directories exist:
+    errorResolutionSuggestion: `Please check if the following environment variables are set correctly, and that the corresponding directories exist:
   - LOCAL_STORAGE_PUBLIC_ROOT_DIR
   - LOCAL_STORAGE_PRIVATE_ROOT_DIR
   - LOCAL_STORAGE_PUBLIC_BASE_URL
@@ -217,7 +217,7 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
           },
         },
       }) as SummarizerConfig,
-    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+    errorResolutionSuggestion: `Please check if the following environment variables are set correctly:
   - OPENAI_API_KEY
   `,
   },
@@ -234,7 +234,7 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
           },
         },
       }) as SummarizerConfig,
-    errorResolutionSuggestion: `Please check if the the following environment variables are set correctly:
+    errorResolutionSuggestion: `Please check if the following environment variables are set correctly:
   - OPENAI_API_KEY
   `,
   },
