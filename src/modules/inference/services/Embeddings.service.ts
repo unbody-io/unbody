@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Unbody } from 'src/lib/core/Unbody'
 import { VectorizeMultimodalDto } from '../dto/VectorizeMultimodal.dto'
+import { VectorizeTextDto } from '../dto/VectorizeText.dto'
 
 @Injectable()
 export class EmbeddingsService {
@@ -14,6 +15,7 @@ export class EmbeddingsService {
     params: VectorizeTextDto
   }) {
     const res = await this.unbody.modules.vectorizer.vectorizeText({
+      alias: model,
       text: params.inputs,
       type: params.type,
     })
@@ -24,6 +26,7 @@ export class EmbeddingsService {
   async vectorizeImage(params: { model: string; image: string[] }) {
     const res = await this.unbody.modules.vectorizer.vectorizeImage({
       image: params.image,
+      alias: params.model,
     })
 
     return res
