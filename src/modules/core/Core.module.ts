@@ -5,6 +5,7 @@ import { Unbody } from 'src/lib/core/Unbody'
 import { PluginRegistry } from 'src/lib/plugins/registry/PluginRegistry'
 import { PluginResources } from 'src/lib/plugins/resources/PluginResources'
 import { z } from 'zod'
+import { fromZodIssue } from 'zod-validation-error'
 import { PluginModule } from '../plugins/Plugin.module'
 import { UNBODY_SETTINGS } from '../shared/tokens'
 
@@ -23,7 +24,8 @@ import { UNBODY_SETTINGS } from '../shared/tokens'
         if (err) {
           if (err instanceof z.ZodError) {
             const messages = err.issues.map(
-              (issue) => `\t - at "${issue.path}": ${issue.message}`,
+              (issue) =>
+                `\t - "${issue.path}": ${fromZodIssue(issue).message}`,
             )
 
             throw new Error(
