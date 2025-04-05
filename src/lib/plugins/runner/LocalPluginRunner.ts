@@ -6,6 +6,7 @@ import {
 } from 'src/lib/plugins-common'
 import * as temp from 'tmp-promise'
 import { zodToJsonSchema } from 'zod-to-json-schema'
+import type * as z from 'zod'
 
 type PluginModule = {
   default: any
@@ -74,7 +75,7 @@ export class PluginRunner {
     return this.manifest
   }
 
-  getSchema = async (key: string) => {
+  getSchema = async (key: string): Promise<z.AnyZodObject | undefined> => {
     const schema = this.plugin.schemas?.[key]
     if (!schema) return undefined
 
