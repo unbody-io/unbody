@@ -312,7 +312,15 @@ export class PluginRegistry {
           await instance.runTask('startService')({})
         }
       } catch (error) {
-        console.error(error)
+        throw new PluginRegistry.Error(
+          'Failed to start plugin service',
+          {
+            alias: plugin.alias,
+            manifest: plugin.manifest,
+            path: plugin.runner.config.pluginPath,
+          },
+          error,
+        )
       }
     }
   }
