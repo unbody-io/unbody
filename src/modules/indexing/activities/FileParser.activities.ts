@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ApplicationFailure } from '@temporalio/client'
 import axios from 'axios'
+import { FileParsers } from 'src/lib/core/modules/file-parsers'
 import { Unbody } from 'src/lib/core/Unbody'
 import {
   ParseFileResult,
@@ -40,16 +41,33 @@ export class FileParserActivities {
         'invalid_file_parser',
       )
 
-    const res = await parser.parseFile({
-      file: await axios
-        .get(url, { responseType: 'stream', timeout: 120000 })
-        .then((res) => res.data as NodeJS.ReadableStream),
-      filename: filename,
-      options: parserOptions,
-      metadata: recordMetadata || {},
-    })
+    try {
+      const res = await parser.parseFile({
+        file: await axios
+          .get(url, { responseType: 'stream', timeout: 120000 })
+          .then((res) => res.data as NodeJS.ReadableStream),
+        filename: filename,
+        options: parserOptions,
+        metadata: recordMetadata || {},
+      })
+      return res
+    } catch (error) {
+      if (error instanceof FileParsers.Exceptions.InvalidFileParserOptions) {
+        throw new ApplicationFailure(
+          `FileParser ${parserAlias} failed to parse file: ${error.message}`,
+          'invalid_file_parser_input',
+        )
+      } else if (
+        error instanceof FileParsers.Exceptions.InvalidFileParserOptions
+      ) {
+        throw new ApplicationFailure(
+          `FileParser ${parserAlias} failed to parse file: ${error.message}`,
+          'invalid_file_parser_options',
+        )
+      }
 
-    return res
+      throw error
+    }
   }
 
   async processFileRecord({
