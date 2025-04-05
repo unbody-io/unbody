@@ -87,8 +87,20 @@ export class PluginRegistry {
     for (const plugin of plugins) {
       try {
         await this.registerPlugin(plugin)
-      } catch (e) {
-        e instanceof PluginRegistry.Error && errors.push(e)
+      } catch (error) {
+        if (error instanceof PluginRegistry.Error) errors.push(error)
+        else
+          errors.push(
+            new PluginRegistry.Error(
+              'Failed to register plugin',
+              {
+                alias: plugin.alias,
+                manifest: this._manifests[plugin.alias] || undefined,
+                path: plugin.path,
+              },
+              error,
+            ),
+          )
       }
     }
     return { registrationErrors: errors }
