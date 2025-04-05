@@ -3,6 +3,7 @@ import * as path from 'path'
 import { settle } from 'src/lib/core-utils'
 import * as uuid from 'uuid'
 import { z } from 'zod'
+import zodToJsonSchema from 'zod-to-json-schema'
 import { PluginContext, PluginLifecycle } from '../../lib/plugins-common'
 import {
   ConnectParams,
@@ -152,23 +153,7 @@ export class LocalFolderProvider
   ): Promise<ListEntrypointOptionsResult> => {
     return {
       type: 'form',
-      fields: [
-        {
-          type: 'string',
-          key: 'directory',
-          label: 'Directory',
-          required: true,
-          description: 'The absolute path to the directory.',
-        },
-        {
-          type: 'number',
-          key: 'maxDepth',
-          label: 'Max Depth',
-          description:
-            'The maximum depth to search for files in the directory.',
-          defaultValue: 1,
-        },
-      ],
+      schema: zodToJsonSchema(entrypointSchema),
     }
   }
 

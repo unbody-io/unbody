@@ -1,31 +1,6 @@
-export type EntrypointFormField = {
-  key: string
-  label: string
-  description?: string
-
-  type:
-    | 'string'
-    | 'text'
-    | 'number'
-    | 'boolean'
-    | 'select'
-    | 'url'
-    | 'date'
-    | 'time'
-    | 'datetime'
-
-  values?: {
-    label: string
-    value: string
-  }[]
-
-  required?: boolean
-  defaultValue?: string | number | boolean
-}
-
 export type EntrypointFormOptions = {
   type: 'form'
-  fields: EntrypointFormField[]
+  schema: Record<string, any> // JSON Schema
 }
 
 export type EntrypointListOption = {
