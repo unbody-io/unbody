@@ -58,6 +58,7 @@ export class LocalFolderProvider
   }
 
   private _watchers: Record<string, { stop: () => Promise<void> }> = {}
+  private _watchTimeout: NodeJS.Timeout | null = null
 
   constructor() {}
 
@@ -100,11 +101,9 @@ export class LocalFolderProvider
   startService = async (ctx: Context) => {
     const sourcesCollection = await this._sourcesCollection(ctx)
 
-    while (true) {
+    const watch = async () => {
       const sources = await sourcesCollection.find({}).toArray()
-
       const sourceIds = sources.map((source) => source.sourceId)
-
       const watchers = Object.keys(this._watchers)
 
       for (const sourceId of watchers) {
@@ -120,11 +119,15 @@ export class LocalFolderProvider
         if (watcher) this._watchers[source.sourceId] = watcher
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 10000))
+      this._watchTimeout = setTimeout(() => watch(), 10000)
     }
+
+    watch()
   }
 
   stopService = async (ctx: Context) => {
+    if (this._watchTimeout) clearTimeout(this._watchTimeout)
+
     const sourcesCollection = await this._sourcesCollection(ctx)
 
     const ids = Object.keys(this._watchers)
