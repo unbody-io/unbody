@@ -50,7 +50,9 @@ export class Unbody {
       const plugins = Object.keys(pluginRegistry.textVectorizers)
 
       if (plugins.length === 0) {
-        return z.undefined({ message: 'No available textVectorizer plugins found' })
+        return z.undefined({
+          message: 'No available textVectorizer plugins found',
+        })
       }
 
       return z.object({
@@ -75,7 +77,9 @@ export class Unbody {
       ]
 
       if (plugins.length === 0) {
-        return z.undefined({ message: 'No available imageVectorizer plugins found' })
+        return z.undefined({
+          message: 'No available imageVectorizer plugins found',
+        })
       }
 
       return z.object({
@@ -128,34 +132,40 @@ export class Unbody {
       })
     }
 
-    const fileParsers = () => {
+    const fileParsers = async () => {
       const plugins = Object.keys(pluginRegistry.fileParsers)
+
+      const schemas = await Promise.all(
+        plugins.map(async (key) => {
+          const plugin = pluginRegistry.fileParsers[key]
+          const options = await plugin.runner.getSchema('parseFileOptions')
+          if (!options)
+            return z.object({
+              name: z.literal(key),
+            })
+
+          return z.object({
+            name: z.literal(key),
+            options: options.optional().default({}),
+          })
+        }),
+      )
+
+      const parserConfigSchema = z.discriminatedUnion(
+        'name',
+        schemas as [
+          z.ZodObject<{
+            name: z.ZodLiteral<string>
+          }>,
+        ],
+      )
+
       return z
         .record(
           z
             .union([
-              z.object({
-                name: z.enum(plugins as [string, ...string[]]),
-                options: z
-                  .object({})
-                  .optional()
-                  .default({})
-                  .describe(
-                    "The options to override plugin's default configurations.",
-                  ),
-              }),
-              z.array(
-                z.object({
-                  name: z.enum(plugins as [string, ...string[]]),
-                  options: z
-                    .object({})
-                    .optional()
-                    .default({})
-                    .describe(
-                      "The options to override plugin's default configurations.",
-                    ),
-                }),
-              ),
+              parserConfigSchema,
+              z.array(parserConfigSchema),
               z.undefined(),
             ])
             .transform((value) => {
@@ -693,7 +703,7 @@ export class Unbody {
       imageVectorizer: imageVectorizer().optional(),
       reranker: reranker().optional(),
       generative: generative().optional(),
-      fileParsers: fileParsers(),
+      fileParsers: await fileParsers(),
 
       autoSummary: await autoEnhancer(),
       autoVision: await autoEnhancer(),
