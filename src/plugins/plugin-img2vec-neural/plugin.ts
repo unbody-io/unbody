@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import * as sharp from 'sharp'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   ImageVectorizerPlugin,
@@ -6,21 +7,14 @@ import {
   VectorizeResult,
 } from 'src/lib/plugins-common/image-vectorizer'
 import * as uuid from 'uuid'
-import { z } from 'zod'
 import { Config, Context } from './plugin.types'
-
-const configSchema = z.object({
-  baseURL: z.string().optional(),
-})
+import { schemas } from './schemas'
 
 export class Img2VecNeural implements PluginLifecycle, ImageVectorizerPlugin {
   private config: Config
   private client: AxiosInstance
 
-  schemas: ImageVectorizerPlugin['schemas'] = {
-    config: configSchema,
-    vectorizeOptions: z.object({}),
-  }
+  schemas: ImageVectorizerPlugin['schemas'] = schemas
 
   constructor() {}
 
@@ -40,14 +34,30 @@ export class Img2VecNeural implements PluginLifecycle, ImageVectorizerPlugin {
     params: VectorizeParams<{}>,
   ): Promise<VectorizeResult> => {
     const res = await Promise.all(
-      params.image.map((image) =>
-        this.client.post<{
+      params.image.map(async (image) => {
+        let buffer = Buffer.from(image, 'base64')
+        let sharpImage = sharp(buffer)
+        const metadata = await sharpImage.metadata()
+        const format = metadata.format
+        const supportedFormats = this.config.supportedFormats || ['jpg']
+        if (
+          supportedFormats.length > 0 &&
+          format &&
+          !this.config.supportedFormats.includes(format)
+        ) {
+          sharpImage = sharpImage.toFormat(
+            supportedFormats[0] as keyof sharp.FormatEnum,
+          )
+          buffer = await sharpImage.toBuffer()
+        }
+
+        return this.client.post<{
           vector: number[]
         }>('/vectors', {
           id: uuid.v4(),
-          image: image,
-        }),
-      ),
+          image: buffer.toString('base64'),
+        })
+      }),
     )
     return {
       vectors: res.map((r) => ({
