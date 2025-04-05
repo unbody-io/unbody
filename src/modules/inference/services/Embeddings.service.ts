@@ -6,9 +6,16 @@ import { VectorizeMultimodalDto } from '../dto/VectorizeMultimodal.dto'
 export class EmbeddingsService {
   constructor(private unbody: Unbody) {}
 
-  async vectorizeText(params: { model: string; text: string[] }) {
+  async vectorizeText({
+    model,
+    params,
+  }: {
+    model: string
+    params: VectorizeTextDto
+  }) {
     const res = await this.unbody.modules.vectorizer.vectorizeText({
-      text: params.text,
+      text: params.inputs,
+      type: params.type,
     })
 
     return res

@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, IsObject, IsOptional, IsString } from 'class-validator'
+import {
+  IsArray,
+  IsEnum,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator'
 
 export class VectorizeTextDto {
   @ApiProperty({})
@@ -11,4 +17,9 @@ export class VectorizeTextDto {
   @IsObject()
   @IsOptional()
   options: Record<string, any> = {}
+
+  @ApiProperty({})
+  @IsEnum(['object', 'query'])
+  @IsOptional()
+  type: 'object' | 'query' = 'query'
 }

@@ -23,11 +23,14 @@ export class Vectorizer {
     private plugins: Plugins,
   ) {}
 
-  async vectorizeText(params: { text: string[] }) {
+  async vectorizeText(params: {
+    text: string[]
+    type: 'object' | 'query'
+  }) {
     const vectorizer = await this.getTextVectorizer()
     if (!vectorizer) throw new Error('Vectorizer not found')
 
-    return await vectorizer.vectorize({ text: params.text })
+    return await vectorizer.vectorize({ text: params.text, type: params.type })
   }
 
   async vectorizeImage(params: { image: string[] }) {
@@ -175,6 +178,7 @@ export class Vectorizer {
 
       const { embeddings } = await textVectorizer.vectorize({
         text: inputs.map((input) => input.text),
+        type: 'object',
       })
 
       for (const [index, input] of inputs.entries()) {

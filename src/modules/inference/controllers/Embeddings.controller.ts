@@ -25,8 +25,8 @@ export class EmbeddingsController {
     return {
       embeddings: await this.embeddingsService
         .vectorizeText({
-          text: body.inputs,
           model,
+          params: body,
         })
         .then((res) => res.embeddings.map((item) => item.embedding)),
     }
