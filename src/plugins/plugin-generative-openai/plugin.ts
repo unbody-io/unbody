@@ -5,10 +5,14 @@ import {
   GenerateTextOptionsBase,
   GenerateTextParams,
   GenerateTextResult,
+  GenerateTextResultStream,
+  GenerateTextResultStreamChunk,
+  GenerateTextResultStreamPayload,
   GenerativePlugin,
   GetSupportedModelsParams,
   GetSupportedModelsResult,
 } from 'src/lib/plugins-common/generative'
+import * as stream from 'stream'
 import { z } from 'zod'
 import { Config, Context, Model } from './plugin.types'
 
@@ -165,7 +169,7 @@ export class GenerativeOpenAI implements PluginLifecycle, GenerativePlugin {
   generateText = async (
     ctx: Context,
     params: GenerateTextParams<GenerateTextOptionsBase>,
-  ): Promise<GenerateTextResult> => {
+  ): Promise<GenerateTextResult | GenerateTextResultStream> => {
     const options = params.options
 
     const model = options?.model || (this.config.options?.model as Model)
@@ -214,6 +218,9 @@ export class GenerativeOpenAI implements PluginLifecycle, GenerativePlugin {
     if (options?.maxTokens && options.maxTokens > config.maxTokens)
       throw new Error(`'${model}' maxTokens limit is ${config.maxTokens}`)
 
+    if (params.stream && !config.streaming)
+      throw new Error(`'${model}' doesn't support streaming`)
+
     const llm =
       responseFormat === 'json_object'
         ? chat.withStructuredOutput(options?.schema || {}, {
@@ -254,6 +261,50 @@ export class GenerativeOpenAI implements PluginLifecycle, GenerativePlugin {
       totalTokens: 0,
     }
 
+    if (params.stream) {
+      const response = await llm.stream(messages, {
+        options: {
+          body: {
+            stream_options: {
+              include_usage: true,
+            },
+          },
+        },
+      })
+
+      const format = params.options?.responseFormat || 'text'
+
+      const stream = new Stream(
+        response as any,
+        (chunk) => {
+          if (format === 'text')
+            return {
+              content: chunk.content,
+            }
+
+          return {
+            content: chunk,
+          }
+        },
+        (acc, chunk) => {
+          if (format === 'text')
+            return {
+              ...acc,
+              content:
+                (typeof acc.content === 'string' ? acc.content : '') +
+                chunk.content,
+            }
+
+          return {
+            ...acc,
+            content: chunk,
+          }
+        },
+      )
+
+      return stream
+    }
+
     const response = await llm.invoke(messages, {
       callbacks: [
         {
@@ -281,5 +332,76 @@ export class GenerativeOpenAI implements PluginLifecycle, GenerativePlugin {
         finishReason,
       },
     }
+  }
+}
+
+export class Stream extends stream.Readable {
+  private _firstChunk: boolean = true
+  private _finished: boolean = false
+
+  constructor(
+    private readonly _readable?: stream.Readable,
+    private readonly _readChunk?: (chunk: any) => GenerateTextResultStreamChunk,
+    private readonly _appendChunk?: (
+      acc: GenerateTextResultStreamPayload,
+      chunk: GenerateTextResultStreamChunk,
+    ) => GenerateTextResultStreamPayload,
+  ) {
+    super({ read: () => {} })
+
+    if (this._readable) {
+      let acc: null | GenerateTextResultStreamPayload = null
+      ;(async () => {
+        if (this._readable)
+          for await (const chunk of this._readable) {
+            const data = this._readChunk ? this._readChunk(chunk) : chunk
+            this.pushChunk(data)
+
+            if (!acc) {
+              acc = {
+                content: null as any,
+                finished: true,
+                metadata: {
+                  finishReason: '',
+                  usage: {
+                    inputTokens: 0,
+                    outputTokens: 0,
+                    totalTokens: 0,
+                  },
+                },
+              }
+            }
+
+            if (this._appendChunk && acc && chunk) {
+              acc = this._appendChunk(acc, chunk)
+            }
+          }
+
+        if (acc) {
+          this.pushFinal(acc)
+          this.close()
+        }
+      })().catch((err) => {
+        this.emit('error', err)
+        this.close()
+      })
+    }
+  }
+
+  pushChunk = (chunk: GenerateTextResultStreamChunk) => {
+    let data = (!this._firstChunk ? '\n' : '') + JSON.stringify(chunk)
+    this._firstChunk = false
+
+    return super.emit('data', Buffer.from(data, 'utf-8'))
+  }
+
+  pushFinal = (payload: GenerateTextResultStreamPayload) => {
+    const data = '\n' + JSON.stringify({ ...payload, finished: true })
+    return super.emit('data', Buffer.from(data, 'utf-8'))
+  }
+
+  close() {
+    this.push(null)
+    this.emit('close')
   }
 }

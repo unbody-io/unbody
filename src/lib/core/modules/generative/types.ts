@@ -27,6 +27,7 @@ export type GenerateTextParams = {
       }
   >
 
+  stream?: boolean
   responseFormat?: {
     type: 'json_object' | 'json_schema'
     schema?: Record<string, any>

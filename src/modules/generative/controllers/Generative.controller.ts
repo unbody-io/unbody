@@ -1,4 +1,6 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common'
+import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common'
+import { Response } from 'express'
+import { Stream } from 'stream'
 import { GenerativeService } from '../services/Generative.service'
 
 @Controller('')
@@ -7,13 +9,13 @@ export class GenerativeController {
 
   @HttpCode(200)
   @Post('/content/generative/chat/completions')
-  async _chatCompletion(@Body() body: any) {
-    return this.chatCompletion(body)
+  async _chatCompletion(@Body() body: any, @Res() res: Response) {
+    return this.chatCompletion(body, res)
   }
 
   @HttpCode(200)
   @Post('/generative/chat/completions')
-  async chatCompletion(@Body() body: any) {
+  async chatCompletion(@Body() body: any, @Res() res: Response) {
     // @TODO: handle cancellation
     const signal = new AbortController().signal
 
@@ -22,12 +24,22 @@ export class GenerativeController {
       signal,
     })
 
-    return result
+    if (result instanceof Stream.Readable) {
+      res.setHeader('Content-Type', 'text/event-stream')
+      res.setHeader('Cache-Control', 'no-cache')
+      res.setHeader('Connection', 'keep-alive')
+
+      result.pipe(res)
+    } else {
+      return res.send({
+        data: result,
+      })
+    }
   }
 
   @HttpCode(200)
   @Post('/generative/generate/text')
-  async text(@Body() body: any) {
+  async text(@Body() body: any, @Res() res: Response) {
     // @TODO: handle cancellation
     const signal = new AbortController().signal
 
@@ -36,6 +48,16 @@ export class GenerativeController {
       signal,
     })
 
-    return result
+    if (result instanceof Stream.Readable) {
+      res.setHeader('Content-Type', 'text/event-stream')
+      res.setHeader('Cache-Control', 'no-cache')
+      res.setHeader('Connection', 'keep-alive')
+
+      result.pipe(res)
+    } else {
+      return res.send({
+        data: result,
+      })
+    }
   }
 }
