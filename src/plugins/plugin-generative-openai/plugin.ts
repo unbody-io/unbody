@@ -269,6 +269,7 @@ export class GenerativeOpenAI implements PluginLifecycle, GenerativePlugin {
               include_usage: true,
             },
           },
+          signal: params.signal,
         },
       })
 

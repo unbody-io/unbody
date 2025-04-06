@@ -17,11 +17,15 @@ export class GenerativeController {
   @Post('/generative/chat/completions')
   async chatCompletion(@Body() body: any, @Res() res: Response) {
     // @TODO: handle cancellation
-    const signal = new AbortController().signal
+    const controller = new AbortController()
+
+    res.on('close', () => {
+      controller.abort()
+    })
 
     const result = await this.generativeService.generateText({
       params: body,
-      signal,
+      signal: controller.signal,
     })
 
     if (result instanceof Stream.Readable) {
@@ -41,11 +45,15 @@ export class GenerativeController {
   @Post('/generative/generate/text')
   async text(@Body() body: any, @Res() res: Response) {
     // @TODO: handle cancellation
-    const signal = new AbortController().signal
+    const controller = new AbortController()
+
+    res.on('close', () => {
+      controller.abort()
+    })
 
     const result = await this.generativeService.generateText({
       params: body,
-      signal,
+      signal: controller.signal,
     })
 
     if (result instanceof Stream.Readable) {
