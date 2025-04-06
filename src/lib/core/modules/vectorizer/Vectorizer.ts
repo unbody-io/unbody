@@ -2,6 +2,7 @@ import axios from 'axios'
 import * as _ from 'lodash'
 import { PropertyConfig } from 'src/lib/core-types'
 import { PluginTypes } from 'src/lib/plugins-common'
+import { VectorizeResult } from 'src/lib/plugins-common/text-vectorizer'
 import { ImageVectorizerPluginInstance } from 'src/lib/plugins/instances/ImageVectorizerPlugin'
 import { MultimodalVectorizerPluginInstance } from 'src/lib/plugins/instances/MultimodalVectorizerPlugin'
 import { TextVectorizerPluginInstance } from 'src/lib/plugins/instances/TextVectorizerPlugin'
@@ -10,7 +11,10 @@ import { ProjectContext } from '../../project-context'
 
 export class Vectorizer {
   private _vectorizedProperties: Record<string, PropertyConfig[]> = {}
-  private _textVectorizer: TextVectorizerPluginInstance | null = null
+  private _textVectorizer:
+    | TextVectorizerPluginInstance
+    | MultimodalVectorizerPluginInstance
+    | null = null
   private _imageVectorizer:
     | ImageVectorizerPluginInstance
     | MultimodalVectorizerPluginInstance
@@ -30,6 +34,26 @@ export class Vectorizer {
   }) {
     const vectorizer = await this.getTextVectorizer(params.alias)
     if (!vectorizer) throw new Error('Vectorizer not found')
+
+    if (vectorizer.type === PluginTypes.MultimodalVectorizer) {
+      return await vectorizer
+        .vectorize({
+          images: [],
+          type: params.type,
+          texts: params.text,
+        })
+        .then(
+          (res) =>
+            ({
+              embeddings: res.vectors.text.map((vector) => ({
+                embedding: vector,
+              })),
+              usage: {
+                tokens: 0,
+              },
+            }) satisfies VectorizeResult,
+        )
+    }
 
     return await vectorizer.vectorize({ text: params.text, type: params.type })
   }
@@ -175,10 +199,7 @@ export class Vectorizer {
     }
 
     if (inputs.length > 0) {
-      const textVectorizer = await this.getTextVectorizer()
-      if (!textVectorizer) throw new Error('Text vectorizer not found')
-
-      const { embeddings } = await textVectorizer.vectorize({
+      const { embeddings } = await this.vectorizeText({
         text: inputs.map((input) => input.text),
         type: 'object',
       })
@@ -299,16 +320,26 @@ export class Vectorizer {
 
     if (this._textVectorizer) return this._textVectorizer
 
-    const plugin = await this.plugins.registry.getTextVectorizer(
-      this._ctx.settings.textVectorizer.name,
-    )
-    if (!plugin) return null
+    const config = this._ctx.settings.textVectorizer
+    if (!config) return null
 
-    this._textVectorizer = new TextVectorizerPluginInstance(
-      plugin,
-      {},
-      this.plugins.resources,
+    const plugin =
+      (await this.plugins.registry.getTextVectorizer(config.name)) ||
+      (await this.plugins.registry.getMultimodalVectorizer(config.name))
+
+    if (!plugin) return null
+    if (
+      plugin.manifest.type !== 'text_vectorizer' &&
+      plugin.manifest.type !== 'multimodal_vectorizer'
     )
+      return null
+
+    const Vectorizer =
+      plugin.manifest.type === 'text_vectorizer'
+        ? TextVectorizerPluginInstance
+        : MultimodalVectorizerPluginInstance
+
+    this._textVectorizer = new Vectorizer(plugin, {}, this.plugins.resources)
 
     return this._textVectorizer
   }
@@ -330,29 +361,24 @@ export class Vectorizer {
     const config = this._ctx.settings.imageVectorizer
     if (!config) return null
 
-    let img2vecPlugin = await this.plugins.registry.getImageVectorizer(
-      config.name,
-    )
-    if (img2vecPlugin) {
-      this._imageVectorizer = new ImageVectorizerPluginInstance(
-        img2vecPlugin,
-        {},
-        this.plugins.resources,
-      )
+    const plugin =
+      (await this.plugins.registry.getImageVectorizer(config.name)) ||
+      (await this.plugins.registry.getMultimodalVectorizer(config.name))
 
-      return this._imageVectorizer
-    }
+    if (!plugin) return null
 
-    const multi2vecPlugin = await this.plugins.registry.getMultimodalVectorizer(
-      config.name,
+    if (
+      plugin.manifest.type !== 'image_vectorizer' &&
+      plugin.manifest.type !== 'multimodal_vectorizer'
     )
-    if (!multi2vecPlugin) return null
+      return null
 
-    this._imageVectorizer = new MultimodalVectorizerPluginInstance(
-      multi2vecPlugin,
-      {},
-      this.plugins.resources,
-    )
+    const Vectorizer =
+      plugin.manifest.type === 'image_vectorizer'
+        ? ImageVectorizerPluginInstance
+        : MultimodalVectorizerPluginInstance
+
+    this._imageVectorizer = new Vectorizer(plugin, {}, this.plugins.resources)
 
     return this._imageVectorizer
   }
