@@ -7,6 +7,7 @@ import { EnhancerPluginInstance } from '../instances/EnhancerPlugin'
 import { FileParserPluginInstance } from '../instances/FileParserPlugin'
 import { GenerativePluginInstance } from '../instances/GenerativePlugin'
 import { ImageVectorizerPluginInstance } from '../instances/ImageVectorizerPlugin'
+import { MultimodalVectorizerPluginInstance } from '../instances/MultimodalVectorizerPlugin'
 import { PluginInstance } from '../instances/PluginInstance'
 import { ProviderPluginInstance } from '../instances/ProviderPlugin'
 import { RerankerPluginInstance } from '../instances/RerankerPlugin'
@@ -16,7 +17,6 @@ import { PluginResources } from '../resources/PluginResources'
 import { PluginRunner } from '../runner/LocalPluginRunner'
 import { LoadedPlugin } from '../shared.types'
 import { PluginStateCollectionDocument } from './schemas'
-import { MultimodalVectorizerPluginInstance } from '../instances/MultimodalVectorizerPlugin'
 
 export type PluginRegistryConfig = {
   configLoader?: (
@@ -87,8 +87,20 @@ export class PluginRegistry {
     for (const plugin of plugins) {
       try {
         await this.registerPlugin(plugin)
-      } catch (e) {
-        e instanceof PluginRegistry.Error && errors.push(e)
+      } catch (error) {
+        if (error instanceof PluginRegistry.Error) errors.push(error)
+        else
+          errors.push(
+            new PluginRegistry.Error(
+              'Failed to register plugin',
+              {
+                alias: plugin.alias,
+                manifest: this._manifests[plugin.alias] || undefined,
+                path: plugin.path,
+              },
+              error,
+            ),
+          )
       }
     }
     return { registrationErrors: errors }
@@ -152,8 +164,8 @@ export class PluginRegistry {
     const instance = await this.getInstance(loaded)
 
     const session = await this.models.pluginState.startSession()
-    session.withTransaction(async () => {
-      let state = await this.models.pluginState.findOne({ alias })
+    await session.withTransaction(async (session) => {
+      let state = await this.models.pluginState.findOne({ alias }, {})
 
       if (!state) {
         state = new this.models.pluginState({
@@ -300,7 +312,15 @@ export class PluginRegistry {
           await instance.runTask('startService')({})
         }
       } catch (error) {
-        console.error(error)
+        throw new PluginRegistry.Error(
+          'Failed to start plugin service',
+          {
+            alias: plugin.alias,
+            manifest: plugin.manifest,
+            path: plugin.runner.config.pluginPath,
+          },
+          error,
+        )
       }
     }
   }

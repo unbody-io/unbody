@@ -333,7 +333,7 @@ export class PluginModule
   async onApplicationBootstrap() {
     for (const worker of this.workers) worker.run()
 
-    this.pluginRegistry.startServices()
+    await this.pluginRegistry.startServices()
   }
 
   async onApplicationShutdown(signal?: string) {
