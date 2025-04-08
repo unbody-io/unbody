@@ -52,7 +52,7 @@ export class FileParserActivities {
       })
       return res
     } catch (error) {
-      if (error instanceof FileParsers.Exceptions.InvalidFileParserOptions) {
+      if (error instanceof FileParsers.Exceptions.InvalidFileInput) {
         throw new ApplicationFailure(
           `FileParser ${parserAlias} failed to parse file: ${error.message}`,
           'invalid_file_parser_input',
