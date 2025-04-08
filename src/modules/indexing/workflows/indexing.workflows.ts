@@ -16,8 +16,8 @@ import {
   InitSourceResult,
 } from 'src/lib/plugins-common/provider'
 import { IndexingActivities } from '../activities/Indexing.activities'
-import { ProcessEventWorkflowParams } from './ProcessRecord.workflows'
 import { IndexingFailures } from '../types'
+import { ProcessEventWorkflowParams } from './ProcessRecord.workflows'
 
 export type SchedulerLockWorkflowParams = {
   current?: string | null
@@ -191,6 +191,7 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
           'provider_not_found',
           'provider_not_connected',
           'provider_invalid_connection',
+          'events_circular_dependency_error',
         ],
       },
     })
@@ -233,56 +234,45 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
 
   res.events = res.events || ([] as Required<typeof res>['events'])
 
-  if (res.events && res.events.length > 0) {
-    let batch = 0
-    const batchSize = 20
-    const lastBatch = Math.ceil(res.events.length / batchSize)
+  const batches = groupEventsByDependency(res.events, 20)
 
-    while (batch < lastBatch) {
-      const events = res.events.slice(
-        batch * batchSize,
-        (batch + 1) * batchSize,
-      )
+  for (const batch of batches) {
+    const workflowResults = await Promise.allSettled(
+      batch.map(async (event) => {
+        await executeChild('processEventWorkflow', {
+          workflowId: `${params.jobId}:${event.eventName}:${event.recordId}`,
+          taskQueue: 'record-processor-queue',
+          args: [
+            {
+              sourceId: params.sourceId,
+              jobId: params.jobId,
+              event,
+            } as ProcessEventWorkflowParams,
+          ],
+          searchAttributes: {
+            sourceId: [params.sourceId],
+            recordId: [event.recordId],
+            eventType: [event.eventName],
+          },
+        })
+      }),
+    )
 
-      const workflowResults = await Promise.allSettled(
-        events.map(async (event) => {
-          await executeChild('processEventWorkflow', {
-            workflowId: `${params.jobId}:${event.eventName}:${event.recordId}`,
-            taskQueue: 'record-processor-queue',
-            args: [
-              {
-                sourceId: params.sourceId,
-                jobId: params.jobId,
-                event,
-              } as ProcessEventWorkflowParams,
-            ],
-            searchAttributes: {
-              sourceId: [params.sourceId],
-              recordId: [event.recordId],
-              eventType: [event.eventName],
-            },
-          })
-        }),
-      )
-
-      workflowResults.map((res, index) => {
-        if (res.status === 'fulfilled')
-          results.push({
-            event: events[index],
-            recordId: events[index].recordId,
-            status: 'success',
-          })
-        else
-          results.push({
-            event: events[index],
-            recordId: events[index].recordId,
-            status: 'error',
-            error: res.reason,
-          })
-      })
-
-      batch++
-    }
+    workflowResults.map((res, index) => {
+      if (res.status === 'fulfilled')
+        results.push({
+          event: batch[index],
+          recordId: batch[index].recordId,
+          status: 'success',
+        })
+      else
+        results.push({
+          event: batch[index],
+          recordId: batch[index].recordId,
+          status: 'error',
+          error: res.reason,
+        })
+    })
   }
 
   await onSourceInitFinished({
@@ -306,6 +296,7 @@ export async function updateSourceWorkflow(params: IndexSourceWorkflowParams) {
           'provider_not_found',
           'provider_not_connected',
           'provider_invalid_connection',
+          'events_circular_dependency_error',
         ],
       },
     })
@@ -341,40 +332,29 @@ export async function updateSourceWorkflow(params: IndexSourceWorkflowParams) {
 
   res.events = res.events || ([] as Required<typeof res>['events'])
 
-  if (res.events && res.events.length > 0) {
-    let batch = 0
-    const batchSize = 20
-    const lastBatch = Math.ceil(res.events.length / batchSize)
+  const batches = groupEventsByDependency(res.events, 20)
 
-    while (batch < lastBatch) {
-      const events = res.events.slice(
-        batch * batchSize,
-        (batch + 1) * batchSize,
-      )
-
-      await Promise.allSettled(
-        events.map(async (event) => {
-          await executeChild('processEventWorkflow', {
-            workflowId: `${params.jobId}:${event.eventName}:${event.recordId}`,
-            taskQueue: 'record-processor-queue',
-            args: [
-              {
-                sourceId: params.sourceId,
-                jobId: params.jobId,
-                event,
-              } as ProcessEventWorkflowParams,
-            ],
-            searchAttributes: {
-              sourceId: [params.sourceId],
-              recordId: [event.recordId],
-              eventType: [event.eventName],
-            },
-          })
-        }),
-      )
-
-      batch++
-    }
+  for (const batch of batches) {
+    await Promise.allSettled(
+      batch.map(async (event) => {
+        await executeChild('processEventWorkflow', {
+          workflowId: `${params.jobId}:${event.eventName}:${event.recordId}`,
+          taskQueue: 'record-processor-queue',
+          args: [
+            {
+              sourceId: params.sourceId,
+              jobId: params.jobId,
+              event,
+            } as ProcessEventWorkflowParams,
+          ],
+          searchAttributes: {
+            sourceId: [params.sourceId],
+            recordId: [event.recordId],
+            eventType: [event.eventName],
+          },
+        })
+      }),
+    )
   }
 
   await onSourceUpdateFinished({
@@ -404,4 +384,108 @@ export async function deleteSourceResourcesWorkflow(
     sourceId: params.sourceId,
     jobId: info.workflowId,
   })
+}
+
+const groupEventsByDependency = (
+  events: IndexingEvent[],
+  maxBatchSize: number,
+) => {
+  const ordered = sortEvents(events)
+  const batches: IndexingEvent[][] = []
+
+  let processedCount = 0
+
+  const processed: Record<string, boolean> = {}
+
+  while (processedCount < ordered.length) {
+    const batch: IndexingEvent[] = []
+
+    for (const event of ordered) {
+      if (processed[event.recordId]) continue
+
+      const { dependsOn = [] } = event
+
+      if (dependsOn.every((id) => processed[id] === true)) {
+        batch.push(event)
+
+        if (batch.length >= maxBatchSize) break
+      }
+    }
+
+    batches.push(batch)
+    for (const event of batch) {
+      processed[event.recordId] = true
+      processedCount++
+    }
+  }
+
+  if (processedCount !== events.length) {
+    const unprocessed = events.filter((event) => !processed[event.recordId])
+
+    if (unprocessed.length > 0) {
+      let errorMessage = `Circular dependency detected:`
+
+      unprocessed.forEach((event) => {
+        const unresolved = (event.dependsOn || []).filter(
+          (recordId) => !processed[recordId],
+        )
+        errorMessage += `\n- "${event.recordId}" has unresolved dependencies: ${unresolved.map((id) => `"${id}"`).join(', ')}`
+      })
+      throw new ApplicationFailure(
+        errorMessage,
+        'events_circular_dependency_error',
+      )
+    }
+  }
+
+  return batches
+}
+
+const sortEvents = (events: IndexingEvent[]) => {
+  const eventIndex = events.reduce(
+    (acc, event, index) => ({
+      ...acc,
+      [event.recordId]: index,
+    }),
+    {},
+  )
+
+  const graph: Record<number, number[]> = {}
+  const indegree = new Array(events.length).fill(0)
+
+  events.forEach((event, index) => {
+    graph[index] = []
+
+    const { dependsOn = [] } = event
+    dependsOn.forEach((depId) => {
+      graph[index].push(eventIndex[depId]!)
+      indegree[index]++
+    })
+  })
+
+  const sorted: number[] = []
+  const queue: number[] = []
+
+  for (let index = 0; index < events.length; index++) {
+    if (indegree[index] === 0) queue.push(index)
+  }
+
+  while (queue.length > 0) {
+    const currentIndex = queue.shift()!
+    sorted.push(currentIndex)
+
+    for (let index = 0; index < events.length; index++) {
+      const dependencies = graph[index] || []
+
+      if (dependencies.includes(currentIndex)) {
+        indegree[index]--
+
+        if (indegree[index] === 0) {
+          queue.push(index)
+        }
+      }
+    }
+  }
+
+  return sorted.map((index) => events[index])
 }
