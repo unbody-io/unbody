@@ -5,6 +5,27 @@ export type FileParserPluginContext = PluginContext & {
   tempDir: string
 }
 
+export namespace FileParserPlugin {
+  export type Context = FileParserPluginContext
+
+  export namespace Exceptions {
+    class BaseError extends Error {}
+
+    export class InvalidFileInput extends BaseError {}
+    export class InvalidParserOptions extends BaseError {
+      constructor(
+        message: string,
+        public errors: {
+          path: (string | number)[]
+          message: string
+        }[],
+      ) {
+        super(message)
+      }
+    }
+  }
+}
+
 export interface FileParserPlugin<
   C extends PluginContext = FileParserPluginContext,
 > {

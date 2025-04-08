@@ -1,3 +1,4 @@
+import { FileParserPlugin } from 'src/lib/plugins-common/file-parser'
 import { FileParserPluginInstance } from 'src/lib/plugins/instances/FileParserPlugin'
 import { Plugins } from '../../plugins'
 import { ProjectContext } from '../../project-context'
@@ -21,7 +22,9 @@ export class FileParsers {
     const config = Array.isArray(map) ? map : [map]
     return config.map(({ name, options }) => ({
       alias: name,
-      options,
+      options: {
+        ...(options || {}),
+      },
     }))
   }
 
@@ -30,5 +33,14 @@ export class FileParsers {
     if (!plugin) return null
 
     return new FileParserPluginInstance(plugin, {}, this.plugins.resources)
+  }
+}
+
+export namespace FileParsers {
+  export namespace Exceptions {
+    export class FileParserNotFound extends Error {}
+
+    export import InvalidFileInput = FileParserPlugin.Exceptions.InvalidFileInput
+    export import InvalidFileParserOptions = FileParserPlugin.Exceptions.InvalidParserOptions
   }
 }

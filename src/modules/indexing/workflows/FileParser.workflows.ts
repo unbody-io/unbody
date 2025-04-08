@@ -27,7 +27,12 @@ export async function parseFileWorkflow(params: ParseFileWorkflowParams) {
   } = proxyActivities<FileParserActivities>({
     startToCloseTimeout: '10m',
     retry: {
-      nonRetryableErrorTypes: ['UNSUPPORTED_MIME_TYPE'],
+      nonRetryableErrorTypes: [
+        'UNSUPPORTED_MIME_TYPE',
+        'invalid_file_parser',
+        'invalid_file_parser_input',
+        'invalid_file_parser_options',
+      ],
     },
   })
 
