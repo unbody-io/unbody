@@ -3,6 +3,8 @@ import {
   ImageBlock,
   TextBlock,
   TextDocument,
+  WebPage,
+  Website,
 } from '../../collections'
 import {
   Collection,
@@ -13,7 +15,14 @@ import {
 } from '../../core-types'
 
 export class Collections {
-  static BUILTIN_COLLECTIONS = [GoogleDoc, TextDocument, ImageBlock, TextBlock]
+  static BUILTIN_COLLECTIONS = [
+    GoogleDoc,
+    TextDocument,
+    WebPage,
+    Website,
+    ImageBlock,
+    TextBlock,
+  ]
 
   public collections: CollectionConfig[] = []
   public collectionMap: Record<string, CollectionConfig> = {}

@@ -1,14 +1,12 @@
 import { Collection, Property, ReferenceProperty } from '../core-types'
-import { GoogleDoc } from './GoogleDoc.collection'
-import { TextDocument } from './TextDocument.collection'
 import { RecordCollection } from './utils'
 import { WebPage } from './WebPage.collection'
 
 @Collection({
-  name: 'ImageBlock',
+  name: 'Website',
 })
-export class ImageBlock {
-  __typename: 'ImageBlock' = 'ImageBlock'
+export class Website {
+  __typename: 'Website' = 'Website'
 
   @Property({
     type: 'text',
@@ -96,101 +94,69 @@ export class ImageBlock {
   pathString: string
 
   @Property({
-    type: 'int',
+    type: 'text',
     required: true,
   })
-  order: number
+  slug: string
+
+  @Property({
+    type: 'text',
+    required: true,
+  })
+  title: string
+
+  @Property({
+    type: 'text',
+    required: true,
+  })
+  description: string
+
+  @Property({
+    type: 'text',
+  })
+  locale?: string
+
+  @Property({
+    type: 'text',
+  })
+  type?: string
 
   @Property({
     type: 'text',
     array: true,
+    required: true,
   })
-  classNames?: string[]
+  keywords: string[]
 
   @Property({
     type: 'text',
-    vectorize: true,
+    vectorize: false,
     required: false,
   })
-  alt?: string
-
-  @Property({
-    type: 'text',
-    required: false,
-    vectorize: true,
-  })
-  caption?: string
-
-  @Property({
-    type: 'text',
-    vectorize: true,
-    required: false,
-  })
-  title?: string
-
-  @Property({
-    type: 'int',
-    required: false,
-  })
-  width: number
-
-  @Property({
-    type: 'int',
-    required: false,
-  })
-  height: number
-
-  @Property({
-    type: 'blob',
-    required: false,
-    array: false,
-  })
-  blob?: string
+  properties?: string
 
   @Property({
     type: 'cref',
+    required: false,
   })
   @ReferenceProperty({
     type: () => [
-      {
-        collection: GoogleDoc,
-        property: 'document',
-      },
-      {
-        collection: TextDocument,
-        property: 'document',
-      },
       {
         collection: WebPage,
         property: 'document',
       },
     ],
+    onDelete: 'CASCADE',
     onUpdate: 'UPDATE_REFERENCE',
-    onDelete: 'REMOVE_REFERENCE',
   })
-  document: Array<GoogleDoc>
+  pages: Array<WebPage>
 
   @Property({
     type: 'text',
     required: false,
     vectorize: true,
   })
-  autoCaption?: string
-
-  @Property({
-    type: 'text',
-    array: true,
-    required: false,
-    vectorize: true,
-  })
-  autoTypes?: string[]
-
-  @Property({
-    type: 'text',
-    required: false,
-    vectorize: true,
-  })
-  autoOCR?: string
+  autoSummary?: string
 }
 
-export const ImageBlockCollection = new RecordCollection<ImageBlock>(ImageBlock)
+export const WebsiteCollection = new RecordCollection<Website>(Website)

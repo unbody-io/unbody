@@ -2,6 +2,7 @@ import { Collection, Property, ReferenceProperty } from '../core-types'
 import { GoogleDoc } from './GoogleDoc.collection'
 import { TextDocument } from './TextDocument.collection'
 import { RecordCollection } from './utils'
+import { WebPage } from './WebPage.collection'
 
 @Collection({
   name: 'TextBlock',
@@ -75,9 +76,15 @@ export class TextBlock {
     type: () => [
       {
         collection: GoogleDoc,
+        property: 'document',
       },
       {
         collection: TextDocument,
+        property: 'document',
+      },
+      {
+        collection: WebPage,
+        property: 'document',
       },
     ],
     onUpdate: 'UPDATE_REFERENCE',
