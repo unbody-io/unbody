@@ -191,6 +191,7 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
           'provider_not_found',
           'provider_not_connected',
           'provider_invalid_connection',
+          'events_circular_dependency_error',
         ],
       },
     })
@@ -295,6 +296,7 @@ export async function updateSourceWorkflow(params: IndexSourceWorkflowParams) {
           'provider_not_found',
           'provider_not_connected',
           'provider_invalid_connection',
+          'events_circular_dependency_error',
         ],
       },
     })
@@ -414,6 +416,25 @@ const groupEventsByDependency = (
     for (const event of batch) {
       processed[event.recordId] = true
       processedCount++
+    }
+  }
+
+  if (processedCount !== events.length) {
+    const unprocessed = events.filter((event) => !processed[event.recordId])
+
+    if (unprocessed.length > 0) {
+      let errorMessage = `Circular dependency detected:`
+
+      unprocessed.forEach((event) => {
+        const unresolved = (event.dependsOn || []).filter(
+          (recordId) => !processed[recordId],
+        )
+        errorMessage += `\n- "${event.recordId}" has unresolved dependencies: ${unresolved.map((id) => `"${id}"`).join(', ')}`
+      })
+      throw new ApplicationFailure(
+        errorMessage,
+        'events_circular_dependency_error',
+      )
     }
   }
 
