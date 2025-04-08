@@ -9,7 +9,14 @@ import {
 import { z } from 'zod'
 import { Config, Context } from './plugin.types'
 
+const MAX_TEXTS_PER_REQUEST = 96
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024 // 3MB
+
+type ApiRes = {
+  embeddings: {
+    float: number[][]
+  }
+}
 
 const vectorizeOptionsSchema = z.object({
   model: z
@@ -66,20 +73,54 @@ export class CohereMultimodalVectorizer
     const model = params.options?.model || this.config.options?.model
     if (!model) throw new Error('Model not provided')
 
-    const texts =
-      params.texts.length > 0
-        ? await this.client
-            .post('/v2/embed', {
-              model,
-              texts: params.texts,
-              embedding_types: ['float'],
-              input_type:
-                params.type === 'query' ? 'search_query' : 'search_document',
-              truncate: 'END',
-            })
-            .then((res) => res.data.embeddings.float)
-        : []
+    const texts = await this._vectorizeText(model, params)
+    const images = await this._vectorizeImage(model, params)
 
+    return {
+      vectors: {
+        text: texts,
+        image: images,
+        combined: null as any,
+      },
+    }
+  }
+
+  private _vectorizeText = async (
+    model: string,
+    params: VectorizeParams<Required<Config>['options']>,
+  ) => {
+    const batches: string[][] = []
+
+    const texts = params.texts || []
+
+    for (let i = 0; i < texts.length; i += MAX_TEXTS_PER_REQUEST) {
+      batches.push(texts.slice(i, i + MAX_TEXTS_PER_REQUEST))
+    }
+
+    const results: ApiRes[] = []
+
+    for (const batch of batches) {
+      const res = await this.client
+        .post<ApiRes>('/v2/embed', {
+          model,
+          texts: batch,
+          embedding_types: ['float'],
+          input_type:
+            params.type === 'query' ? 'search_query' : 'search_document',
+          truncate: 'END',
+        })
+        .then((res) => res.data)
+
+      results.push(res)
+    }
+
+    return results.flatMap((res) => res.embeddings.float)
+  }
+
+  private _vectorizeImage = async (
+    model: string,
+    params: VectorizeParams<Required<Config>['options']>,
+  ) => {
     const images: number[][] = []
 
     if (params.images.length > 0) {
@@ -99,13 +140,7 @@ export class CohereMultimodalVectorizer
       }
     }
 
-    return {
-      vectors: {
-        text: texts,
-        image: images,
-        combined: null as any,
-      },
-    }
+    return images
   }
 
   private _formatImage = async (image: string) => {

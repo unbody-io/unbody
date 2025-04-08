@@ -23,15 +23,19 @@ export class Vectorizer {
     private plugins: Plugins,
   ) {}
 
-  async vectorizeText(params: { text: string[] }) {
-    const vectorizer = await this.getTextVectorizer()
+  async vectorizeText(params: {
+    alias?: string
+    text: string[]
+    type: 'object' | 'query'
+  }) {
+    const vectorizer = await this.getTextVectorizer(params.alias)
     if (!vectorizer) throw new Error('Vectorizer not found')
 
-    return await vectorizer.vectorize({ text: params.text })
+    return await vectorizer.vectorize({ text: params.text, type: params.type })
   }
 
-  async vectorizeImage(params: { image: string[] }) {
-    const vectorizer = await this.getImageVectorizer()
+  async vectorizeImage(params: { alias?: string; image: string[] }) {
+    const vectorizer = await this.getImageVectorizer(params.alias)
     if (!vectorizer) throw new Error('Image vectorizer not found')
 
     const encoded = await this._encodeImage(params.image)
@@ -80,6 +84,7 @@ export class Vectorizer {
       } else if (image.startsWith('http://') || image.startsWith('https://')) {
         const response = await axios.get(image, {
           responseType: 'arraybuffer',
+          timeout: 60000,
         })
         const enc = Buffer.from(response.data, 'binary').toString('base64')
         encoded.push(enc)
@@ -175,6 +180,7 @@ export class Vectorizer {
 
       const { embeddings } = await textVectorizer.vectorize({
         text: inputs.map((input) => input.text),
+        type: 'object',
       })
 
       for (const [index, input] of inputs.entries()) {
@@ -279,7 +285,18 @@ export class Vectorizer {
     return this._vectorizedProperties[collectionName]
   }
 
-  async getTextVectorizer() {
+  async getTextVectorizer(alias?: string) {
+    if (alias) {
+      const plugin = await this.plugins.registry.getTextVectorizer(alias)
+      if (!plugin) return null
+      const vectorizer = new TextVectorizerPluginInstance(
+        plugin,
+        {},
+        this.plugins.resources,
+      )
+      return vectorizer
+    }
+
     if (this._textVectorizer) return this._textVectorizer
 
     const plugin = await this.plugins.registry.getTextVectorizer(
@@ -296,7 +313,18 @@ export class Vectorizer {
     return this._textVectorizer
   }
 
-  async getImageVectorizer() {
+  async getImageVectorizer(alias?: string) {
+    if (alias) {
+      const plugin = await this.plugins.registry.getImageVectorizer(alias)
+      if (!plugin) return null
+      const vectorizer = new ImageVectorizerPluginInstance(
+        plugin,
+        {},
+        this.plugins.resources,
+      )
+      return vectorizer
+    }
+
     if (this._imageVectorizer) return this._imageVectorizer
 
     const config = this._ctx.settings.imageVectorizer

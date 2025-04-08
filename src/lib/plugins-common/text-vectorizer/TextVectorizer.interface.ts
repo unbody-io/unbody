@@ -20,6 +20,8 @@ export type VectorizeParams<
   T extends Record<string, any> = Record<string, any>,
 > = {
   text: string[]
+  type: 'object' | 'query'
+
   options?: T
 }
 
