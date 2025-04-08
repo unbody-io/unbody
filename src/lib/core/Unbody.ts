@@ -47,7 +47,10 @@ export class Unbody {
     pluginRegistry: PluginRegistry,
   ) {
     const textVectorizer = () => {
-      const plugins = Object.keys(pluginRegistry.textVectorizers)
+      const plugins = [
+        ...Object.keys(pluginRegistry.textVectorizers),
+        ...Object.keys(pluginRegistry.multimodalVectorizers),
+      ]
 
       if (plugins.length === 0) {
         return z.undefined({

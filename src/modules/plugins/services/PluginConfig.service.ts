@@ -35,12 +35,19 @@ export class PluginConfigService {
       }
 
       if (!config.modules?.textVectorizer) {
-        const endpointURL = `${baseUrl}/inference/embeddings/text/${this.settings.textVectorizer.name}`
+        const vectorizerName = this.settings.textVectorizer.name
+        const vectorizerManifest = await getPluginManifest(vectorizerName)
+        const isMultimodal =
+          vectorizerManifest &&
+          vectorizerManifest.type === 'multimodal_vectorizer'
+        const endpointURL = `${baseUrl}/inference/embeddings/${isMultimodal ? 'multimodal' : 'text'}/${vectorizerName}`
+        const name = isMultimodal ? 'multi2vec-custom' : 'text2vec-huggingface'
 
         config.modules = {
           ...config.modules,
           textVectorizer: {
-            name: this.settings.textVectorizer.name,
+            name: name,
+            multimodal: isMultimodal,
             config: {
               endpointURL,
             },
@@ -64,23 +71,21 @@ export class PluginConfigService {
 
       if (!config.modules?.imageVectorizer && !!this.settings.imageVectorizer) {
         const vectorizerName = this.settings.imageVectorizer.name
-        if (plugin) {
-          const vectorizerManifest = await getPluginManifest(vectorizerName)
-          const isMultimodal =
-            vectorizerManifest &&
-            vectorizerManifest.type === 'multimodal_vectorizer'
-          const endpointURL = `${baseUrl}/inference/embeddings/${isMultimodal ? 'multimodal' : 'image'}/${vectorizerName}`
-          const name = isMultimodal ? 'multi2vec-custom' : 'img2vec-custom'
-          config.modules = {
-            ...config.modules,
-            imageVectorizer: {
-              name: name,
-              multimodal: isMultimodal,
-              config: {
-                endpointURL: endpointURL,
-              },
+        const vectorizerManifest = await getPluginManifest(vectorizerName)
+        const isMultimodal =
+          vectorizerManifest &&
+          vectorizerManifest.type === 'multimodal_vectorizer'
+        const endpointURL = `${baseUrl}/inference/embeddings/${isMultimodal ? 'multimodal' : 'image'}/${vectorizerName}`
+        const name = isMultimodal ? 'multi2vec-custom' : 'img2vec-custom'
+        config.modules = {
+          ...config.modules,
+          imageVectorizer: {
+            name: name,
+            multimodal: isMultimodal,
+            config: {
+              endpointURL: endpointURL,
             },
-          }
+          },
         }
       }
 

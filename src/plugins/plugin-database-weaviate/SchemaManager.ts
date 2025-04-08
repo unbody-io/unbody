@@ -66,37 +66,64 @@ export class SchemaManager {
       references: [],
     }
 
-    if (
-      this.config.modules?.imageVectorizer &&
-      collection.name === 'ImageBlock'
-    ) {
-      const module = this.config.modules.imageVectorizer
-      const vectorizer = {
-        name: module.name,
-        config: module.config,
-      }
-      config.vectorizers = {
-        vectorIndex: weaviate.configure.vectorIndex.hnsw({}),
-        vectorizer,
-      } as any
+    const textProps = collection.properties
+      .filter((prop) => prop.type === 'text' && prop.vectorize !== false)
+      .map((prop) => prop.name)
 
-      const textProps = collection.properties
-        .filter((prop) => prop.type === 'text' && prop.vectorize !== false)
-        .map((prop) => prop.name)
-      const imageProps = collection.properties
-        .filter((prop) => prop.type === 'blob')
-        .map((prop) => prop.name)
+    const imageProps = collection.properties
+      .filter((prop) => prop.type === 'blob')
+      .map((prop) => prop.name)
 
-      if (this.config.modules.imageVectorizer?.multimodal) {
-        vectorizer.config = {
-          ...vectorizer.config,
-          textFields: textProps,
-          imageFields: imageProps,
+    {
+      const module = this.config.modules?.textVectorizer
+
+      if (module) {
+        const vectorizer = {
+          name: module.name,
+          config: {
+            ...module.config,
+          },
         }
-      } else {
-        vectorizer.config = {
-          ...vectorizer.config,
-          imageFields: imageProps,
+
+        config.vectorizers = {
+          vectorIndex: weaviate.configure.vectorIndex.hnsw({}),
+          vectorizer,
+        } as any
+
+        if (module.multimodal) {
+          vectorizer.config = {
+            ...vectorizer.config,
+            textFields: textProps,
+            imageFields: imageProps.length > 0 ? imageProps : ['blob'],
+          }
+        }
+      }
+    }
+
+    {
+      const module = this.config.modules?.imageVectorizer
+
+      if (module && collection.name === 'ImageBlock') {
+        const vectorizer = {
+          name: module.name,
+          config: module.config,
+        }
+        config.vectorizers = {
+          vectorIndex: weaviate.configure.vectorIndex.hnsw({}),
+          vectorizer,
+        } as any
+
+        if (module.multimodal) {
+          vectorizer.config = {
+            ...vectorizer.config,
+            textFields: textProps,
+            imageFields: imageProps,
+          }
+        } else {
+          vectorizer.config = {
+            ...vectorizer.config,
+            imageFields: imageProps,
+          }
         }
       }
     }
