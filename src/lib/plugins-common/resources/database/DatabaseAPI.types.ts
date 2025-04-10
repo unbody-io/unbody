@@ -44,4 +44,6 @@ export interface DatabaseCollectionAPI {
   dropIndex: mongodb.Collection['dropIndex']
 
   listIndexes: mongodb.Collection['listIndexes']
+
+  bulkWrite: mongodb.Collection['bulkWrite']
 }
