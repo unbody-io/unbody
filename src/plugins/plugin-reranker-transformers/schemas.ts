@@ -2,7 +2,7 @@ import { RerankerPlugin } from 'src/lib/plugins-common/reranker'
 import { z } from 'zod'
 
 const config = z.object({
-  baseURL: z.string().optional(),
+  baseURL: z.string(),
 })
 
 const rerankOptions = z.object({})
