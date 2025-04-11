@@ -2,6 +2,8 @@ import { Model } from 'mongoose'
 import { UnbodyPlugins } from 'src/lib/core-types'
 import { PluginManifest, PluginType } from 'src/lib/plugins-common'
 import * as uuid from 'uuid'
+import { ZodError } from 'zod'
+import { fromZodIssue } from 'zod-validation-error'
 import { DatabasePluginInstance } from '../instances/DatabasePlugin'
 import { EnhancerPluginInstance } from '../instances/EnhancerPlugin'
 import { FileParserPluginInstance } from '../instances/FileParserPlugin'
@@ -145,6 +147,36 @@ export class PluginRegistry {
       alias,
       runner,
       manifest,
+    }
+
+    try {
+      const configSchema = await runner.getSchema('config')
+      if (configSchema) {
+        const parsed = configSchema.parse(config)
+        loaded.runner.config.pluginConfig = parsed
+      }
+    } catch (e) {
+      if (e instanceof ZodError)
+        throw new PluginRegistry.Error(
+          'Invalid plugin config: \n' +
+            e.issues.map((issue) => fromZodIssue(issue)).join('\n'),
+          {
+            alias,
+            path: plugin.path,
+            manifest,
+          },
+          e,
+        )
+      else
+        throw new PluginRegistry.Error(
+          'Failed to parse plugin config',
+          {
+            alias,
+            path: plugin.path,
+            manifest,
+          },
+          e,
+        )
     }
 
     try {
