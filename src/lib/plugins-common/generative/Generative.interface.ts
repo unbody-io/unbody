@@ -1,3 +1,4 @@
+import type * as stream from 'stream'
 import type { z } from 'zod'
 import { PluginContext } from '..'
 
@@ -19,7 +20,7 @@ export interface GenerativePlugin<
   generateText: (
     ctx: C,
     params: GenerateTextParams,
-  ) => Promise<GenerateTextResult>
+  ) => Promise<GenerateTextResult | GenerateTextResultStream>
 }
 
 export type GetSupportedModelsParams = {}
@@ -33,6 +34,7 @@ export type GenerateTextParams<
   messages: GenerativeMessage[]
 
   options?: T
+  stream?: boolean
   signal: AbortSignal
 }
 
@@ -49,6 +51,16 @@ export type GenerateTextResult = {
     finishReason: string
   }
 }
+
+export type GenerateTextResultStreamChunk = {
+  content: string | Record<string, any>
+}
+
+export type GenerateTextResultStreamPayload = GenerateTextResult & {
+  finished: true
+}
+
+export type GenerateTextResultStream = stream.Readable
 
 export type ModelSpec = {
   name: string

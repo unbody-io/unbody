@@ -12,6 +12,7 @@ const promptSchema = z.object({
     .optional()
     .default([])
     .transform((data) => transformData(data)),
+  stream: z.boolean().optional().default(false),
 })
 
 const validationSchema = z.object({
@@ -107,6 +108,7 @@ const validationSchema = z.object({
     .default({
       type: 'text',
     }),
+  stream: z.boolean().optional().default(false),
 })
 
 const schema = z.discriminatedUnion('type', [promptSchema, validationSchema])

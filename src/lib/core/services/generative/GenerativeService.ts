@@ -3,6 +3,7 @@ import {
   GenerativeImageMessage,
   GenerativeTextMessage,
 } from 'src/lib/plugins-common/generative'
+import { Stream } from 'stream'
 import { Modules } from '../../modules'
 import { GenerateTextParams } from '../../modules/generative/types'
 import { Plugins } from '../../plugins'
@@ -66,15 +67,20 @@ export class GenerativeService {
               ? validated.responseFormat?.schema
               : undefined,
         },
+        stream: validated.stream,
       }),
     )
 
     if (err) throw new Error(err.message)
 
-    return {
-      content: res.content,
-      usageMetadata: res.metadata.usage,
-      finishReason: res.metadata.finishReason,
+    if (res instanceof Stream.Readable) {
+      return res
+    } else {
+      return {
+        content: res.content,
+        usageMetadata: res.metadata.usage,
+        finishReason: res.metadata.finishReason,
+      }
     }
   }
 }
