@@ -77,6 +77,8 @@ export class ProjectService implements OnApplicationBootstrap {
     keepSources?: boolean
     exit?: boolean
   }) {
+    await this.projectModel.deleteMany({})
+
     const sources = await this.sourceModel.find({})
 
     await Promise.all(
