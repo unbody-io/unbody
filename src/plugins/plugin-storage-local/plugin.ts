@@ -13,7 +13,6 @@ import {
   StoreFileParams,
   StoreFileResult,
 } from 'src/lib/plugins-common/storage/Storage.interface'
-import { z } from 'zod'
 import { Config, configSchema, Context } from './plugin.types'
 
 export const slugify = (
@@ -57,17 +56,8 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
 
   constructor() {}
 
-  initialize = async (config: Record<string, any>) => {
-    try {
-      this.config = configSchema.parse(config)
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        throw new PluginLifecycle.ConfigurationError(
-          config,
-          e.issues.map((issue) => `'${issue.path}' ${issue.message}`),
-        )
-      }
-    }
+  initialize = async (config: Config) => {
+    this.config = config
 
     if (!fs.existsSync(this.config.publicRootDir)) {
       throw new PluginLifecycle.ConfigurationError(this.config, [
