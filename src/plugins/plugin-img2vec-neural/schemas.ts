@@ -2,7 +2,7 @@ import { ImageVectorizerPlugin } from 'src/lib/plugins-common/image-vectorizer'
 import { z } from 'zod'
 
 const configSchema = z.object({
-  baseURL: z.string().url().optional(),
+  baseURL: z.string().url(),
   supportedFormats: z
     .array(z.string())
     .optional()

@@ -6,8 +6,8 @@ import {
   VectorizeParams,
   VectorizeResult,
 } from 'src/lib/plugins-common/multimodal-vectorizer'
-import { z } from 'zod'
 import { Config, Context } from './plugin.types'
+import { schemas } from './schemas'
 
 const MAX_TEXTS_PER_REQUEST = 96
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024 // 3MB
@@ -18,36 +18,13 @@ type ApiRes = {
   }
 }
 
-const vectorizeOptionsSchema = z.object({
-  model: z
-    .enum([
-      'embed-english-v3.0',
-      'embed-english-light-v3.0',
-      'embed-multilingual-v3.0',
-      'embed-multilingual-light-v3.0',
-    ])
-    .optional()
-    .default('embed-english-v3.0'),
-})
-
-const configSchema = z.object({
-  baseURL: z.string().optional(),
-  clientSecret: z.object({
-    apiKey: z.string().optional(),
-  }),
-  options: vectorizeOptionsSchema.optional(),
-})
-
 export class CohereMultimodalVectorizer
   implements PluginLifecycle, MultimodalVectorizerPlugin
 {
   private client: AxiosInstance
   private config: Config
 
-  schemas: MultimodalVectorizerPlugin['schemas'] = {
-    config: configSchema,
-    vectorizeOptions: vectorizeOptionsSchema,
-  }
+  schemas: MultimodalVectorizerPlugin['schemas'] = schemas
 
   constructor() {}
 

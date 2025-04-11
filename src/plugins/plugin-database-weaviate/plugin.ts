@@ -34,7 +34,6 @@ import weaviate, {
   WeaviateClient,
   weaviateV2,
 } from 'weaviate-client'
-import { z } from 'zod'
 import { Database } from './database'
 import { Config, Context, configSchema } from './plugin.types'
 import { SchemaManager } from './SchemaManager'
@@ -84,18 +83,8 @@ export class WeaviateDatabase implements PluginLifecycle {
 
   constructor() {}
 
-  initialize = async (config: Record<string, any>) => {
-    try {
-      this.config = configSchema.parse(config)
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        throw new PluginLifecycle.ConfigurationError(
-          config,
-          e.issues.map((issue) => `'${issue.path}' ${issue.message}`),
-        )
-      }
-      throw e
-    }
+  initialize = async (config: Config) => {
+    this.config = config
 
     const { connection } = this.config
     const auth = connection.auth

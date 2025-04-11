@@ -129,6 +129,29 @@ const providers: Provider[] = [
                 projectSettings.textVectorizer.name ===
                 error.pluginDetails.alias
               )
+            case PluginTypes.ImageVectorizer:
+              return (
+                projectSettings.imageVectorizer?.name ===
+                error.pluginDetails.alias
+              )
+            case PluginTypes.MultimodalVectorizer:
+              return (
+                projectSettings.imageVectorizer?.name ===
+                  error.pluginDetails.alias ||
+                projectSettings.textVectorizer.name ===
+                  error.pluginDetails.alias
+              )
+            case PluginTypes.Reranker:
+              return (
+                projectSettings.reranker?.name === error.pluginDetails.alias
+              )
+            case PluginTypes.Generative:
+              return (
+                !!projectSettings.generative &&
+                projectSettings.generative.name === error.pluginDetails.alias
+              )
+            case PluginTypes.FileParser:
+              return true
             default:
               return false
           }

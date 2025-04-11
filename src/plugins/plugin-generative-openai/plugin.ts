@@ -9,8 +9,8 @@ import {
   GetSupportedModelsParams,
   GetSupportedModelsResult,
 } from 'src/lib/plugins-common/generative'
-import { z } from 'zod'
 import { Config, Context, Model } from './plugin.types'
+import { schemas } from './schemas'
 
 const models: Record<
   Model,
@@ -109,37 +109,10 @@ const models: Record<
   },
 }
 
-const configSchema = z.object({
-  clientSecret: z.object({
-    apiKey: z.string(),
-    project: z.string().optional(),
-    organization: z.string().optional(),
-  }),
-})
-
-const generateTextOptionsSchema = z.object({
-  model: z
-    .enum<Model, Readonly<[Model, ...Model[]]>>(Object.keys(models) as any)
-    .optional(),
-  topP: z.number().optional(),
-  maxTokens: z.number().optional(),
-  temperature: z.number().optional(),
-  presencePenalty: z.number().optional(),
-  frequencyPenalty: z.number().optional(),
-  schema: z.record(z.any()).optional(),
-  responseFormat: z
-    .enum(['text', 'json_object', 'json_schema'])
-    .optional()
-    .default('text'),
-})
-
 export class GenerativeOpenAI implements PluginLifecycle, GenerativePlugin {
   private config: Config
 
-  schemas: GenerativePlugin['schemas'] = {
-    config: configSchema,
-    generateTextOptions: generateTextOptionsSchema,
-  }
+  schemas: GenerativePlugin['schemas'] = schemas
 
   constructor() {}
 

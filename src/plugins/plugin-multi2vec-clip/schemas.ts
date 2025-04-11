@@ -2,7 +2,7 @@ import { MultimodalVectorizerPlugin } from 'src/lib/plugins-common/multimodal-ve
 import { z } from 'zod'
 
 const config = z.object({
-  baseURL: z.string().url().optional(),
+  baseURL: z.string().url(),
   supportedImageFormats: z
     .array(z.string())
     .optional()

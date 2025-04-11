@@ -10,8 +10,8 @@ import {
   EnhancerPlugin,
   EnhancerPluginContext,
 } from 'src/lib/plugins-common/enhancer'
-import { z } from 'zod'
 import { Config, Context, EnhancerArgs, EnhancerResult } from './plugin.types'
+import { schemas } from './schemas'
 
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024 // 3MB
 
@@ -53,34 +53,6 @@ const reduceImageSize = async (image: Buffer) => {
   return sharpImage
 }
 
-const configSchema = z.object({
-  clientSecret: z.object({
-    openai: z
-      .object({
-        apiKey: z.string(),
-        project: z.string().optional(),
-        organization: z.string().optional(),
-      })
-      .optional(),
-  }),
-})
-
-const argsSchema = z.object({
-  schema: z.any(),
-  model: z.enum(['openai-gpt-4o', 'openai-gpt-4o-mini']),
-  prompt: z.string(),
-  maxTokens: z.number().optional(),
-  temperature: z.number().optional(),
-  images: z
-    .array(
-      z.object({
-        url: z.string().url(),
-      }),
-    )
-    .optional()
-    .default([]),
-})
-
 const downloadImage = async (url: string) => {
   if (url.startsWith('data:image')) {
     return url
@@ -108,10 +80,7 @@ const downloadImage = async (url: string) => {
 export class Summarizer implements PluginLifecycle, EnhancerPlugin {
   private config: Config
 
-  schemas: EnhancerPlugin['schemas'] = {
-    config: configSchema,
-    args: argsSchema,
-  }
+  schemas: EnhancerPlugin['schemas'] = schemas
 
   constructor() {}
 

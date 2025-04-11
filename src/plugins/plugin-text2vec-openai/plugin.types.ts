@@ -1,23 +1,12 @@
 import { PluginContext } from 'src/lib/plugins-common'
+import type { z } from 'zod'
+import { model, type schemas } from './schemas'
 
-export type Config = {
-  baseURL?: string
+export type Config = z.infer<typeof schemas.config>
 
-  clientSecret: {
-    apiKey?: string
-    project?: string
-    organization?: string
-  }
+export type VectorizeOptions = z.infer<typeof schemas.vectorizeOptions>
 
-  options?: {
-    model?: Model
-    autoTrim?: boolean
-  }
-}
-
-export type Model =
-  'text-embedding-ada-002'
-  | 'text-embedding-3-large'
-  | 'text-embedding-3-small'
+export const Models = model.enum
+export type Model = keyof typeof Models
 
 export type Context = PluginContext
