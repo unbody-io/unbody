@@ -1,17 +1,11 @@
 import { PluginContext } from 'src/lib/plugins-common'
+import { z } from 'zod'
+import { model, schemas } from './schemas'
 
-export type Config = {
-  baseURL?: string
+export type Config = z.infer<typeof schemas.config>
+export type RerankOptions = z.infer<typeof schemas.rerankOptions>
 
-  clientSecret: {
-    apiKey: string
-  }
-
-  options?: RerankOptions
-}
-
-export type RerankOptions = {
-  model: 'rerank-v3.5' | 'rerank-english-v3.0' | 'rerank-multilingual-v3.0'
-}
+export const Models = model.enum
+export type Model = keyof typeof Models
 
 export type Context = PluginContext
