@@ -11,7 +11,7 @@ import { z } from 'zod'
 import { Config, Context } from './plugin.types'
 
 const configSchema = z.object({
-  baseURL: z.string().optional(),
+  baseURL: z.string().url(),
 })
 
 export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
