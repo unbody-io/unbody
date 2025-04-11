@@ -7,21 +7,14 @@ import {
   RerankerPlugin,
   RerankerPluginContext,
 } from 'src/lib/plugins-common/reranker/Reranker.interface'
-import { z } from 'zod'
 import { Config, Context } from './plugin.types'
-
-const configSchema = z.object({
-  baseURL: z.string().optional(),
-})
+import { schemas } from './schemas'
 
 export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
   private config: Config
   private client: AxiosInstance
 
-  schemas: RerankerPlugin['schemas'] = {
-    config: configSchema,
-    rerankOptions: z.object({}),
-  }
+  schemas: RerankerPlugin['schemas'] = schemas
 
   constructor() {}
 
