@@ -1,6 +1,7 @@
 # Unbody
+[Unbody](https://unbody.io/) is building the [Supabase](https://supabase.com/) of the AI era.
 
-[Unbody](https://unbody.io/) will be the [Supabase](https://supabase.com/) of AI Era. We're continuing our journey out in the open. The project is in early development, so expect some rough edges.
+Building AI features today is a complex and fragmented process. Unbody fixes that. We're continuing our journey out in the open. The project is in early development, so expect some rough edges.
 
 ## Getting Started
 
