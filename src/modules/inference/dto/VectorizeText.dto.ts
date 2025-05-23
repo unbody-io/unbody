@@ -11,7 +11,7 @@ export class VectorizeTextDto {
   @ApiProperty({})
   @IsArray()
   @IsString({ each: true })
-  inputs: string[]
+  inputs: string[] = []
 
   @ApiProperty({})
   @IsObject()

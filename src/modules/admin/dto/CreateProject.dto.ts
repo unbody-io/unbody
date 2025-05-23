@@ -7,5 +7,5 @@ export class CreateProjectDto {
     description: 'Project name',
   })
   @IsString()
-  name: string
+  name!: string
 }

@@ -25,11 +25,11 @@ export type PluginInstanceMethods<T> = {
 export class PluginInstance<
   C extends PluginInstanceBaseConfig = PluginInstanceBaseConfig,
 > {
-  private _database: DatabaseAPI
-  private _cacheStore: CacheStoreAPI
-  private _fileStorage: FileStorageAPI
-  private _jobScheduler: JobSchedulerAPI
-  private _webhookRegistry: WebhookRegistryAPI
+  private _database: DatabaseAPI | undefined = undefined
+  private _cacheStore: CacheStoreAPI | undefined = undefined
+  private _fileStorage: FileStorageAPI | undefined = undefined
+  private _jobScheduler: JobSchedulerAPI | undefined = undefined
+  private _webhookRegistry: WebhookRegistryAPI | undefined = undefined
 
   constructor(
     protected readonly config: C,

@@ -111,7 +111,7 @@ const metadataFromAttributes = (attributes: Record<string, any>) => {
 }
 
 export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
     config: z.object({}),

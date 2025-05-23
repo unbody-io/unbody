@@ -44,7 +44,7 @@ export const slugify = (
   _slugify(text, { strict: true, trim: true, lower: true, ...(options ?? {}) })
 
 export class HTMLFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = schemas
 

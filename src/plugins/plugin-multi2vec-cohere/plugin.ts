@@ -21,8 +21,8 @@ type ApiRes = {
 export class CohereMultimodalVectorizer
   implements PluginLifecycle, MultimodalVectorizerPlugin
 {
-  private client: AxiosInstance
-  private config: Config
+  private client!: AxiosInstance
+  private config!: Config
 
   schemas: MultimodalVectorizerPlugin['schemas'] = schemas
 

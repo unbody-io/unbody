@@ -37,7 +37,7 @@ export const slugify = (
   _slugify(text, { strict: true, trim: true, lower: true, ...(options ?? {}) })
 
 export class GoogleDocFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
     config: z.object({}),

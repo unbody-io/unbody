@@ -19,8 +19,8 @@ type ApiRes = {
 export class CohereTextVectorizer
   implements PluginLifecycle, TextVectorizerPlugin
 {
-  private client: AxiosInstance
-  private config: Config
+  private client!: AxiosInstance
+  private config!: Config
 
   schemas: TextVectorizerPlugin['schemas'] = schemas
 

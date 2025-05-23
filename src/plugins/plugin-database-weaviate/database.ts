@@ -32,8 +32,6 @@ type InsertPayload = {
   }>
 }
 
-type PatchPayload = InsertPayload & {}
-
 export class Database {
   public schemaManager: SchemaManager
 
@@ -48,7 +46,7 @@ export class Database {
     }[]
   > = new Map()
 
-  private _collections: Record<string, CollectionConfig>
+  private _collections!: Record<string, CollectionConfig>
   private _graphQLPaths: Record<string, string> = {}
   private _graphql: GraphQLClient
 

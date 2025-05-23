@@ -50,7 +50,7 @@ export const evaluate = async <T = any>(
 }
 
 export class EnhancerStepState {
-  name: string
+  name: string = ''
   run: boolean = false
   failed: boolean = false
   taskId?: string

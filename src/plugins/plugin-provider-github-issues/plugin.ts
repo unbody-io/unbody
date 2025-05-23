@@ -88,7 +88,7 @@ export class GithubIssuesProvider
     WebhookConsumer<Context>
 {
   config!: Config
-  private app: App
+  private app!: App
 
   schemas: ProviderPlugin['schemas'] = {
     config: configSchema,

@@ -8,38 +8,38 @@ import { UploadFileOptions } from 'src/lib/plugins-common/resources/file-store'
 })
 export class PluginFileCollectionSchema {
   @Prop()
-  pluginId: string
+  pluginId!: string
 
   @Prop()
-  key: string
+  key!: string
 
   @Prop()
-  contentType: string
+  contentType!: string
 
   @Prop({})
-  size: number
+  size!: number
 
   @Prop({
     default: {},
     type: SchemaTypes.Mixed,
   })
-  metadata: Record<string, any>
+  metadata!: Record<string, any>
 
   @Prop({
     type: SchemaTypes.Mixed,
   })
-  payload: Record<string, any> // Storage specific payload
+  payload!: Record<string, any> // Storage specific payload
 
   @Prop({
     type: SchemaTypes.Mixed,
   })
-  options: UploadFileOptions
+  options!: UploadFileOptions
 
   @Prop()
-  createdAt: Date
+  createdAt!: Date
 
   @Prop()
-  updatedAt: Date
+  updatedAt!: Date
 
   @Prop()
   expiresAt?: Date

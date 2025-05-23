@@ -72,10 +72,10 @@ const v3Client = async (config: ClientParams) => {
 }
 
 export class WeaviateDatabase implements PluginLifecycle {
-  private config: Config
+  private config!: Config
 
-  private v3: WeaviateClient
-  private v2: ReturnType<typeof weaviateV2.client>
+  private v3!: WeaviateClient
+  private v2!: ReturnType<typeof weaviateV2.client>
 
   schemas: FileParserPlugin['schemas'] = {
     config: configSchema,

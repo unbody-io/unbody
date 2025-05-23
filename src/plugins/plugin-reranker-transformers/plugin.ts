@@ -15,8 +15,8 @@ const configSchema = z.object({
 })
 
 export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
-  private config: Config
-  private client: AxiosInstance
+  private config!: Config
+  private client!: AxiosInstance
 
   schemas: RerankerPlugin['schemas'] = {
     config: configSchema,

@@ -11,8 +11,8 @@ import { Config, Context } from './plugin.types'
 import { schemas } from './schemas'
 
 export class Img2VecNeural implements PluginLifecycle, ImageVectorizerPlugin {
-  private config: Config
-  private client: AxiosInstance
+  private config!: Config
+  private client!: AxiosInstance
 
   schemas: ImageVectorizerPlugin['schemas'] = schemas
 

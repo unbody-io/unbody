@@ -78,7 +78,7 @@ const downloadImage = async (url: string) => {
 }
 
 export class Summarizer implements PluginLifecycle, EnhancerPlugin {
-  private config: Config
+  private config!: Config
 
   schemas: EnhancerPlugin['schemas'] = schemas
 

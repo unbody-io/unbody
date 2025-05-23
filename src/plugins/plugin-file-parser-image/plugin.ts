@@ -17,7 +17,7 @@ import { Config, Context } from './plugin.types'
 const configSchema = z.object({})
 
 export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
     config: configSchema,

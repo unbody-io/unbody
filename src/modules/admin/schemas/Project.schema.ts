@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document, SchemaTypes } from 'mongoose'
+import { SchemaTypes } from 'mongoose'
 import { CoreTypes } from 'src/lib/core-types'
 import * as uuid from 'uuid'
 
@@ -14,29 +14,29 @@ export class ProjectSchemaClass {
     default: () => uuid.v4().toString(),
     cast: String,
   })
-  _id: string
+  _id!: string
 
   @Prop({
     required: true,
   })
-  name: string
+  name!: string
 
   @Prop({
     required: true,
     enum: Object.values(CoreTypes.Project.States),
   })
-  state: CoreTypes.Project.State
+  state!: CoreTypes.Project.State
 
   @Prop({
-    type: SchemaTypes.Mixed
+    type: SchemaTypes.Mixed,
   })
-  settings: CoreTypes.ProjectSettings.Document
+  settings!: CoreTypes.ProjectSettings.Document
 
   @Prop()
-  createdAt: Date
+  createdAt!: Date
 
   @Prop()
-  updatedAt: Date
+  updatedAt!: Date
 
   @Prop()
   pausedAt?: Date
@@ -45,4 +45,4 @@ export class ProjectSchemaClass {
   restoredAt?: Date
 }
 
-export const ProjectSchema = SchemaFactory.createForClass(ProjectSchemaClass) 
+export const ProjectSchema = SchemaFactory.createForClass(ProjectSchemaClass)

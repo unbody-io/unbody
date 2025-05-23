@@ -15,7 +15,7 @@ export class Website {
     tokenization: 'field',
     description: 'The source identifier',
   })
-  sourceId: string
+  sourceId!: string
 
   @Property({
     type: 'text',
@@ -43,7 +43,7 @@ export class Website {
     vectorize: false,
     required: true,
   })
-  url: string
+  url!: string
 
   @Property({
     type: 'text',
@@ -51,7 +51,7 @@ export class Website {
     required: true,
     tokenization: 'field',
   })
-  originalName: string
+  originalName!: string
 
   @Property({
     type: 'text',
@@ -59,7 +59,7 @@ export class Website {
     vectorize: false,
     tokenization: 'field',
   })
-  mimeType: string
+  mimeType!: string
 
   @Property({
     type: 'text',
@@ -67,13 +67,13 @@ export class Website {
     vectorize: false,
     required: true,
   })
-  ext: string
+  ext!: string
 
   @Property({
     type: 'int',
     required: true,
   })
-  size: number
+  size!: number
 
   @Property({
     type: 'text',
@@ -82,7 +82,7 @@ export class Website {
     vectorize: false,
     tokenization: 'field',
   })
-  path: string[]
+  path!: string[]
 
   @Property({
     type: 'text',
@@ -91,25 +91,25 @@ export class Website {
     vectorize: false,
     tokenization: 'field',
   })
-  pathString: string
+  pathString!: string
 
   @Property({
     type: 'text',
     required: true,
   })
-  slug: string
+  slug!: string
 
   @Property({
     type: 'text',
     required: true,
   })
-  title: string
+  title!: string
 
   @Property({
     type: 'text',
     required: true,
   })
-  description: string
+  description!: string
 
   @Property({
     type: 'text',
@@ -126,7 +126,7 @@ export class Website {
     array: true,
     required: true,
   })
-  keywords: string[]
+  keywords!: string[]
 
   @Property({
     type: 'text',
@@ -149,7 +149,7 @@ export class Website {
     onDelete: 'CASCADE',
     onUpdate: 'UPDATE_REFERENCE',
   })
-  pages: Array<WebPage>
+  pages!: Array<WebPage>
 
   @Property({
     type: 'text',

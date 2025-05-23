@@ -11,7 +11,7 @@ export class ExecGraphQLQueryDto {
     required: true,
   })
   @IsString()
-  query: string
+  query!: string
 
   @ApiProperty({
     example: {},

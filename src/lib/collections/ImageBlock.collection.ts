@@ -17,7 +17,7 @@ export class ImageBlock {
     tokenization: 'field',
     description: 'The source identifier',
   })
-  sourceId: string
+  sourceId!: string
 
   @Property({
     type: 'text',
@@ -45,7 +45,7 @@ export class ImageBlock {
     vectorize: false,
     required: true,
   })
-  url: string
+  url!: string
 
   @Property({
     type: 'text',
@@ -53,7 +53,7 @@ export class ImageBlock {
     required: true,
     tokenization: 'field',
   })
-  originalName: string
+  originalName!: string
 
   @Property({
     type: 'text',
@@ -61,7 +61,7 @@ export class ImageBlock {
     vectorize: false,
     tokenization: 'field',
   })
-  mimeType: string
+  mimeType!: string
 
   @Property({
     type: 'text',
@@ -69,13 +69,13 @@ export class ImageBlock {
     vectorize: false,
     required: true,
   })
-  ext: string
+  ext!: string
 
   @Property({
     type: 'int',
     required: true,
   })
-  size: number
+  size!: number
 
   @Property({
     type: 'text',
@@ -84,7 +84,7 @@ export class ImageBlock {
     vectorize: false,
     tokenization: 'field',
   })
-  path: string[]
+  path!: string[]
 
   @Property({
     type: 'text',
@@ -93,13 +93,13 @@ export class ImageBlock {
     vectorize: false,
     tokenization: 'field',
   })
-  pathString: string
+  pathString!: string
 
   @Property({
     type: 'int',
     required: true,
   })
-  order: number
+  order!: number
 
   @Property({
     type: 'text',
@@ -132,13 +132,13 @@ export class ImageBlock {
     type: 'int',
     required: false,
   })
-  width: number
+  width!: number
 
   @Property({
     type: 'int',
     required: false,
   })
-  height: number
+  height!: number
 
   @Property({
     type: 'blob',
@@ -168,7 +168,7 @@ export class ImageBlock {
     onUpdate: 'UPDATE_REFERENCE',
     onDelete: 'REMOVE_REFERENCE',
   })
-  document: Array<GoogleDoc>
+  document!: Array<GoogleDoc>
 
   @Property({
     type: 'text',

@@ -14,16 +14,16 @@ export class PluginStateCollectionSchema {
     default: () => uuid.v4().toString(),
     cast: String,
   })
-  _id: string
+  _id!: string
 
   @Prop({})
-  alias: string
+  alias!: string
 
   @Prop({
     required: true,
     type: SchemaTypes.Mixed,
   })
-  manifest: PluginManifest
+  manifest!: PluginManifest
 }
 
 export type PluginStateCollectionDocument = PluginStateCollectionSchema &
