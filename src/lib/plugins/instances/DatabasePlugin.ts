@@ -33,14 +33,14 @@ export class DatabasePluginInstance extends PluginInstance<DatabasePluginInstanc
   ]
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: DatabasePluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: DatabasePluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, DatabasePluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.Database
   }
 

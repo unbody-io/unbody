@@ -2,9 +2,9 @@ import * as jq from 'node-jq'
 import { Formatter } from './Formattter'
 
 export class JqFormatter extends Formatter<{ expression: string }> {
-  public name: string = 'jq'
+  public override name: string = 'jq'
 
-  public format = async (
+  public override format = async (
     expression: string,
     data: Record<string, any> | Record<string, any>[],
     args: Record<string, any>,
@@ -19,5 +19,6 @@ export class JqFormatter extends Formatter<{ expression: string }> {
     return res
   }
 
-  public validateOptions = async (options: { expression: string }) => options
+  public override validateOptions = async (options: { expression: string }) =>
+    options
 }

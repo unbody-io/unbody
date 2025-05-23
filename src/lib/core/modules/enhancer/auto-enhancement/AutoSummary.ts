@@ -7,22 +7,22 @@ export class AutoSummary extends AutoEnhancer {
     (collection) => collection.name,
   ).filter((collection) => !['TextBlock', 'ImageBlock'].includes(collection))
 
-  get name() {
+  override get name() {
     return 'AutoSummary'
   }
 
-  get enabled() {
+  override get enabled() {
     return (
       AutoSummary.COLLECTIONS.includes(this.collection) &&
       !!this.settings.autoSummary?.name
     )
   }
 
-  get pipelines() {
+  override get pipelines() {
     return []
   }
 
-  get steps() {
+  override get steps() {
     const steps: UnbodyProjectSettings.Enhancement.Step[] = []
 
     const settings = this.settings.autoSummary

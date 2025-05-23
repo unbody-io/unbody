@@ -7,15 +7,15 @@ import { AutoSummary } from './AutoSummary'
 import { AutoVision } from './AutoVision'
 
 export class AutoEnhancement extends AutoEnhancer {
-  get name() {
+  override get name() {
     return 'AutoEnhancement'
   }
 
   private enhancers: AutoEnhancer[] = []
 
   constructor(
-    protected readonly collection: string,
-    protected settings: UnbodyProjectSettingsDoc,
+    protected override readonly collection: string,
+    protected override settings: UnbodyProjectSettingsDoc,
   ) {
     super(collection, settings)
 
@@ -25,11 +25,11 @@ export class AutoEnhancement extends AutoEnhancer {
     ].filter((enhancer) => enhancer.enabled)
   }
 
-  get enabled() {
+  override get enabled() {
     return false
   }
 
-  get pipelines(): UnbodyProjectSettings.Enhancement.Pipeline[] {
+  override get pipelines(): UnbodyProjectSettings.Enhancement.Pipeline[] {
     const pipelines: UnbodyProjectSettings.Enhancement.Pipeline[] = []
 
     const used = new Set<string>()

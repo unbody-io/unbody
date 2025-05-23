@@ -32,9 +32,9 @@ export class ProviderPluginInstance extends PluginInstance<ProviderPluginInstanc
   ]
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: ProviderPluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: ProviderPluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, ProviderPluginInstance.methods)
   }
@@ -54,7 +54,7 @@ export class ProviderPluginInstance extends PluginInstance<ProviderPluginInstanc
     )
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.Provider
   }
 }

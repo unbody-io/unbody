@@ -17,14 +17,14 @@ export class GenerativePluginInstance extends PluginInstance<GenerativePluginIns
   ]
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: GenerativePluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: GenerativePluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, GenerativePluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.Generative
   }
 

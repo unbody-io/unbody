@@ -21,14 +21,14 @@ export class FileParserPluginInstance extends PluginInstance<FileParserPluginIns
   ]
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: FileParserPluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: FileParserPluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, FileParserPluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.FileParser
   }
 

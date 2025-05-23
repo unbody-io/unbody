@@ -15,14 +15,14 @@ export class MultimodalVectorizerPluginInstance extends PluginInstance<Multimoda
   static methods: Array<keyof MultimodalVectorizerPlugin> = ['vectorize']
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: MultimodalVectorizerPluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: MultimodalVectorizerPluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, MultimodalVectorizerPluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.MultimodalVectorizer
   }
 }

@@ -17,14 +17,14 @@ export class EnhancerPluginInstance extends PluginInstance<EnhancerPluginInstanc
   static methods: Array<keyof EnhancerPlugin> = ['enhance']
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: EnhancerPluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: EnhancerPluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, EnhancerPluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.Enhancer
   }
 

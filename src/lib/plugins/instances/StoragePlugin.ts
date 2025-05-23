@@ -21,14 +21,14 @@ export class StoragePluginInstance extends PluginInstance<StoragePluginInstanceC
   ]
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: StoragePluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: StoragePluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, StoragePluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.Storage
   }
 }

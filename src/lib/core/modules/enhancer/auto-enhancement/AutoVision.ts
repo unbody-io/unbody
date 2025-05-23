@@ -84,15 +84,15 @@ const DEFAULT_PROMPT = `For the given image, provide the following information:
 `
 
 export class AutoVision extends AutoEnhancer {
-  get name() {
+  override get name() {
     return 'AutoVision'
   }
 
-  get enabled() {
+  override get enabled() {
     return this.collection === 'ImageBlock' && !!this.settings.autoVision?.name
   }
 
-  get pipelines() {
+  override get pipelines() {
     const settings = this.settings.autoVision
     if (!settings) return []
 
