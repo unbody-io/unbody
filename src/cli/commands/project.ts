@@ -44,7 +44,10 @@ export async function destroyProject() {
       console.log('Project deleted successfully.')
       process.exit(0)
     }
-    console.error('Failed to delete project:', error.message)
+    console.error(
+      'Failed to delete project:',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
     process.exit(1)
   }
 }

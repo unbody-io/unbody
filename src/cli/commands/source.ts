@@ -17,7 +17,10 @@ export const listSources = new Command('list')
       console.log('\nSources:')
       console.log(sources)
     } catch (error) {
-      console.error('Error listing sources:', error.message)
+      console.error(
+        'Error listing sources:',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
       process.exit(1)
     }
   })
@@ -81,7 +84,10 @@ export const addSource = new Command('add')
       )
       console.log('http://localhost:8233/')
     } catch (error) {
-      console.error('Error adding source:', error.message)
+      console.error(
+        'Error adding source:',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
       process.exit(1)
     }
   })
@@ -122,7 +128,10 @@ export const deleteSource = new Command('delete')
         console.log('Deletion cancelled.')
       }
     } catch (error) {
-      console.error('Error deleting source:', error.message)
+      console.error(
+        'Error deleting source:',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
       process.exit(1)
     }
   })
@@ -172,7 +181,10 @@ export const rebuildSource = new Command('rebuild')
         console.log('Rebuild cancelled.')
       }
     } catch (error) {
-      console.error('Error rebuilding source:', error.message)
+      console.error(
+        'Error rebuilding source:',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
       process.exit(1)
     }
   })

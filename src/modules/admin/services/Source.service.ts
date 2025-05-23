@@ -123,7 +123,9 @@ export class SourceService {
         isValid: true,
       }
     } catch (error) {
-      throw new BadRequestException(error.message)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      throw new BadRequestException(errorMessage)
     }
   }
 
@@ -145,7 +147,9 @@ export class SourceService {
 
       return res
     } catch (error) {
-      throw new BadRequestException(error.message)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      throw new BadRequestException(errorMessage)
     }
   }
 
@@ -175,7 +179,9 @@ export class SourceService {
 
       return res
     } catch (error) {
-      throw new BadRequestException(error.message)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      throw new BadRequestException(errorMessage)
     }
   }
 

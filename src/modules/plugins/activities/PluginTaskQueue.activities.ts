@@ -91,8 +91,10 @@ export class PluginTaskQueueActivities implements OnApplicationBootstrap {
         retryOptions: job.retryOptions,
       } satisfies Job)
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
       throw new ApplicationFailure(
-        `Error running job ${job.jobId}: ${error.message}`,
+        `Error running job ${job.jobId}: ${errorMessage}`,
         'job_execution_error',
       )
     }

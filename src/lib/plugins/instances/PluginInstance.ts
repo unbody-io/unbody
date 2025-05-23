@@ -1,3 +1,4 @@
+import { settle } from 'src/lib/core-utils'
 import { PluginEvent } from 'src/lib/plugins-common'
 import {
   CacheStoreAPI,
@@ -333,26 +334,33 @@ export class PluginInstance<
     return async (params: T): Promise<R> => {
       const tmpDir = await this.plugin.runner.createTempDir()
 
-      const res = await this._runTask<T, R>(
-        task,
-        {
-          id: this.plugin.id,
-          tempDir: tmpDir.path,
-          logger: this.config.logger || console,
-          getResource: this._getResource,
-          dispatchEvent: (event: PluginEvent<any, any>) =>
-            this.resources.eventEmitter.emit(
-              'event',
-              event,
-              this.plugin.id,
-              this.plugin.alias,
-              this.plugin.manifest.type,
-            ),
-        },
-        params,
+      const [res, err] = await settle(() =>
+        this._runTask<T, R>(
+          task,
+          {
+            id: this.plugin.id,
+            tempDir: tmpDir.path,
+            logger: this.config.logger || console,
+            getResource: this._getResource,
+            dispatchEvent: (event: PluginEvent<any, any>) =>
+              this.resources.eventEmitter.emit(
+                'event',
+                event,
+                this.plugin.id,
+                this.plugin.alias,
+                this.plugin.manifest.type,
+              ),
+          },
+          params,
+        ),
       )
 
       await tmpDir.cleanup()
+
+      if (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error')
+        throw error
+      }
 
       return res
     }

@@ -20,6 +20,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true
+    "useUnknownInCatchVariables": true
   }
 }
