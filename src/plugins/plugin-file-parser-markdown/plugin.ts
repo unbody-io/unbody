@@ -221,6 +221,8 @@ export class MarkdownFileParser
             level: Number.parseInt(tagName[1], 10),
           }
         }
+
+        return null
       })
       .filter((item) => !!item)
 

@@ -325,6 +325,8 @@ export class EnhancerPipelineState {
 
       if (step) return step
     }
+
+    return undefined
   }
 
   get baseContext() {

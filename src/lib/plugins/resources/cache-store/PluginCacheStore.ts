@@ -37,7 +37,7 @@ export class PluginCacheStore {
   ) {
     const encodedValue = this.encode(value, options?.encoding)
     if (!options?.ttl)
-      return this.client.set(`${pluginId}:${key}`, encodedValue)
+      return void this.client.set(`${pluginId}:${key}`, encodedValue)
 
     this.client.set(`${pluginId}:${key}`, encodedValue, 'EX', options.ttl)
   }
