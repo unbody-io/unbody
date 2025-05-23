@@ -8,7 +8,7 @@ export class Formatters {
     this.registerFormatter(new JqFormatter())
   }
 
-  public registerFormatter = (formatter: Formatter) => {
+  public registerFormatter = (formatter: Formatter<any>) => {
     this.formatters[formatter.name] = formatter
   }
 

@@ -17,7 +17,9 @@ const MAX_TOKENS = {
 }
 
 export class OpenAITextVectorizer
-  implements PluginLifecycle, TextVectorizerPlugin
+  implements
+    PluginLifecycle<Context, Config>,
+    TextVectorizerPlugin<Context, VectorizeOptions>
 {
   private client!: OpenAI
   private config!: Config

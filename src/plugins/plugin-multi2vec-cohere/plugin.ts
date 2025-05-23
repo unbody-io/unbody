@@ -19,7 +19,9 @@ type ApiRes = {
 }
 
 export class CohereMultimodalVectorizer
-  implements PluginLifecycle, MultimodalVectorizerPlugin
+  implements
+    PluginLifecycle<Context, Config>,
+    MultimodalVectorizerPlugin<Context, Required<Config>['options']>
 {
   private client!: AxiosInstance
   private config!: Config

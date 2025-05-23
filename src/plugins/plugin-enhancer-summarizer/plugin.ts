@@ -7,7 +7,6 @@ import {
   EnhanceParams,
   EnhanceResult,
   EnhancerPlugin,
-  EnhancerPluginContext,
 } from 'src/lib/plugins-common/enhancer'
 import {
   Config,
@@ -32,7 +31,11 @@ INPUT:
 SUMMARY:
 `
 
-export class Summarizer implements PluginLifecycle, EnhancerPlugin {
+export class Summarizer
+  implements
+    PluginLifecycle<Context, Config>,
+    EnhancerPlugin<Context, SummarizerArgs>
+{
   private config!: Config
 
   schemas: EnhancerPlugin['schemas'] = schemas
@@ -48,7 +51,7 @@ export class Summarizer implements PluginLifecycle, EnhancerPlugin {
   destroy = async (ctx: Context) => {}
 
   enhance = async (
-    ctx: EnhancerPluginContext,
+    ctx: Context,
     params: EnhanceParams<SummarizerArgs>,
   ): Promise<EnhanceResult<SummarizerResult>> => {
     const res = await this._summarize(params.args)

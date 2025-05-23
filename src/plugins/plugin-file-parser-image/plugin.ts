@@ -16,7 +16,9 @@ import { Config, Context } from './plugin.types'
 
 const configSchema = z.object({})
 
-export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
+export class ImageFileParser
+  implements PluginLifecycle<Context, Config>, FileParserPlugin<Context>
+{
   private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
@@ -34,7 +36,7 @@ export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
   destroy = async (ctx: Context) => {}
 
   parseFile = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ParseFileParams,
   ): Promise<ParseFileResult> => {
     const fileBuffer = Buffer.isBuffer(params.file)
@@ -65,7 +67,7 @@ export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
   }
 
   processFileRecord = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ProcessFileRecordParams,
   ): Promise<ProcessFileRecordResult> => {
     return {

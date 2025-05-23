@@ -109,7 +109,9 @@ const models: Record<
   },
 }
 
-export class GenerativeOpenAI implements PluginLifecycle, GenerativePlugin {
+export class GenerativeOpenAI
+  implements PluginLifecycle<Context, Config>, GenerativePlugin<Context>
+{
   private config!: Config
 
   schemas: GenerativePlugin['schemas'] = schemas

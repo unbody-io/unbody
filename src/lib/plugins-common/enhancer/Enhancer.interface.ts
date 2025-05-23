@@ -7,13 +7,14 @@ export type EnhancerPluginContext = PluginContext & {
 
 export interface EnhancerPlugin<
   C extends PluginContext = EnhancerPluginContext,
+  A extends Record<string, any> = Record<string, any>,
 > {
   schemas: {
     config: z.ZodObject<any, any, any>
     args: z.ZodObject<any, any, any>
   }
 
-  enhance: (ctx: C, params: EnhanceParams) => Promise<EnhanceResult>
+  enhance: (ctx: C, params: EnhanceParams<A>) => Promise<EnhanceResult>
 }
 
 export type EnhanceParams<T extends Record<string, any> = Record<string, any>> =

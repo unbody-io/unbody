@@ -7,13 +7,14 @@ export type MultimodalVectorizerPluginContext = PluginContext & {
 
 export interface MultimodalVectorizerPlugin<
   C extends PluginContext = MultimodalVectorizerPluginContext,
+  A extends Record<string, any> = Record<string, any>,
 > {
   schemas: {
     config: z.ZodObject<any, any, any>
     vectorizeOptions?: z.ZodObject<any, any, any>
   }
 
-  vectorize: (ctx: C, params: VectorizeParams) => Promise<VectorizeResult>
+  vectorize: (ctx: C, params: VectorizeParams<A>) => Promise<VectorizeResult>
 }
 
 export type VectorizeParams<

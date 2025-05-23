@@ -83,7 +83,7 @@ const configSchema = z
 
 export class GithubIssuesProvider
   implements
-    PluginLifecycle<PluginContext, Config>,
+    PluginLifecycle<Context, Config>,
     ProviderPlugin<Context>,
     WebhookConsumer<Context>
 {

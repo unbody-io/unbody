@@ -73,7 +73,7 @@ const entrypointSchema = z.object({
 })
 
 export class CrawleeProvider
-  implements PluginLifecycle<PluginContext, Config>, ProviderPlugin<Context>
+  implements PluginLifecycle<Context, Config>, ProviderPlugin<Context>
 {
   config!: Config
 

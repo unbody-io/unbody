@@ -33,7 +33,9 @@ const decodeFilename = (file: string) => {
   return [id, filename]
 }
 
-export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
+export class LocalStoragePlugin
+  implements PluginLifecycle<Context, Config>, StoragePlugin<Context>
+{
   private config!: Config
   private tree: Record<
     string,

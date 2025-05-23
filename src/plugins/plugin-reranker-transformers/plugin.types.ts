@@ -1,7 +1,7 @@
-import { PluginContext } from 'src/lib/plugins-common'
+import { RerankerPluginContext } from 'src/lib/plugins-common/reranker'
 
 export type Config = {
   baseURL?: string
 }
 
-export type Context = PluginContext
+export type Context = RerankerPluginContext

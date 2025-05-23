@@ -1,4 +1,4 @@
-import { PluginContext } from 'src/lib/plugins-common'
+import { TextVectorizerPluginContext } from 'src/lib/plugins-common/text-vectorizer'
 import type { z } from 'zod'
 import { model, schemas } from './schemas'
 
@@ -9,4 +9,4 @@ export type VectorizeOptions = z.infer<typeof schemas.vectorizeOptions>
 export const Models = model.Enum
 export type Model = keyof typeof model.enum
 
-export type Context = PluginContext
+export type Context = TextVectorizerPluginContext

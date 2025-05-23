@@ -5,6 +5,7 @@ import {
   ConfigureDatabaseResult,
   CountSourceRecordsParams,
   CountSourceRecordsResult,
+  DatabasePlugin,
   DeleteRecordParams,
   DeleteRecordResult,
   EraseDatabaseParams,
@@ -71,7 +72,9 @@ const v3Client = async (config: ClientParams) => {
   }
 }
 
-export class WeaviateDatabase implements PluginLifecycle {
+export class WeaviateDatabase
+  implements PluginLifecycle<Context, Config>, DatabasePlugin<Context>
+{
   private config!: Config
 
   private v3!: WeaviateClient

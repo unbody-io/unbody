@@ -50,7 +50,7 @@ const entrypointSchema = z.object({
 })
 
 export class LocalFolderProvider
-  implements PluginLifecycle<PluginContext, Config>, ProviderPlugin<Context>
+  implements PluginLifecycle<Context, Config>, ProviderPlugin<Context>
 {
   config!: Config
 

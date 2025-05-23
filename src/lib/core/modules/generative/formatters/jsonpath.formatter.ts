@@ -1,7 +1,9 @@
-import { Formatter } from './Formattter'
 import * as jsonpath from 'jsonpath'
+import { Formatter } from './Formattter'
 
-export class JsonPathFormatter extends Formatter<{}> {
+export class JsonPathFormatter extends Formatter<{
+  expression: string
+}> {
   public name: string = 'jsonpath'
 
   public format = async (
@@ -21,5 +23,5 @@ export class JsonPathFormatter extends Formatter<{}> {
     return res
   }
 
-  public validateOptions = async (options: { expression: string }) => ({})
+  public validateOptions = async (options: { expression: string }) => options
 }

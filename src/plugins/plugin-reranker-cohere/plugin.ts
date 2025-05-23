@@ -10,7 +10,11 @@ import {
 import { Config, Context, RerankOptions } from './plugin.types'
 import { schemas } from './schemas'
 
-export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
+export class RerankerTransformers
+  implements
+    PluginLifecycle<Context, Config>,
+    RerankerPlugin<Context, RerankOptions>
+{
   private config!: Config
   private client!: AxiosInstance
 
@@ -33,7 +37,7 @@ export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
   destroy = async (ctx: Context) => {}
 
   rerank = async (
-    ctx: RerankerPluginContext,
+    ctx: Context,
     params: RerankParams<RerankOptions>,
   ): Promise<RerankResult> => {
     const { query, documents } = params

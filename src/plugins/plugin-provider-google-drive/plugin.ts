@@ -87,7 +87,7 @@ const configSchema = z
 
 export class GoogleDriveProvider
   implements
-    PluginLifecycle<PluginContext, Config>,
+    PluginLifecycle<Context, Config>,
     ProviderPlugin<Context>,
     JobSchedulerConsumer<Context>,
     WebhookConsumer<Context>

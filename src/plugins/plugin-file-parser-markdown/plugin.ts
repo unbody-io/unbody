@@ -9,7 +9,6 @@ import { isInvalidDate, settleSync } from 'src/lib/core-utils'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   FileParserPlugin,
-  FileParserPluginContext,
   ParseFileParams,
   ParseFileResult,
   ProcessFileRecordParams,
@@ -110,7 +109,9 @@ const metadataFromAttributes = (attributes: Record<string, any>) => {
   }
 }
 
-export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
+export class MarkdownFileParser
+  implements PluginLifecycle<Context, Config>, FileParserPlugin<Context>
+{
   private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
@@ -129,7 +130,7 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
   destroy = async (ctx: Context) => {}
 
   parseFile = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ParseFileParams,
   ): Promise<ParseFileResult> => {
     const fileBuffer = Buffer.isBuffer(params.file)
@@ -258,7 +259,7 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
   }
 
   processFileRecord = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ProcessFileRecordParams,
   ): Promise<ProcessFileRecordResult> => {
     const record = params.record as JsonRecord<'TextDocument'>

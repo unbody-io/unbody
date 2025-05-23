@@ -15,7 +15,7 @@ export type PluginInstanceBaseConfig = {
 }
 
 export type PluginInstanceMethods<T> = {
-  [K in keyof T]: Required<T>[K] extends (...args: unknown[]) => unknown
+  [K in keyof T]: Required<T>[K] extends (...args: any[]) => any
     ? Parameters<Required<T>[K]> extends [any, ...infer U]
       ? (...args: U) => ReturnType<Required<T>[K]>
       : () => ReturnType<Required<T>[K]>
