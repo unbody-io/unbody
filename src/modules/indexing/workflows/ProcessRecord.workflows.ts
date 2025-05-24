@@ -127,13 +127,13 @@ export async function processRecordWorkflow(
     },
   })
 
-  if (params.event.metadata?.mimeType) {
+  if (params.event.metadata?.['mimeType']) {
     const parsers = await getFileParsers({
-      mimeType: params.event.metadata.mimeType,
+      mimeType: params.event.metadata['mimeType'],
     })
     if (parsers.length === 0) {
       throw new ApplicationFailure(
-        `No parser found for "${params.event.metadata.mimeType}"`,
+        `No parser found for "${params.event.metadata['mimeType']}"`,
         'unsupported_mime_type',
       )
     }

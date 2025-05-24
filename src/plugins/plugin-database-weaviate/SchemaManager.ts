@@ -57,7 +57,7 @@ export class SchemaManager {
           name: 'text2vec-huggingface',
           config: {
             endpointURL:
-              this.config.modules?.textVectorizer?.config?.endpointURL,
+              this.config.modules?.textVectorizer?.config?.['endpointURL'],
           },
         },
         vectorIndex: weaviate.configure.vectorIndex.hnsw({}),
@@ -132,7 +132,7 @@ export class SchemaManager {
       config.generative = {
         name: 'generative-unbody',
         config: {
-          endpointURL: this.config.modules?.generative?.config?.endpointURL,
+          endpointURL: this.config.modules?.generative?.config?.['endpointURL'],
         },
       }
     }

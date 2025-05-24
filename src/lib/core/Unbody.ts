@@ -534,7 +534,7 @@ export class Unbody {
                         ),
                       ])
                       .superRefine((value, ctx) => {
-                        if (value.type === PropertyTypes.cref) {
+                        if (value['type'] === PropertyTypes.cref) {
                           const prop = value as CrossReferencePropertyConfig
                           const refs = prop.refs
                           for (let i = 0; i < refs.length; i++) {
@@ -568,17 +568,17 @@ export class Unbody {
                   .superRefine((value, ctx) => {
                     const propertyNames: Record<string, number> = {}
                     for (const property of value) {
-                      propertyNames[property.name] =
-                        (propertyNames[property.name] || 0) + 1
+                      propertyNames[property['name']] =
+                        (propertyNames[property['name']] || 0) + 1
                     }
 
                     for (let i = 0; i < value.length; i++) {
                       const property = value[i]
-                      if (propertyNames[property.name] > 1) {
+                      if (propertyNames[property['name']] > 1) {
                         ctx.addIssue({
                           code: z.ZodIssueCode.custom,
                           path: [i, 'name'],
-                          message: `Duplicate property name: "${property.name}"`,
+                          message: `Duplicate property name: "${property['name']}"`,
                         })
                       }
                     }
@@ -663,7 +663,7 @@ export class Unbody {
 
           for (const collection of collections) {
             const crefs = collection.properties.filter(
-              (prop) => prop.type === PropertyTypes.cref,
+              (prop) => prop['type'] === PropertyTypes.cref,
             )
             for (const cref of crefs) {
               const property = cref as CrossReferencePropertyConfig

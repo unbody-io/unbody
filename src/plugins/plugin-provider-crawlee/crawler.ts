@@ -13,15 +13,26 @@ import { SourceEntrypoint } from './plugin.types'
 const hashPageContent = async (content: string) =>
   crypto.createHash('sha256').update(content).digest('hex')
 
-export const extractMetadata = (html: htmlParser.HTMLElement | string) => {
+export const extractMetadata = (
+  html: htmlParser.HTMLElement | string,
+): Crawler.PageMetadata => {
   if (typeof html === 'string') {
     html = htmlParser.parse(html)
   }
 
   const head = html.querySelector('head') as htmlParser.HTMLElement
-  if (!head) return {}
+  if (!head)
+    return {
+      title: '',
+      description: '',
+      locale: '',
+      type: '',
+      url: '',
+      keywords: [],
+      properties: {},
+    }
 
-  const title = head.querySelector('title')?.text
+  const title = head.querySelector('title')?.text || ''
   const meta = Object.fromEntries(
     head.childNodes
       .filter(
@@ -82,7 +93,7 @@ export namespace Crawler {
 }
 
 export class Crawler {
-  dataset: Dataset | undefined
+  dataset: Dataset<Crawler.PageData> | undefined
 
   constructor(
     private crawlerId: string,
@@ -115,7 +126,7 @@ export class Crawler {
         hash,
         metadata,
         isRoot: true,
-      })
+      } satisfies Crawler.PageData)
 
       let loadedUrl = ctx.request.loadedUrl
       if (loadedUrl.endsWith('/')) {
@@ -133,7 +144,7 @@ export class Crawler {
     })
 
     router.addHandler('subpage', async (ctx) => {
-      const depth = ctx.request.userData?.depth || 1
+      const depth = ctx.request.userData['depth'] || 1
       const id = uuid.v5(
         `${this.crawlerId}:${ctx.request.loadedUrl}`,
         uuid.v5.URL,
@@ -182,7 +193,7 @@ export class Crawler {
 
     await crawler.run([this.config.url], {})
 
-    this.dataset = await Dataset.open('default', {
+    this.dataset = await Dataset.open<Crawler.PageData>('default', {
       storageClient,
     })
   }

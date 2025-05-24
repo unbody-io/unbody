@@ -133,7 +133,7 @@ export class Summarizer
     })
 
     return {
-      summary: res?.text || '',
+      summary: res?.['text'] || '',
       metadata: {
         finishReason: usageMetadata.finishReason,
         usage: {

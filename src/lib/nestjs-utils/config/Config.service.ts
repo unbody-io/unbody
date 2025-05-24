@@ -17,7 +17,7 @@ export class ConfigService<T extends object = {}> {
   constructor(config?: Config.IConfig) {
     this.config = (config ?? Config) as any as ConfigInstance<T>
     this.serviceName = this.get('app.name') ?? 'unnamed'
-    this.env = this.get('app.env') ?? (process.env.NODE_ENV as string)
+    this.env = this.get('app.env') ?? (process.env['NODE_ENV'] || 'development')
     this.isDev = ['dev', 'development'].includes(this.env)
     this.isProduction = ['prod', 'production'].includes(this.env)
 

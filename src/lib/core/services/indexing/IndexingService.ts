@@ -291,7 +291,7 @@ export class IndexingService {
       sourceId: params.source.id,
       id: params.recordId,
       recordId: params.recordId,
-      filename: result.metadata.originalName || 'file',
+      filename: result.metadata['originalName'] || 'file',
       mimeType: result.fileReference.mimeType,
       visibility: 'private',
     })

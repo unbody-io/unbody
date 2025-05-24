@@ -135,7 +135,10 @@ export class Vectorizer {
     return combined.map((v) => v / vectors.length)
   }
 
-  async vectorizeObjects(record: Record<string, any>) {
+  async vectorizeObjects(record: Record<string, any>): Promise<{
+    [key: string]: any
+    vectors: number[]
+  }> {
     const vectorizeImages = !!this._ctx.settings.imageVectorizer
 
     const objects = this._ctx.collections.getObjectPaths(record)
@@ -256,11 +259,13 @@ export class Vectorizer {
       }
     }
 
-    return record
+    return record as Record<string, any> & {
+      vectors: number[]
+    }
   }
 
   getObjectText(obj: Record<string, any>) {
-    const collection = obj.__typename
+    const collection = obj['__typename']
     if (!collection) return ''
 
     const properties = this.getCollectionVectorizedProperties(collection)

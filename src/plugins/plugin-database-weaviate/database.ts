@@ -236,7 +236,14 @@ export class Database {
     return null
   }
 
-  getObject = async (collection: string, objectId: string) => {
+  getObject = async (
+    collection: string,
+    objectId: string,
+  ): Promise<{
+    __typename: string
+    id: string
+    [key: string]: any
+  } | null> => {
     const path = this.getGraphQLPath(collection)
     const res = await this.v2.graphql
       .get()
@@ -252,9 +259,13 @@ export class Database {
     const obj = res.data?.Get?.[collection]?.[0]
     if (!obj) return null
 
-    const result: Record<string, any> = {
+    const result = {
       id: obj.id,
       __typename: collection,
+    } as {
+      __typename: string
+      id: string
+      [key: string]: any
     }
 
     for (const key in obj) {
@@ -294,7 +305,7 @@ export class Database {
     if (!record['id'] && record['remoteId']) {
       record['id'] = Database.getObjectId(sourceId, record['remoteId'])
     }
-    const objectId = record.id
+    const objectId = record['id']
 
     const properties: Record<string, any> = {}
 
@@ -427,7 +438,7 @@ export class Database {
     if (!record['id'] && record['remoteId'])
       record['id'] = Database.getObjectId(sourceId, record['remoteId'])
 
-    const objectId = record.id
+    const objectId = record['id']
 
     const { objects, references } = this._createInsertPayload(
       [],

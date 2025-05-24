@@ -81,7 +81,7 @@ export class PluginInstance<
         dropCollection: async (...args) =>
           this.resources.database.dropCollection({ pluginId }, ...args),
         getCollection: async (...args) =>
-          this.resources.database.getCollection({ pluginId }, ...args),
+          this.resources.database.getCollection({ pluginId }, ...args) as any,
         listCollections: async () =>
           this.resources.database.listCollections({ pluginId }),
         withTransaction: async (...args) =>

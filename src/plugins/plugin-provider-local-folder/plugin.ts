@@ -35,11 +35,14 @@ import {
 import {
   Config,
   Context,
+  CreatedEvent,
   EventDocument,
   RecordMetadata,
   SourceCredentials,
+  SourceDocument,
   SourceEntrypoint,
   SourceState,
+  UpdatedEvent,
 } from './plugin.types'
 import { getFileMetadata, scanFolder, watchForChanges } from './utils'
 
@@ -308,8 +311,8 @@ export class LocalFolderProvider
               recordId: ev.recordId,
               sourceId: ev.sourceId,
               timestamp: +ev.timestamp,
-              metadata: ev.metadata,
-            }) satisfies EventDocument,
+              metadata: ev.eventName !== 'deleted' ? ev.metadata : undefined,
+            }) as EventDocument,
         ),
       )
 
@@ -410,7 +413,7 @@ export class LocalFolderProvider
   ): Promise<GetRecordResult> => {
     const fileStorage = await ctx.getResource('fileStorage')
     const eventsCollection = await this._eventsCollection(ctx)
-    const event = await eventsCollection.findOne(
+    const event = await eventsCollection.findOne<CreatedEvent | UpdatedEvent>(
       {
         sourceId: ctx.source.id,
         recordId: params.recordId,
@@ -464,7 +467,7 @@ export class LocalFolderProvider
       record: {
         ...params.content,
         ...params.metadata,
-        remoteId: params.metadata.id,
+        remoteId: params.metadata['id'],
       },
     }
   }
@@ -482,6 +485,7 @@ export class LocalFolderProvider
     await sourcesCollection.insertOne({
       sourceId: ctx.source.id,
       entrypoint: ctx.source.entrypoint,
+      lockedAt: null,
     })
 
     return {}
@@ -501,10 +505,6 @@ export class LocalFolderProvider
     })
 
     return {}
-  }
-
-  private _sourcesCollection = async (ctx: Context) => {
-    return ctx.getResource('database').then((db) => db.getCollection('sources'))
   }
 
   private _watchForChanges = async (ctx: Context, sourceId: string) => {
@@ -574,7 +574,15 @@ export class LocalFolderProvider
     }
   }
 
+  private _sourcesCollection = async (ctx: Context) => {
+    return ctx
+      .getResource('database')
+      .then((db) => db.getCollection<SourceDocument>('sources'))
+  }
+
   private _eventsCollection = async (ctx: Context) => {
-    return ctx.getResource('database').then((db) => db.getCollection('events'))
+    return ctx
+      .getResource('database')
+      .then((db) => db.getCollection<EventDocument>('events'))
   }
 }

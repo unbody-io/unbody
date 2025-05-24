@@ -233,12 +233,13 @@ export class GenerativeOpenAI
       callbacks: [
         {
           handleLLMEnd: (output) => {
-            usage.outputTokens = output.llmOutput!.tokenUsage.completionTokens
-            usage.inputTokens = output.llmOutput!.tokenUsage.promptTokens
-            usage.totalTokens = output.llmOutput!.tokenUsage.totalTokens
-            if (output.generations?.[0]?.[0].generationInfo?.finish_reason)
+            usage.outputTokens =
+              output.llmOutput!['tokenUsage']['completionTokens']
+            usage.inputTokens = output.llmOutput!['tokenUsage']['promptTokens']
+            usage.totalTokens = output.llmOutput!['tokenUsage']['totalTokens']
+            if (output.generations?.[0]?.[0].generationInfo?.['finish_reason'])
               finishReason =
-                output.generations?.[0]?.[0].generationInfo?.finish_reason
+                output.generations?.[0]?.[0].generationInfo?.['finish_reason']
           },
         },
       ],

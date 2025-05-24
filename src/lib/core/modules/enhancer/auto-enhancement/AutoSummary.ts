@@ -39,9 +39,9 @@ export class AutoSummary extends AutoEnhancer {
               this.arg(value),
             ]),
           ),
-          model: this.arg(settings.options?.model || 'openai-gpt-4o'),
+          model: this.arg(settings.options?.['model'] || 'openai-gpt-4o'),
           metadata: this.arg((ctx) => {
-            const collection = ctx.vars.collection
+            const collection = ctx.vars['collection']
             const record = ctx.record as any
             let metadata: Record<string, any> = {}
 
@@ -70,7 +70,7 @@ export class AutoSummary extends AutoEnhancer {
             return JSON.stringify(metadata)
           }),
           text: this.arg((ctx) => {
-            const collection = ctx.vars.collection
+            const collection = ctx.vars['collection']
             switch (collection) {
               case 'TextDocument':
               case 'GoogleDoc': {
@@ -88,13 +88,13 @@ export class AutoSummary extends AutoEnhancer {
               }
 
               default:
-                return ctx.record.text || ''
+                return ctx.record['text'] || ''
             }
           }),
         },
       },
       output: {
-        autoSummary: this.arg((ctx) => ctx.result.summary || ''),
+        autoSummary: this.arg((ctx) => ctx.result['summary'] || ''),
       },
     })
 

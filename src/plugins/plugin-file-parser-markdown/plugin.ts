@@ -61,10 +61,10 @@ const getAttribute = <T = any>(
 }
 
 const metadataFromAttributes = (attributes: Record<string, any>) => {
-  const title = attributes?.title
-  const subtitle = attributes?.subtitle
-  const description = attributes?.description
-  const summary = attributes?.summary
+  const title = attributes?.['title']
+  const subtitle = attributes?.['subtitle']
+  const description = attributes?.['description']
+  const summary = attributes?.['summary']
 
   const createdAt = getAttribute(
     attributes,
@@ -245,8 +245,9 @@ export class MarkdownFileParser
         : '')
     doc.summary = metadata.summary || ''
     doc.authors = metadata.authors || ''
-    doc.createdAt = metadata.createdAt || params.metadata?.createdAt || null
-    doc.modifiedAt = metadata.modifiedAt || params.metadata?.modifiedAt || null
+    doc.createdAt = metadata.createdAt || params.metadata?.['createdAt'] || null
+    doc.modifiedAt =
+      metadata.modifiedAt || params.metadata?.['modifiedAt'] || null
     doc.tags = metadata.tags || []
     doc.toc = JSON.stringify(tableOfContents)
     doc.blocks = blocks.map((block, index) => ({

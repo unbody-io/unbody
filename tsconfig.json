@@ -20,6 +20,7 @@
     "noImplicitAny": true,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true
   }
 }

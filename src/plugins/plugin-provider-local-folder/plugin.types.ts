@@ -16,13 +16,34 @@ export type SourceState = {
   lastEventTimestamp?: string
 }
 
-export type EventDocument = {
+type EventBase = {
   sourceId: string
   filename: string
   recordId: string
-  eventName: 'created' | 'updated' | 'deleted'
   timestamp: number
-  metadata?: Record<string, any>
+}
+
+export type CreatedEvent = EventBase & {
+  eventName: 'created'
+  metadata: RecordMetadata
+}
+
+export type UpdatedEvent = EventBase & {
+  eventName: 'updated'
+  metadata: RecordMetadata
+}
+
+export type DeletedEvent = EventBase & {
+  eventName: 'deleted'
+  metadata?: undefined
+}
+
+export type EventDocument = CreatedEvent | UpdatedEvent | DeletedEvent
+
+export type SourceDocument = {
+  sourceId: string
+  lockedAt: Date | null
+  entrypoint: SourceEntrypoint
 }
 
 export type RecordMetadata = {

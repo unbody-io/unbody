@@ -297,7 +297,9 @@ export class GoogleDriveProvider
     const auth = new GoogleOAuth(this.config.clientSecret, null)
 
     if (params.payload) {
-      const [res, err] = await settle(() => auth.getToken(params.payload!.code))
+      const [res, err] = await settle(() =>
+        auth.getToken(params.payload!['code']),
+      )
 
       if (err) {
         const error = err as gaxios.GaxiosError
@@ -669,7 +671,7 @@ export class GoogleDriveProvider
       record: {
         ...params.metadata,
         ...params.content,
-        remoteId: params.metadata.id,
+        remoteId: params.metadata['id'],
       },
     }
   }
@@ -758,7 +760,7 @@ export class GoogleDriveProvider
     const webhook = await webhookRegistry.get('notification-channel', 'source')
     if (webhook) {
       const metadata = webhook.metadata || {}
-      const channelId = metadata.channelId
+      const channelId = metadata['channelId']
 
       await google.drive({ version: 'v3', auth }).channels.stop({
         requestBody: {

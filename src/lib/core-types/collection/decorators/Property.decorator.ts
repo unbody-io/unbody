@@ -12,7 +12,7 @@ import {
   UUIDPropertyConfig,
 } from '../collection.types'
 import { getMetadataObject } from '../helpers/metadata.helpers'
-import { CollectionType } from './Collection.decorator'
+import { Collection, CollectionType } from './Collection.decorator'
 import { PropertyAttributes } from './PropertyAttributes.decorator'
 import {
   ReferencePropertyMetadata,
@@ -59,72 +59,75 @@ export const Property =
   }
 
 Property.getMetadata = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
 ): PropertyMetadata => {
   const referenceOptions = getReferencePropertyMetadata(
-    schemaClass,
+    collection,
     propertyName,
   )
 
   const metadata = {
     name: propertyName,
     options: {
-      ...getMetadataObject(schemaClass.prototype, propertyName)[
+      ...getMetadataObject(Collection.getPrototype(collection), propertyName)[
         symbols.property.options
       ],
     },
     ...(referenceOptions ? { referenceOptions: referenceOptions.options } : {}),
-    attributes: PropertyAttributes.getAttributes(schemaClass, propertyName),
+    attributes: PropertyAttributes.getAttributes(collection, propertyName),
   }
 
   return metadata
 }
 
 Property.hasProperty = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
 ): boolean => {
   return (
     Reflect.getMetadata(
       symbols.property.options,
-      schemaClass.prototype,
+      Collection.getPrototype(collection),
       propertyName,
     ) !== undefined
   )
 }
 
 Property.deleteProperty = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
 ) => {
   const propKeys =
-    Reflect.getMetadata(symbols.class.propertyKeys, schemaClass.prototype) ?? []
+    Reflect.getMetadata(
+      symbols.class.propertyKeys,
+      Collection.getPrototype(collection),
+    ) ?? []
 
   Reflect.defineMetadata(
     symbols.class.propertyKeys,
     propKeys.filter((key: string) => key !== propertyName),
-    schemaClass.prototype,
+    Collection.getPrototype(collection),
   )
 
   Reflect.deleteMetadata(
     symbols.property.options,
-    schemaClass.prototype,
+    Collection.getPrototype(collection),
     propertyName,
   )
   Reflect.deleteMetadata(
     symbols.property.referenceOptions,
-    schemaClass.prototype,
+    Collection.getPrototype(collection),
     propertyName,
   )
 }
 
 export const getPropertyMetadata = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
-): PropertyMetadata => Property.getMetadata(schemaClass, propertyName)
+): PropertyMetadata => Property.getMetadata(collection, propertyName)
 
 export const deletePropertyMetadata = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
-) => Property.deleteProperty(schemaClass, propertyName)
+) => Property.deleteProperty(collection, propertyName)

@@ -101,7 +101,7 @@ export class PluginFileStorage {
 
     if (!file) throw new Error(`File not found: ${params.key}`)
 
-    await fs.promises.unlink(file.payload.filename)
+    await fs.promises.unlink(file.payload['filename'])
     await file.deleteOne()
   }
 
@@ -142,7 +142,7 @@ export class PluginFileStorage {
 
     if (!file) throw new Error(`File not found: ${params.key}`)
 
-    return fs.createReadStream(file.payload.filename)
+    return fs.createReadStream(file.payload['filename'])
   }
 
   private getPluginDir = (() => {

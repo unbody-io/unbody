@@ -165,21 +165,21 @@ export class EnhancerStepState {
 
   static fromJSON = (data: Record<string, any>) => {
     const state = new EnhancerStepState()
-    state.name = data.name
-    state.run = data.run
-    state.pending = data.pending
-    state.taskId = data.taskId
-    state.failed = data.failed
-    state.args = data.args
-    state.output = data.output
-    state.preparedAt = data.preparedAt
-    state.startedAt = data.startedAt
-    state.finishedAt = data.finishedAt
-    state.failedAt = data.failedAt
-    state.skipped = data.skipped
-    state.errorCode = data.errorCode
-    state.errorMessage = data.errorMessage
-    state.logs = data.logs
+    state.name = data['name']
+    state.run = data['run']
+    state.pending = data['pending']
+    state.taskId = data['taskId']
+    state.failed = data['failed']
+    state.args = data['args']
+    state.output = data['output']
+    state.preparedAt = data['preparedAt']
+    state.startedAt = data['startedAt']
+    state.finishedAt = data['finishedAt']
+    state.failedAt = data['failedAt']
+    state.skipped = data['skipped']
+    state.errorCode = data['errorCode']
+    state.errorMessage = data['errorMessage']
+    state.logs = data['logs']
 
     return state
   }
@@ -383,27 +383,27 @@ export class EnhancerPipelineState {
 
   static fromJSON = (state: Record<string, any>) => {
     const instance = new EnhancerPipelineState(
-      state.job,
-      state.source,
-      state.record,
-      state.pipeline,
+      state['job'],
+      state['source'],
+      state['record'],
+      state['pipeline'],
       Object.fromEntries(
-        Object.entries(state.steps || {}).map(([name, step]) => [
+        Object.entries(state['steps'] || {}).map(([name, step]) => [
           name,
           EnhancerStepState.fromJSON(step as Record<string, any>),
         ]),
       ),
-      state.vars || {},
+      state['vars'] || {},
     )
 
-    if (state.currentStep) instance.currentStep = state.currentStep
-    if (state.pendingStepTask) instance.pendingStepTask = true
-    if (state.failedAt) instance.failedAt = new Date(state.failedAt)
-    if (state.skippedAt) instance.skippedAt = new Date(state.skippedAt)
-    if (state.finishedAt) instance.finishedAt = new Date(state.finishedAt)
+    if (state['currentStep']) instance.currentStep = state['currentStep']
+    if (state['pendingStepTask']) instance.pendingStepTask = true
+    if (state['failedAt']) instance.failedAt = new Date(state['failedAt'])
+    if (state['skippedAt']) instance.skippedAt = new Date(state['skippedAt'])
+    if (state['finishedAt']) instance.finishedAt = new Date(state['finishedAt'])
 
-    if (state.errorCode) instance.errorCode = state.errorCode
-    if (state.errorMessage) instance.errorMessage = state.errorMessage
+    if (state['errorCode']) instance.errorCode = state['errorCode']
+    if (state['errorMessage']) instance.errorMessage = state['errorMessage']
 
     return instance
   }

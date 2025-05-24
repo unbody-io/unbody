@@ -85,8 +85,11 @@ export class Generative {
       if (validated.model && !this._models[validated.model])
         throw new Error(`unknown model: ${validated.model}`)
 
-      if (!validated.model && this._ctx.settings?.generative?.options?.model) {
-        validated.model = this._ctx.settings.generative.options.model
+      if (
+        !validated.model &&
+        this._ctx.settings?.generative?.options?.['model']
+      ) {
+        validated.model = this._ctx.settings.generative.options['model']
       }
 
       return validated

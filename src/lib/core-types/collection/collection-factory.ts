@@ -50,11 +50,17 @@ export class CollectionFactory {
     attributes?: Record<string, any>,
     referenceOptions?: ReferencePropertyOptions,
   ) {
-    Property(options)(this.collectionClass.prototype, name)
+    Property(options)(Collection.getPrototype(this.collectionClass), name)
     if (attributes)
-      PropertyAttributes(attributes)(this.collectionClass.prototype, name)
+      PropertyAttributes(attributes)(
+        Collection.getPrototype(this.collectionClass),
+        name,
+      )
     if (referenceOptions)
-      ReferenceProperty(referenceOptions)(this.collectionClass.prototype, name)
+      ReferenceProperty(referenceOptions)(
+        Collection.getPrototype(this.collectionClass),
+        name,
+      )
   }
 
   public updateProperty(
@@ -67,14 +73,17 @@ export class CollectionFactory {
     const newProp = _.isFunction(update) ? update(_.cloneDeep(prop)) : update
 
     Property.deleteProperty(this.collectionClass, name)
-    Property(newProp.options)(this.collectionClass.prototype, name)
+    Property(newProp.options)(
+      Collection.getPrototype(this.collectionClass),
+      name,
+    )
     if (newProp.referenceOptions)
       ReferenceProperty(newProp.referenceOptions)(
-        this.collectionClass.prototype,
+        Collection.getPrototype(this.collectionClass),
         name,
       )
     PropertyAttributes(newProp.attributes || {})(
-      this.collectionClass.prototype,
+      Collection.getPrototype(this.collectionClass),
       name,
     )
   }

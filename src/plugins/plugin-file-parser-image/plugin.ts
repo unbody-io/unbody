@@ -4,7 +4,6 @@ import { ImageBlockCollection } from 'src/lib/collections'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   FileParserPlugin,
-  FileParserPluginContext,
   ParseFileParams,
   ParseFileResult,
   ProcessFileRecordParams,
@@ -49,7 +48,7 @@ export class ImageFileParser
 
     const record = ImageBlockCollection.createPayload({
       originalName: originalName,
-      alt: params.metadata.alt || '',
+      alt: params.metadata['alt'] || '',
       title: '',
       caption: '',
       classNames: [],
@@ -57,7 +56,7 @@ export class ImageFileParser
       size: metadata.size,
       width: metadata.width,
       height: metadata.height,
-      mimeType: params.metadata.mimeType,
+      mimeType: params.metadata['mimeType'],
     })
 
     return {

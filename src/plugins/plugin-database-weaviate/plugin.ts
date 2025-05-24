@@ -251,11 +251,7 @@ export class WeaviateDatabase
     }
 
     return {
-      record: {
-        __typename: record.__typename,
-        id: record.id,
-        ...record,
-      },
+      record,
     }
   }
 
