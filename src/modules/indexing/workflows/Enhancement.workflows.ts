@@ -36,15 +36,18 @@ export async function enhanceRecordObjectsWorkflow(
   let maxDepth = 0
   const collections: Record<string, EnhancementPipelineDefinition[]> = {}
 
-  const grouped = objects.reduce((acc, obj) => {
-    if (!acc[obj.depth]) acc[obj.depth] = []
-    acc[obj.depth].push(obj)
+  const grouped = objects.reduce(
+    (acc, obj) => {
+      if (!acc[obj.depth]) acc[obj.depth] = []
+      acc[obj.depth].push(obj)
 
-    if (obj.depth > maxDepth) maxDepth = obj.depth
-    collections[obj.collection] = []
+      if (obj.depth > maxDepth) maxDepth = obj.depth
+      collections[obj.collection] = []
 
-    return acc
-  }, {}) as Record<number, typeof objects>
+      return acc
+    },
+    {} as Record<string, typeof objects>,
+  )
 
   for (const collection in collections) {
     const pipelines = await getCollectionPipelines({ collection })
@@ -54,12 +57,15 @@ export async function enhanceRecordObjectsWorkflow(
 
   for (let depth = maxDepth; depth >= 0; depth--) {
     const objects = grouped[String(depth)] || []
-    const groupedByCollection = objects.reduce((acc, obj) => {
-      if (!collections[obj.collection]) return acc
-      if (!acc[obj.collection]) acc[obj.collection] = []
-      acc[obj.collection].push(obj)
-      return acc
-    }, {})
+    const groupedByCollection = objects.reduce(
+      (acc, obj) => {
+        if (!collections[obj.collection]) return acc
+        if (!acc[obj.collection]) acc[obj.collection] = []
+        acc[obj.collection].push(obj)
+        return acc
+      },
+      {} as Record<string, typeof objects>,
+    )
 
     for (const collection in groupedByCollection) {
       const pipelines = collections[collection]

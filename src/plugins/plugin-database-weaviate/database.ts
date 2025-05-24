@@ -304,8 +304,13 @@ export class Database {
 
       if (property.type === 'cref') {
         const references = record[key] as Array<
-          | { __typename: string; id: string }
-          | { __typename: string; [key: string]: any }
+          | { __typename: string; id: string; remoteId?: string | undefined }
+          | {
+              __typename: string
+              id?: string | undefined
+              remoteId: string
+              [key: string]: any
+            }
         >
 
         let index = -1
@@ -323,11 +328,12 @@ export class Database {
           }
 
           if (
-            Object.keys(reference).every((key) =>
-              ['id', '__typename', 'remoteId'].includes(key),
-            )
+            Object.keys(reference).length === 3 &&
+            typeof reference.id !== 'undefined' &&
+            typeof reference.__typename !== 'undefined' &&
+            typeof reference.remoteId !== 'undefined'
           ) {
-            const refId = reference.id
+            const refId = reference.id!
 
             payload.references.push({
               fromUuid: objectId,

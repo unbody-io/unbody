@@ -1,7 +1,6 @@
 import * as marked from 'marked'
 import * as htmlParser from 'node-html-parser'
 import * as path from 'path'
-import * as sanitizeHtml from 'sanitize-html'
 import _slugify from 'slugify'
 import { ImageBlock, TextBlock } from 'src/lib/collections'
 import { JsonRecord } from 'src/lib/collections/types'
@@ -20,6 +19,8 @@ import { schemas } from './schemas'
 
 // @ts-ignore
 import * as turndownPluginGfm from 'turndown-plugin-gfm'
+// @ts-ignore
+import * as sanitizeHtml from 'sanitize-html'
 
 const turndown = new Turndown({
   headingStyle: 'atx',

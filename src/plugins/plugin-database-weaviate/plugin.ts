@@ -216,10 +216,13 @@ export class WeaviateDatabase
     )
 
     if (err) {
-      if (err['response']) {
+      const errorResponse = (err as any)['response'] as
+        | Record<string, unknown>
+        | undefined
+      if (errorResponse) {
         return {
           result: {
-            errors: err['response']['errors'],
+            errors: errorResponse['errors'] as unknown[],
           },
         }
       }

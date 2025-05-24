@@ -271,13 +271,16 @@ export class Unbody {
             .optional()
             .default([])
             .superRefine((value, ctx) => {
-              const byCollection = value.reduce((acc, pipeline) => {
-                if (!acc[pipeline.collection]) {
-                  acc[pipeline.collection] = []
-                }
-                acc[pipeline.collection].push(pipeline.name)
-                return acc
-              }, {})
+              const byCollection = value.reduce(
+                (acc, pipeline) => {
+                  if (!acc[pipeline.collection]) {
+                    acc[pipeline.collection] = []
+                  }
+                  acc[pipeline.collection].push(pipeline.name)
+                  return acc
+                },
+                {} as Record<string, string[]>,
+              )
 
               for (let i = 0; i < value.length; i++) {
                 const pipeline = value[i]
@@ -302,7 +305,7 @@ export class Unbody {
       const customCollectionProperty = (
         type: PropertyType,
         reservedNames: string[] = [],
-      ) => {
+      ): z.ZodObject<any, any> => {
         const base = () =>
           z.object({
             type: z.literal(type),

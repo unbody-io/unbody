@@ -78,11 +78,11 @@ export class AutoSummary extends AutoEnhancer {
                 const text = record?.text || ''
                 const images = (record?.blocks || [])
                   .filter(
-                    (b) =>
+                    (b: any) =>
                       b.__typename === 'ImageBlock' &&
                       typeof b.autoOCR === 'string',
                   )
-                  .map((b) => b.autoOCR)
+                  .map((b: any) => b.autoOCR)
                   .join('\n\n')
                 return [text, images].filter((x) => x.length > 0).join('\n\n')
               }

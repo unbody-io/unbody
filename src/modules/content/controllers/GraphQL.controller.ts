@@ -21,12 +21,15 @@ export class GraphQLController {
   @HttpCode(200)
   @SetMetadata(SkipFormatResponseInterceptor, true)
   async post(@Body() body: ExecGraphQLQueryDto, @Req() req: Request) {
-    const headers = req.rawHeaders.reduce((acc, curr, i) => {
-      if (i % 2 === 0) {
-        acc[curr] = req.rawHeaders[i + 1]
-      }
-      return acc
-    }, {})
+    const headers = req.rawHeaders.reduce(
+      (acc, curr, i) => {
+        if (i % 2 === 0) {
+          acc[curr] = req.rawHeaders[i + 1]
+        }
+        return acc
+      },
+      {} as Record<string, string>,
+    )
 
     return this.graphQLService.execGraphQLQuery({
       query: body.query,

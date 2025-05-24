@@ -63,7 +63,11 @@ export class PluginDatabase {
     return collection
   }
 
-  async withTransaction({ pluginId }: { pluginId }, fn: any, options?: any) {
+  async withTransaction(
+    { pluginId }: { pluginId: string },
+    fn: any,
+    options?: any,
+  ) {
     return this.client.startSession().withTransaction(async (session) => {
       await fn(session)
     }, options)

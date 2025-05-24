@@ -52,14 +52,15 @@ export class PluginInstance<
 
     if (!this._fileStorage) {
       this._fileStorage = {
-        get: (key) => this.resources.fileStorage.get({ pluginId }, { key }),
-        delete: (key) =>
+        get: async (key) =>
+          this.resources.fileStorage.get({ pluginId }, { key }),
+        delete: async (key) =>
           this.resources.fileStorage.delete({ pluginId }, { key }),
-        download: (key) =>
+        download: async (key) =>
           this.resources.fileStorage.download({ pluginId }, { key }),
-        list: (options) =>
+        list: async (options) =>
           this.resources.fileStorage.list({ pluginId }, { options }),
-        upload: (key, file, options) =>
+        upload: async (key, file, options) =>
           this.resources.fileStorage.upload(
             { pluginId },
             { key, file, options },
@@ -75,15 +76,15 @@ export class PluginInstance<
 
     if (!this._database) {
       this._database = {
-        createCollection: (...args) =>
+        createCollection: async (...args) =>
           this.resources.database.createCollection({ pluginId }, ...args),
-        dropCollection: (...args) =>
+        dropCollection: async (...args) =>
           this.resources.database.dropCollection({ pluginId }, ...args),
-        getCollection: (...args) =>
+        getCollection: async (...args) =>
           this.resources.database.getCollection({ pluginId }, ...args),
-        listCollections: () =>
+        listCollections: async () =>
           this.resources.database.listCollections({ pluginId }),
-        withTransaction: (...args) =>
+        withTransaction: async (...args) =>
           this.resources.database.withTransaction({ pluginId }, ...args) as any,
       }
     }
@@ -115,7 +116,7 @@ export class PluginInstance<
       }
 
       this._jobScheduler = {
-        get: (jobId) =>
+        get: async (jobId) =>
           this.resources.jobScheduler
             .get({ pluginId }, { jobId })
             .then((job) => {
@@ -123,17 +124,19 @@ export class PluginInstance<
 
               return transformJob(job)
             }),
-        cancel: (jobId) =>
+        cancel: async (jobId) =>
           this.resources.jobScheduler.cancel({ pluginId }, { jobId }),
-        cancelAll: (scope) => {
-          const sourceId = this.config['source']?.['id']
+        cancelAll: async (scope) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.jobScheduler.cancelAll(
             { pluginId, sourceId: scope === 'source' ? sourceId : undefined },
             { scope },
           )
         },
-        list: (options) => {
-          const sourceId = this.config['source']?.['id']
+        list: async (options) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.jobScheduler
             .list(
               {
@@ -147,8 +150,9 @@ export class PluginInstance<
               jobs: res.jobs.map(transformJob),
             }))
         },
-        schedule: (job) => {
-          const sourceId = this.config['source']?.['id']
+        schedule: async (job) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.jobScheduler
             .schedule(
               {
@@ -186,8 +190,9 @@ export class PluginInstance<
       }
 
       this._webhookRegistry = {
-        create: (webhook) => {
-          const sourceId = this.config['source']?.['id']
+        create: async (webhook) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.webhookRegistry
             .create(
               {
@@ -198,15 +203,17 @@ export class PluginInstance<
             )
             .then(transform)
         },
-        delete: (key, scope) => {
-          const sourceId = this.config['source']?.['id']
+        delete: async (key, scope) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.webhookRegistry.delete(
             { pluginId, sourceId: scope === 'source' ? sourceId : undefined },
             { key, scope: scope || 'global' },
           )
         },
-        deleteAll: (scope) => {
-          const sourceId = this.config['source']?.['id']
+        deleteAll: async (scope) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.webhookRegistry.deleteAll(
             { pluginId, sourceId: scope === 'source' ? sourceId : undefined },
             {
@@ -214,10 +221,11 @@ export class PluginInstance<
             },
           )
         },
-        deleteById: (id) =>
+        deleteById: async (id) =>
           this.resources.webhookRegistry.deleteById({ pluginId }, { id }),
-        get: (key, scope) => {
-          const sourceId = this.config['source']?.['id']
+        get: async (key, scope) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.webhookRegistry
             .get(
               { pluginId, sourceId: scope === 'source' ? sourceId : undefined },
@@ -225,21 +233,22 @@ export class PluginInstance<
             )
             .then(transform)
         },
-        getById: (id) =>
+        getById: async (id) =>
           this.resources.webhookRegistry
             .getById({ pluginId }, { id })
             .then((res) => transform(res)),
-        getSecret: (webhook) => {
-          const sourceId = this.config['source']?.['id']
+        getSecret: async (webhook) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.webhookRegistry
             .getSecret({ pluginId, sourceId }, { webhook })
             .then((res) => ({
               secret: res,
             }))
         },
-        update: (key, payload, scope) => {
-          const sourceId = this.config['source']?.['id']
-
+        update: async (key, payload, scope) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.webhookRegistry
             .update(
               {
@@ -250,13 +259,14 @@ export class PluginInstance<
             )
             .then((res) => transform(res))
         },
-        updateById: (id, payload) => {
+        updateById: async (id, payload) => {
           return this.resources.webhookRegistry
             .updateById({ pluginId }, { id, payload })
             .then((res) => transform(res))
         },
-        list: (options) => {
-          const sourceId = this.config['source']?.['id']
+        list: async (options) => {
+          const config = this.config as any
+          const sourceId = config['source']?.['id']
           return this.resources.webhookRegistry
             .list(
               {
@@ -285,16 +295,16 @@ export class PluginInstance<
       const pluginId = this.plugin.id
 
       this._cacheStore = {
-        clear: () => this.resources.cacheStore.clear({ pluginId }),
-        delete: (key) =>
+        clear: async () => this.resources.cacheStore.clear({ pluginId }),
+        delete: async (key) =>
           this.resources.cacheStore
             .delete({ pluginId }, key)
             .then((res) => undefined),
-        get: (key, options) =>
+        get: async (key, options) =>
           this.resources.cacheStore.get({ pluginId }, key, options),
-        has: (key) => this.resources.cacheStore.has({ pluginId }, key),
-        keys: () => this.resources.cacheStore.keys({ pluginId }),
-        set: (key, value, options) =>
+        has: async (key) => this.resources.cacheStore.has({ pluginId }, key),
+        keys: async () => this.resources.cacheStore.keys({ pluginId }),
+        set: async (key, value, options) =>
           this.resources.cacheStore
             .set({ pluginId }, key, value, options)
             .then((res) => undefined),

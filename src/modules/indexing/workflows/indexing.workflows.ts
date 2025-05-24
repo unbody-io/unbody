@@ -447,7 +447,7 @@ const sortEvents = (events: IndexingEvent[]) => {
       ...acc,
       [event.recordId]: index,
     }),
-    {},
+    {} as Record<string, number>,
   )
 
   const graph: Record<number, number[]> = {}
