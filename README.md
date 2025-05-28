@@ -80,4 +80,4 @@ If you run into any issues during the setup process, or would like to give us an
 - [Website](https://unbody.io/)
 - [Blog](https://unbody.io/blog)
 - [Twitter](https://twitter.com/unbody_io)
-- [Discord](https://discord.gg/UX8WKEsVPu)
+- [Discord](https://discord.gg/UBMYRGSPgJ)
