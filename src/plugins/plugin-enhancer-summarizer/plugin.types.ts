@@ -1,25 +1,10 @@
 import { EnhancerPluginContext } from 'src/lib/plugins-common/enhancer'
+import type { z } from 'zod'
+import type { schemas } from './schemas'
 
-export type Config = {
-  clientSecret: {
-    openai?: {
-      apiKey: string
-      project?: string
-      organization?: string
-    }
-  }
-}
+export type Config = z.infer<typeof schemas.config>
 
-export type SummarizerArgs = {
-  prompt?: string
-
-  text: string
-  metadata?: string | Record<string, any>
-  maxWords?: number
-  chunkSize?: number
-  chunkOverlap?: number
-  model: 'openai-gpt-4o' | 'openai-gpt-4o-mini' | 'openai-gpt-3.5-turbo'
-}
+export type SummarizerArgs = z.infer<typeof schemas.args>
 
 export type SummarizerResult = {
   summary: string

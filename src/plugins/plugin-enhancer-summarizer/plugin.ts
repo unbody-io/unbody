@@ -9,13 +9,13 @@ import {
   EnhancerPlugin,
   EnhancerPluginContext,
 } from 'src/lib/plugins-common/enhancer'
-import { z } from 'zod'
 import {
   Config,
   Context,
   SummarizerArgs,
   SummarizerResult,
 } from './plugin.types'
+import { schemas } from './schemas'
 
 const DEFAULT_PROMPT_TEMPLATE = `Write a summary of the given input, adhering to the following instructions:
 - The summary must not exceed {maxWords} words.
@@ -32,36 +32,10 @@ INPUT:
 SUMMARY:
 `
 
-const configSchema = z.object({
-  clientSecret: z.object({
-    openai: z
-      .object({
-        apiKey: z.string(),
-        project: z.string().optional(),
-        organization: z.string().optional(),
-      })
-      .optional(),
-  }),
-})
-
-const argsSchema = z.object({
-  text: z.string(),
-  prompt: z.string().optional(),
-  metadata: z.string().optional(),
-  model: z.enum([
-    'openai-gpt-4o',
-    'openai-gpt-4o-mini',
-    'openai-gpt-3.5-turbo',
-  ]),
-})
-
 export class Summarizer implements PluginLifecycle, EnhancerPlugin {
   private config: Config
 
-  schemas: EnhancerPlugin['schemas'] = {
-    config: configSchema,
-    args: argsSchema,
-  }
+  schemas: EnhancerPlugin['schemas'] = schemas
 
   constructor() {}
 

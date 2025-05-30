@@ -7,8 +7,8 @@ import {
   VectorizeResult,
 } from 'src/lib/plugins-common/text-vectorizer'
 import { encoding_for_model } from 'tiktoken'
-import { z } from 'zod'
-import { Config, Context } from './plugin.types'
+import { Config, Context, Models, VectorizeOptions } from './plugin.types'
+import { schemas } from './schemas'
 
 const MAX_TOKENS = {
   'text-embedding-ada-002': 8191,
@@ -16,37 +16,13 @@ const MAX_TOKENS = {
   'text-embedding-3-small': 8191,
 }
 
-const vectorizeOptionsSchema = z.object({
-  model: z
-    .enum([
-      'text-embedding-ada-002',
-      'text-embedding-3-large',
-      'text-embedding-3-small',
-    ])
-    .optional()
-    .default('text-embedding-ada-002'),
-  autoTrim: z.boolean().optional().default(true),
-})
-
-const configSchema = z.object({
-  clientSecret: z.object({
-    apiKey: z.string(),
-    project: z.string().optional(),
-    organization: z.string().optional(),
-  }),
-  options: vectorizeOptionsSchema.optional(),
-})
-
 export class OpenAITextVectorizer
   implements PluginLifecycle, TextVectorizerPlugin
 {
   private client: OpenAI
   private config: Config
 
-  schemas: TextVectorizerPlugin['schemas'] = {
-    config: configSchema,
-    vectorizeOptions: vectorizeOptionsSchema,
-  }
+  schemas: TextVectorizerPlugin['schemas'] = schemas
 
   constructor() {}
 
@@ -66,12 +42,16 @@ export class OpenAITextVectorizer
 
   vectorize = async (
     ctx: Context,
-    params: VectorizeParams<Required<Config>['options']>,
+    params: VectorizeParams<VectorizeOptions>,
   ): Promise<VectorizeResult> => {
     const input = [...params.text]
-    let options: Config['options'] = {
-      ...(this.config.options || {}),
-      ...(params.options || {}),
+    let options: VectorizeOptions = {
+      model:
+        params.options?.model ||
+        this.config.options?.model ||
+        Models['text-embedding-ada-002'],
+      autoTrim:
+        params.options?.autoTrim || this.config.options?.autoTrim || true,
     }
 
     for (let index = 0; index < input.length; index++) {

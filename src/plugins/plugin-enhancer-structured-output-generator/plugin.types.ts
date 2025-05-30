@@ -1,25 +1,10 @@
 import { EnhancerPluginContext } from 'src/lib/plugins-common/enhancer'
+import type { z } from 'zod'
+import type { schemas } from './schemas'
 
-export type Config = {
-  clientSecret: {
-    openai?: {
-      apiKey: string
-      project?: string
-      organization?: string
-    }
-  }
-}
+export type Config = z.infer<typeof schemas.config>
 
-export type EnhancerArgs = {
-  schema: any
-  model: string
-  prompt: string
-  maxTokens?: number
-  temperature?: number
-  images?: {
-    url: string
-  }[]
-}
+export type EnhancerArgs = z.infer<typeof schemas.args>
 
 export type EnhancerResult = {
   json: any

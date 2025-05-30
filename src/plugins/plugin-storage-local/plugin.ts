@@ -13,9 +13,7 @@ import {
   StoreFileParams,
   StoreFileResult,
 } from 'src/lib/plugins-common/storage/Storage.interface'
-import { z, ZodError } from 'zod'
-import { Config, Context } from './plugin.types'
-import { configSchema } from './plugin.types'
+import { Config, configSchema, Context } from './plugin.types'
 
 export const slugify = (
   text: string,
@@ -53,45 +51,32 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
   > = {}
 
   schemas: StoragePlugin['schemas'] = {
-    config: z.object({
-      publicRootDir: z.string(),
-      privateRootDir: z.string(),
-    }),
+    config: configSchema,
   }
 
-  constructor() { }
+  constructor() {}
 
-  initialize = async (config: Record<string, any>) => {
-    try {
-      this.config = configSchema.parse(config)
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        throw new PluginLifecycle.ConfigurationError(
-          config,
-          e.issues.map((issue) => `'${issue.path}' ${issue.message}`),
-        )
-      }
-    }
+  initialize = async (config: Config) => {
+    this.config = config
 
     if (!fs.existsSync(this.config.publicRootDir)) {
-      throw new PluginLifecycle.ConfigurationError(
-        this.config,
-        [`Public root directory not found: ${this.config.publicRootDir}`]
-      )
+      throw new PluginLifecycle.ConfigurationError(this.config, [
+        `Public root directory not found: ${this.config.publicRootDir}`,
+      ])
     }
 
     if (!fs.existsSync(this.config.privateRootDir)) {
-      throw new PluginLifecycle.ConfigurationError(this.config,
-        [`Private root directory not found: ${this.config.privateRootDir}`]
-      )
+      throw new PluginLifecycle.ConfigurationError(this.config, [
+        `Private root directory not found: ${this.config.privateRootDir}`,
+      ])
     }
 
     await this._loadTree()
   }
 
-  bootstrap = async (ctx: Context) => { }
+  bootstrap = async (ctx: Context) => {}
 
-  destroy = async (ctx: Context) => { }
+  destroy = async (ctx: Context) => {}
 
   storeFile = async (
     ctx: StoragePluginContext,
@@ -173,7 +158,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
       }
       const oldFile = path.join(
         this.config[
-        oldVisibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+          oldVisibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
@@ -181,7 +166,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
       )
       const newFile = path.join(
         this.config[
-        params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+          params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
@@ -205,7 +190,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
 
       const oldFile = path.join(
         this.config[
-        file.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+          file.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
@@ -213,7 +198,7 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
       )
       const newFile = path.join(
         this.config[
-        params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
+          params.visibility === 'public' ? 'publicRootDir' : 'privateRootDir'
         ],
         params.sourceId,
         params.recordId,
