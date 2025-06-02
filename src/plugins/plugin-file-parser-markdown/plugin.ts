@@ -152,11 +152,13 @@ export class MarkdownFileParser
     for (const element of parsed.childNodes) {
       if (!(element instanceof htmlParser.HTMLElement)) continue
 
-      elements.push(element)
       if (element.childNodes.length === 1 && !!element.querySelector('img')) {
         const img = element.querySelector('img')!!
         const { src, alt, title } = img.attributes
 
+        if (!src) continue
+
+        elements.push(element)
         blocks.push({
           __typename: 'ImageBlock',
           url: src,
@@ -189,6 +191,7 @@ export class MarkdownFileParser
           }
         }
 
+        elements.push(element)
         blocks.push({
           tagName: tagName,
           html: current.outerHTML,
@@ -218,7 +221,7 @@ export class MarkdownFileParser
             blockIndex: index,
             title: element.text,
             tag: tagName,
-            level: Number.parseInt(tagName[1], 10),
+            level: Number.parseInt(tagName[1]!, 10),
           }
         }
 

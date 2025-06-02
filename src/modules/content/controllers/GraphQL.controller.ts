@@ -24,7 +24,7 @@ export class GraphQLController {
     const headers = req.rawHeaders.reduce(
       (acc, curr, i) => {
         if (i % 2 === 0) {
-          acc[curr] = req.rawHeaders[i + 1]
+          acc[curr] = req.rawHeaders[i + 1] || ''
         }
         return acc
       },

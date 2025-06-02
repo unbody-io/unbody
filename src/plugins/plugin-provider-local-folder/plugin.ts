@@ -111,7 +111,7 @@ export class LocalFolderProvider
       const watchers = Object.keys(this._watchers)
 
       for (const sourceId of watchers) {
-        if (!sourceIds.includes(sourceId)) {
+        if (!sourceIds.includes(sourceId) && this._watchers[sourceId]) {
           await this._watchers[sourceId].stop()
           delete this._watchers[sourceId]
         }
@@ -137,8 +137,10 @@ export class LocalFolderProvider
     const ids = Object.keys(this._watchers)
 
     for (const sourceId of ids) {
-      await this._watchers[sourceId].stop()
-      delete this._watchers[sourceId]
+      if (this._watchers[sourceId]) {
+        await this._watchers[sourceId].stop()
+        delete this._watchers[sourceId]
+      }
     }
 
     await sourcesCollection.updateMany(
@@ -367,7 +369,7 @@ export class LocalFolderProvider
       sourceState: {
         lastEventTimestamp:
           changes.length > 0
-            ? new Date(changes[changes.length - 1].timestamp).toJSON()
+            ? new Date(changes[changes.length - 1]!.timestamp).toJSON()
             : ctx.source.state.lastEventTimestamp,
       },
     }

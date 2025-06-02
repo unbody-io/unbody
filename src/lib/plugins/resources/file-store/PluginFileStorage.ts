@@ -64,7 +64,7 @@ export class PluginFileStorage {
 
       const size = await fs.promises.stat(filename).then((stat) => stat.size)
 
-      const file = files[0]
+      const file = files[0]!
       await file.updateOne({ size: size }, { session })
 
       return {

@@ -21,7 +21,7 @@ export class WebhooksController {
     const headers = request.rawHeaders.reduce(
       (acc, val, index) => {
         if (index % 2 === 0) {
-          acc[val] = request.rawHeaders[index + 1]
+          acc[val] = request.rawHeaders[index + 1] || ''
         }
         return acc
       },

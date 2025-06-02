@@ -60,7 +60,7 @@ export class RerankerTransformers
     })
 
     const scores: DocumentScore[] = response.data.results.map((result) => ({
-      document: documents[result.index],
+      document: documents[result.index]!,
       score: result.relevance_score,
     }))
 

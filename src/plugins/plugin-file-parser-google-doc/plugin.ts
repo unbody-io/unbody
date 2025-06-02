@@ -231,7 +231,7 @@ const translateInlineStyles = (html: HTMLElement) => {
     if (!parsed.stylesheet || parsed.stylesheet.rules?.length === 0) continue
 
     const rule = parsed.stylesheet.rules[0]
-    if (!('declarations' in rule)) continue
+    if (!rule || !('declarations' in rule)) continue
 
     const declarations = (rule.declarations || []) as css.Declaration[]
 
@@ -346,7 +346,7 @@ export const sanitizerGDocHTML = async (
   const transformAnchorElements: Transformer = (_, attribs) => {
     const { href, ...rest } = attribs
 
-    const [url] = settleSync(() => new URL(href))
+    const [url] = settleSync(() => new URL(href || ''))
     const q = url && url.searchParams.get('q')
     const [newUrl] = settleSync(() => q && new URL(q))
 
@@ -544,6 +544,8 @@ export const parseSanitizedGDocHTML = async (
       ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(block.tagName)
     ) {
       const element = blockElements[index]
+      if (!element) return
+
       const id = slugify(block.text!)
       element.setAttribute('id', id)
       const level = Number.parseInt(block.tagName.slice(1), 10)

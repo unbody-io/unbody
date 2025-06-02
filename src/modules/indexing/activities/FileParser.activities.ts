@@ -156,6 +156,6 @@ export class FileParserActivities {
         recordId,
         visibility: 'public',
       })
-      .then((res) => res.files[0])
+      .then((res) => res.files[0]!)
   }
 }

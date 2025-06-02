@@ -71,10 +71,10 @@ export type GithubCommentMetadata =
 export type GithubThreadMetadataBase = {
   id: string
   url: string
-  author: GithubUserData
+  author: GithubUserData | null
 
-  createdAt: string
-  modifiedAt: string
+  createdAt: string | null
+  modifiedAt: string | null
 }
 
 export type GithubIssueThreadMetadata = GithubThreadMetadataBase & {
@@ -156,7 +156,7 @@ export type GithubPullRequestReviewThreadMetadata = GithubThreadMetadataBase & {
 
   threadId: string // pull request thread id = pull request id
 
-  submittedAt: string
+  submittedAt: string | null
 
   type: 'pull_request_review'
 }

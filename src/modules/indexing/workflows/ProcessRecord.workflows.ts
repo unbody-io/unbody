@@ -236,7 +236,7 @@ export async function processRecordWorkflow(
         const { publicUrl } = await makeAttachmentPublic({
           sourceId: params.sourceId,
           recordId: params.event.recordId,
-          fileId: result.attachments[index].id,
+          fileId: result.attachments[index]!.id,
         })
 
         return {
@@ -245,7 +245,7 @@ export async function processRecordWorkflow(
             ...attachment.record,
             url: publicUrl,
           },
-          raw: result.attachments[index],
+          raw: result.attachments[index]!,
         }
       }),
     )

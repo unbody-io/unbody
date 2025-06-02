@@ -57,7 +57,7 @@ export class OpenAITextVectorizer
     }
 
     for (let index = 0; index < input.length; index++) {
-      let text = input[index]
+      let text = input[index]!
       const enc = encoding_for_model(options!.model as any)
       const tokens = enc.encode(text).length
 
@@ -73,9 +73,9 @@ export class OpenAITextVectorizer
           )
         }
 
-        if (text.length < params.text[index].length) {
+        if (text.length < params.text[index]!.length) {
           ctx.logger.warn("Text was truncated to fit the model's token limit", {
-            originalLength: params.text[index].length,
+            originalLength: params.text[index]!.length,
             truncatedLength: text.length,
             model: options!.model,
           })

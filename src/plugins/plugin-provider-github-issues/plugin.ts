@@ -885,7 +885,7 @@ export class GithubIssuesProvider
         .digest('hex')
       const trusted = Buffer.from(`sha256=${signature}`, 'ascii')
       const untrusted = Buffer.from(
-        event.headers['x-hub-signature-256'],
+        event.headers['x-hub-signature-256'] || '',
         'ascii',
       )
       if (!crypto.timingSafeEqual(trusted, untrusted)) return

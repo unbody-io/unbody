@@ -15,6 +15,8 @@ export const evaluate = async <T = any>(
     if (parsed.body.length === 0) throw new Error()
 
     const firstNode = parsed.body[0]
+    if (!firstNode) throw new Error('No expression found')
+
     if (firstNode.type === 'ExpressionStatement') {
       const expressionNode = firstNode.expression
       if (
@@ -225,7 +227,7 @@ export class EnhancerPipelineState {
 
     this.pipeline.steps.forEach((step) => {
       if (steps[step.name]) {
-        this.steps[step.name] = EnhancerStepState.fromJSON(steps[step.name])
+        this.steps[step.name] = EnhancerStepState.fromJSON(steps[step.name]!)
       } else this.steps[step.name] = new EnhancerStepState()
     })
 
@@ -234,7 +236,9 @@ export class EnhancerPipelineState {
 
   prepare() {
     for (const step of this.pipeline.steps) {
-      this.steps[step.name].reset()
+      const stepState = this.steps[step.name]
+      if (stepState) stepState.reset()
+      else this.steps[step.name] = new EnhancerStepState()
     }
 
     this.result = {}
@@ -251,22 +255,25 @@ export class EnhancerPipelineState {
   }
 
   onStepPrepared(stepName: string) {
-    this.steps[stepName].prepare()
-
+    const stepState = this._getStepState(stepName)
+    stepState.prepare()
     this.currentStep = stepName
   }
 
   onStepStarted(stepName: string) {
-    this.steps[stepName].onStarted()
+    const stepState = this._getStepState(stepName)
+    stepState.onStarted()
     this.result = {}
   }
 
   onStepArgsEvaluated(stepName: string, args: Record<string, any>) {
-    this.steps[stepName].onArgsEvaluated(args)
+    const stepState = this._getStepState(stepName)
+    stepState.onArgsEvaluated(args)
   }
 
   onStepSkipped(stepName: string) {
-    this.steps[stepName].onSkipped()
+    const stepState = this._getStepState(stepName)
+    stepState.onSkipped()
 
     this.pendingStepTask = false
   }
@@ -278,29 +285,34 @@ export class EnhancerPipelineState {
   }
 
   onStepPendingTask(stepName: string, taskId: string) {
+    const stepState = this._getStepState(stepName)
     this.pendingStepTask = true
-    this.steps[stepName].onPendingTask(taskId)
+    stepState.onPendingTask(taskId)
   }
 
   onStepTaskFinished(stepName: string) {
+    const stepState = this._getStepState(stepName)
     this.pendingStepTask = false
-    this.steps[stepName].onTaskFinished()
+    stepState.onTaskFinished()
   }
 
   onStepFinished(stepName: string, output: Record<string, any>) {
-    this.steps[stepName].onFinished(output)
+    const stepState = this._getStepState(stepName)
+    stepState.onFinished(output)
 
     this.pendingStepTask = false
   }
 
   onStepError(stepName: string, error: Error) {
-    this.steps[stepName].onError(error)
+    const stepState = this._getStepState(stepName)
+    stepState.onError(error)
 
     this.pendingStepTask = false
   }
 
   logStep(stepName: string, level: string, message: string) {
-    this.steps[stepName].log(level, message)
+    const stepState = this._getStepState(stepName)
+    stepState.log(level, message)
   }
 
   onFinished() {
@@ -318,10 +330,20 @@ export class EnhancerPipelineState {
     this.errorMessage = error.message
   }
 
+  private _getStepState(stepName: string) {
+    const stepState = this.steps[stepName]
+    if (!stepState) {
+      throw new Error(`Step ${stepName} not found in pipeline state`)
+    }
+    return stepState
+  }
+
   get nextStep() {
     for (const step of this.pipeline.steps) {
-      if (this.steps[step.name].preparedAt && !this.steps[step.name].pending)
-        continue
+      const stepState = this.steps[step.name]
+      if (!stepState) continue
+
+      if (stepState.preparedAt && !stepState.pending) continue
 
       if (step) return step
     }

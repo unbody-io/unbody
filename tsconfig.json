@@ -18,9 +18,10 @@
     "strictPropertyInitialization": true,
     "strictFunctionTypes": true,
     "noImplicitAny": true,
-    "strictBindCallApply": false,
+    "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": true
   }
 }

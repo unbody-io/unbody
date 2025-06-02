@@ -14,7 +14,9 @@ export class PluginConfigService {
   async loadPluginConfig(
     plugin: UnbodyPlugins.Registration,
     manifest: PluginManifest,
-    getPluginManifest: (alias: string) => Promise<PluginManifest | null>,
+    getPluginManifest: (
+      alias: string,
+    ) => Promise<PluginManifest | null | undefined>,
     _config: Record<string, any> | undefined,
   ) {
     const config = {

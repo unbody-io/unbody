@@ -237,9 +237,9 @@ export class GenerativeOpenAI
               output.llmOutput!['tokenUsage']['completionTokens']
             usage.inputTokens = output.llmOutput!['tokenUsage']['promptTokens']
             usage.totalTokens = output.llmOutput!['tokenUsage']['totalTokens']
-            if (output.generations?.[0]?.[0].generationInfo?.['finish_reason'])
+            if (output.generations?.[0]?.[0]?.generationInfo?.['finish_reason'])
               finishReason =
-                output.generations?.[0]?.[0].generationInfo?.['finish_reason']
+                output.generations[0][0].generationInfo['finish_reason']
           },
         },
       ],

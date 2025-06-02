@@ -116,7 +116,7 @@ const providers: Provider[] = [
         )
 
         const isFatal = (() => {
-          switch (error.pluginDetails.manifest.type) {
+          switch (error.pluginDetails.manifest?.type) {
             // only one database is supported currently and it's required
             case PluginTypes.Database:
               return true

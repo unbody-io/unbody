@@ -259,16 +259,18 @@ export async function initSourceWorkflow(params: IndexSourceWorkflowParams) {
     )
 
     workflowResults.map((res, index) => {
+      const event = batch[index]!
+
       if (res.status === 'fulfilled')
         results.push({
-          event: batch[index],
-          recordId: batch[index].recordId,
+          event: event,
+          recordId: event.recordId,
           status: 'success',
         })
       else
         results.push({
-          event: batch[index],
-          recordId: batch[index].recordId,
+          event: event,
+          recordId: event.recordId,
           status: 'error',
           error: res.reason,
         })
@@ -441,7 +443,7 @@ const groupEventsByDependency = (
   return batches
 }
 
-const sortEvents = (events: IndexingEvent[]) => {
+const sortEvents = (events: IndexingEvent[]): IndexingEvent[] => {
   const eventIndex = events.reduce(
     (acc, event, index) => ({
       ...acc,
@@ -458,7 +460,7 @@ const sortEvents = (events: IndexingEvent[]) => {
 
     const { dependsOn = [] } = event
     dependsOn.forEach((depId) => {
-      graph[index].push(eventIndex[depId]!)
+      graph[index]!.push(eventIndex[depId]!)
       indegree[index]++
     })
   })
@@ -487,5 +489,5 @@ const sortEvents = (events: IndexingEvent[]) => {
     }
   }
 
-  return sorted.map((index) => events[index])
+  return sorted.map((index) => events[index]!)
 }

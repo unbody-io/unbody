@@ -39,7 +39,7 @@ export async function enhanceRecordObjectsWorkflow(
   const grouped = objects.reduce(
     (acc, obj) => {
       if (!acc[obj.depth]) acc[obj.depth] = []
-      acc[obj.depth].push(obj)
+      acc[obj.depth]!.push(obj)
 
       if (obj.depth > maxDepth) maxDepth = obj.depth
       collections[obj.collection] = []
@@ -61,14 +61,14 @@ export async function enhanceRecordObjectsWorkflow(
       (acc, obj) => {
         if (!collections[obj.collection]) return acc
         if (!acc[obj.collection]) acc[obj.collection] = []
-        acc[obj.collection].push(obj)
+        acc[obj.collection]!.push(obj)
         return acc
       },
       {} as Record<string, typeof objects>,
     )
 
     for (const collection in groupedByCollection) {
-      const pipelines = collections[collection]
+      const pipelines = collections[collection] || []
       const objects = groupedByCollection[collection] || []
       await Promise.all(
         objects.map(async (obj) => {
@@ -97,7 +97,7 @@ export async function enhanceRecordObjectsWorkflow(
               if (state.pendingStepTask) await sleep('10 seconds')
 
               if (state.currentStep && state.steps[state.currentStep]) {
-                const step = state.steps[state.currentStep]
+                const step = state.steps[state.currentStep]!
                 if (step.finishedAt && step.output) {
                   updates = {
                     ...updates,

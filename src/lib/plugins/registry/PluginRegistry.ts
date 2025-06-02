@@ -24,7 +24,7 @@ export type PluginRegistryConfig = {
   configLoader?: (
     plugin: UnbodyPlugins.Registration,
     manifest: PluginManifest,
-    getManifest: (alias: string) => Promise<PluginManifest | null>,
+    getManifest: (alias: string) => Promise<PluginManifest | undefined | null>,
     defaultLoader: (
       plugin: UnbodyPlugins.Registration,
       manifest: PluginManifest,
@@ -377,7 +377,7 @@ export namespace PluginRegistry {
     export interface Details {
       alias: string
       path: string
-      manifest: PluginManifest
+      manifest?: PluginManifest
     }
   }
 

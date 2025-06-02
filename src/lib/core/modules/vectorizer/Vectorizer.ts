@@ -123,12 +123,19 @@ export class Vectorizer {
   combineVectors(vectors: number[][]) {
     if (vectors.length === 0) return []
 
-    const vectorLength = vectors[0].length
+    const vectorLength = vectors[0]!.length
     const combined: number[] = new Array(vectorLength).fill(0)
+
+    if (vectors.every((v) => v.length !== vectorLength))
+      throw new Error(
+        `Vectors must have the same length. Expected ${vectorLength}, got lengths: ${vectors
+          .map((v) => v.length)
+          .join(', ')}`,
+      )
 
     for (const vector of vectors) {
       for (let i = 0; i < vectorLength; i++) {
-        combined[i] += vector[i]
+        combined[i]! += vector[i]!
       }
     }
 
@@ -208,7 +215,7 @@ export class Vectorizer {
       })
 
       for (const [index, input] of inputs.entries()) {
-        const embedding = embeddings[index]
+        const embedding = embeddings[index]!
         const path = input.path
         _.set(
           record,
@@ -228,7 +235,7 @@ export class Vectorizer {
         })
 
         for (const [index, input] of images.entries()) {
-          const vector = vectors[index]
+          const vector = vectors[index]!
           const path = input.path
           _.set(
             record,

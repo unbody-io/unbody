@@ -110,7 +110,8 @@ export class Enhancer {
       return state
     }
 
-    const pendingTaskId = state.pendingStepTask && state.steps[step.name].taskId
+    const pendingTaskId =
+      state.pendingStepTask && state.steps[step.name]?.taskId
 
     if (!pendingTaskId) {
       state.onStepPrepared(step.name)
@@ -236,6 +237,8 @@ export class Enhancer {
       if (parsed.body.length === 0) throw new Error()
 
       const firstNode = parsed.body[0]
+      if (!firstNode) throw new Error('No expression found')
+
       if (firstNode.type === 'ExpressionStatement') {
         const expressionNode = firstNode.expression
         if (
@@ -276,7 +279,7 @@ export class Enhancer {
   ) {
     const evaluated = await Promise.all(
       Object.keys(input).map(async (key) => {
-        const raw = input[key]
+        const raw = input[key]!
         const value =
           raw.type === 'literal'
             ? raw.value
@@ -296,7 +299,7 @@ export class Enhancer {
   ) {
     return await Promise.all(
       Object.keys(output).map(async (key) => {
-        const raw = output[key]
+        const raw = output[key]!
         const value =
           raw.type === 'literal'
             ? raw.value
@@ -312,7 +315,7 @@ export class Enhancer {
   ) {
     return await Promise.all(
       Object.keys(vars).map(async (key) => {
-        const raw = vars[key]
+        const raw = vars[key]!
         const value =
           raw.type === 'literal'
             ? raw.value

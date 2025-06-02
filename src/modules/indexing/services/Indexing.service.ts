@@ -37,7 +37,7 @@ export class IndexingService {
         query: `WorkflowType = 'indexSourceWorkflow' AND ExecutionStatus = 'Running' AND sourceId = '${params.sourceId}'`,
       })
 
-    if (executions.length > 0) {
+    if (executions[0]) {
       const execution = executions[0]
       const handle = this.temporal.workflow.getHandle(
         execution.execution!.workflowId!,

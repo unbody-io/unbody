@@ -115,6 +115,8 @@ export class ProjectService implements OnApplicationBootstrap {
 
     for (const key in plugins) {
       const plugin = plugins[key]
+      if (!plugin) continue
+
       const instance = await this.unbody.plugins.registry.getInstance(plugin)
 
       const webhookRegistry = instance.webhookRegistry

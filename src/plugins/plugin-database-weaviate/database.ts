@@ -79,7 +79,9 @@ export class Database {
     const path: string[] = []
     path.push('_additional { id }')
 
-    for (const property of this.collections[collection].properties) {
+    const properties = this.collections[collection]?.properties || []
+
+    for (const property of properties) {
       if (property.type === 'cref') {
         const paths = property.refs.map(
           (ref) => `... on ${ref.collection} { __typename _additional {id} }`,
@@ -268,10 +270,13 @@ export class Database {
       [key: string]: any
     }
 
+    const collectionConfig = this.collections[collection]
+    if (!collectionConfig) throw new Error(`Unknown collection: ${collection}`)
+
     for (const key in obj) {
       if (key === '_additional') continue
 
-      const property = this.collections[collection].properties.find(
+      const property = collectionConfig.properties.find(
         (prop) => prop.name === key,
       )
 
@@ -453,7 +458,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.insertMany(
-          grouped[collectionName].map(({ id, properties, vectors }) => ({
+          grouped[collectionName]!.map(({ id, properties, vectors }) => ({
             id,
             vectors,
             properties: {
@@ -470,7 +475,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.referenceAddMany(
-          grouped[collectionName].map(({ fromUuid, fromProperty, to }) => ({
+          grouped[collectionName]!.map(({ fromUuid, fromProperty, to }) => ({
             fromProperty,
             fromUuid,
             to,
@@ -601,7 +606,7 @@ export class Database {
       }
     }
 
-    const rootObj = objects[objects.length - 1]
+    const rootObj = objects[objects.length - 1]!
     const rest = objects.slice(0, -1)
 
     {
@@ -609,7 +614,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.insertMany(
-          grouped[collectionName].map(({ id, properties, vectors }) => ({
+          grouped[collectionName]!.map(({ id, properties, vectors }) => ({
             id,
             vectors,
             properties,
@@ -629,7 +634,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.referenceAddMany(
-          grouped[collectionName].map(({ fromUuid, fromProperty, to }) => ({
+          grouped[collectionName]!.map(({ fromUuid, fromProperty, to }) => ({
             fromProperty,
             fromUuid,
             to,
