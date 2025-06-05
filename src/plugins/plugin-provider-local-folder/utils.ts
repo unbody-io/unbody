@@ -4,7 +4,12 @@ import * as mimeTypes from 'mime-types'
 import * as path from 'path'
 import { settle } from 'src/lib/core-utils'
 import * as uuid from 'uuid'
-import { EventDocument, RecordMetadata, WatcherConfig } from './plugin.types'
+import {
+  CreatedEvent,
+  EventDocument,
+  RecordMetadata,
+  WatcherConfig,
+} from './plugin.types'
 
 export const getFileMetadata = async (
   directory: string,
@@ -36,8 +41,8 @@ export const getFileMetadata = async (
 
 export const scanFolder = async (
   config: WatcherConfig,
-): Promise<EventDocument[]> => {
-  const events: EventDocument[] = []
+): Promise<CreatedEvent[]> => {
+  const events: CreatedEvent[] = []
 
   const watcher = chokidar.watch(config.directory, {
     atomic: 1000,
@@ -128,19 +133,28 @@ export const watchForChanges = async (
       return
     }
 
-    await callback({
-      recordId: id,
-      filename: relative,
-      timestamp: Date.now(),
-      sourceId: config.sourceId,
-      metadata: metadata,
-      eventName:
-        event === 'add'
-          ? 'created'
-          : event === 'change'
-            ? 'updated'
-            : 'deleted',
-    } satisfies EventDocument)
+    const eventName =
+      event === 'add' ? 'created' : event === 'change' ? 'updated' : 'deleted'
+
+    const eventDocument: EventDocument =
+      eventName === 'deleted'
+        ? {
+            recordId: id,
+            filename: relative,
+            timestamp: Date.now(),
+            sourceId: config.sourceId,
+            eventName,
+          }
+        : {
+            recordId: id,
+            filename: relative,
+            timestamp: Date.now(),
+            sourceId: config.sourceId,
+            eventName,
+            metadata,
+          }
+
+    await callback(eventDocument)
   })
 
   return watcher

@@ -14,7 +14,9 @@ export class PluginConfigService {
   async loadPluginConfig(
     plugin: UnbodyPlugins.Registration,
     manifest: PluginManifest,
-    getPluginManifest: (alias: string) => Promise<PluginManifest | null>,
+    getPluginManifest: (
+      alias: string,
+    ) => Promise<PluginManifest | null | undefined>,
     _config: Record<string, any> | undefined,
   ) {
     const config = {
@@ -26,15 +28,18 @@ export class PluginConfigService {
         this.configService.get('server.baseUrl') || 'http://localhost:3000'
       if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1)
 
-      if (!config.connection) {
-        config.connection = {
+      if (!config['connection']) {
+        config['connection'] = {
           httpHost: '127.0.0.1',
           httpPort: 8080,
           grpcHost: '127.0.0.1',
         }
       }
 
-      if (!config.modules?.textVectorizer) {
+      if (!config['modules']) config['modules'] = {}
+      const modules = config['modules']
+
+      if (!modules['textVectorizer']) {
         const vectorizerName = this.settings.textVectorizer.name
         const vectorizerManifest = await getPluginManifest(vectorizerName)
         const isMultimodal =
@@ -43,33 +48,27 @@ export class PluginConfigService {
         const endpointURL = `${baseUrl}/inference/embeddings/${isMultimodal ? 'multimodal' : 'text'}/${vectorizerName}`
         const name = isMultimodal ? 'multi2vec-custom' : 'text2vec-huggingface'
 
-        config.modules = {
-          ...config.modules,
-          textVectorizer: {
-            name: name,
-            multimodal: isMultimodal,
-            config: {
-              endpointURL,
-            },
+        modules['textVectorizer'] = {
+          name: name,
+          multimodal: isMultimodal,
+          config: {
+            endpointURL,
           },
         }
       }
 
-      if (!config.modules?.generative) {
+      if (!config['modules']?.['generative']) {
         const endpointURL = `${baseUrl}/generative/`
 
-        config.modules = {
-          ...config.modules,
-          generative: {
-            name: 'generative-unbody',
-            config: {
-              endpointURL,
-            },
+        modules['generative'] = {
+          name: 'generative-unbody',
+          config: {
+            endpointURL,
           },
         }
       }
 
-      if (!config.modules?.imageVectorizer && !!this.settings.imageVectorizer) {
+      if (!modules['imageVectorizer'] && !!this.settings.imageVectorizer) {
         const vectorizerName = this.settings.imageVectorizer.name
         const vectorizerManifest = await getPluginManifest(vectorizerName)
         const isMultimodal =
@@ -77,26 +76,20 @@ export class PluginConfigService {
           vectorizerManifest.type === 'multimodal_vectorizer'
         const endpointURL = `${baseUrl}/inference/embeddings/${isMultimodal ? 'multimodal' : 'image'}/${vectorizerName}`
         const name = isMultimodal ? 'multi2vec-custom' : 'img2vec-custom'
-        config.modules = {
-          ...config.modules,
-          imageVectorizer: {
-            name: name,
-            multimodal: isMultimodal,
-            config: {
-              endpointURL: endpointURL,
-            },
+        modules['imageVectorizer'] = {
+          name: name,
+          multimodal: isMultimodal,
+          config: {
+            endpointURL: endpointURL,
           },
         }
       }
 
-      if (!config.modules?.reranker && !!this.settings.reranker) {
-        config.modules = {
-          ...config.modules,
-          reranker: {
-            name: 'reranker-custom',
-            config: {
-              endpointURL: `${baseUrl}/inference/rerank/${this.settings.reranker.name}`,
-            },
+      if (!modules['reranker'] && !!this.settings.reranker) {
+        modules['reranker'] = {
+          name: 'reranker-custom',
+          config: {
+            endpointURL: `${baseUrl}/inference/rerank/${this.settings.reranker.name}`,
           },
         }
       }

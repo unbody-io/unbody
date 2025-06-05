@@ -60,11 +60,6 @@ export interface DatabasePlugin<
   getObject: (ctx: C, params: GetObjectParams) => Promise<GetObjectResult>
 
   patchObject: (ctx: C, params: PatchObjectParams) => Promise<PatchObjectResult>
-
-  updateObjectVectors: (
-    ctx: C,
-    params: UpdateObjectVectorsParams,
-  ) => Promise<UpdateObjectVectorsResult>
 }
 
 export type ConfigureDatabaseParams = {}
@@ -172,16 +167,6 @@ export type PatchObjectResult = {
     objectId: string
     collection: string
   }>
-}
-
-export type UpdateObjectVectorsParams = {
-  objectId: string
-  collection: string
-  vectors: number[]
-}
-export type UpdateObjectVectorsResult = {
-  objectId: string
-  collection: string
 }
 
 export type CreateRecordPayload<T extends { __typename: string }> = {

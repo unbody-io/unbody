@@ -1,13 +1,11 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { UnbodySourceDoc } from 'src/lib/core-types'
+import { Result } from 'src/lib/core-utils/result'
 import { Unbody } from 'src/lib/core/Unbody'
 import { IndexingService } from 'src/modules/indexing/services/Indexing.service'
+import { IndexingFailures } from 'src/modules/indexing/types'
 import * as uuid from 'uuid'
 import { ConnectSourceDto } from '../dto/ConnectSource.dto'
 import { CreateSourceDto } from '../dto/CreateSource.dto'
@@ -15,8 +13,6 @@ import { ListEntrypointOptionsDto } from '../dto/ListEntrypointOptions.dto'
 import { SetEntrypointDto } from '../dto/SetEntrypoint.dto'
 import { VerifySourceConnectionDto } from '../dto/VerifySourceConnection.dto'
 import { SourceSchemaClass } from '../schemas/Source.schema'
-import { IndexingFailures } from 'src/modules/indexing/types'
-import { Result } from 'src/lib/core-utils/result'
 
 @Injectable()
 export class SourceService {
@@ -55,10 +51,10 @@ export class SourceService {
       connected: doc.connected,
       initialized: doc.initialized,
 
-      entrypoint: doc.entrypoint,
+      entrypoint: doc.entrypoint || undefined,
       credentials: doc.credentials,
       providerState: doc.providerState,
-      entrypointOptions: doc.entrypointOptions,
+      entrypointOptions: doc.entrypointOptions || undefined,
 
       createdAt: doc.createdAt.toJSON(),
       updatedAt: doc.updatedAt.toJSON(),
@@ -127,7 +123,9 @@ export class SourceService {
         isValid: true,
       }
     } catch (error) {
-      throw new BadRequestException(error.message)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      throw new BadRequestException(errorMessage)
     }
   }
 
@@ -149,7 +147,9 @@ export class SourceService {
 
       return res
     } catch (error) {
-      throw new BadRequestException(error.message)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      throw new BadRequestException(errorMessage)
     }
   }
 
@@ -179,7 +179,9 @@ export class SourceService {
 
       return res
     } catch (error) {
-      throw new BadRequestException(error.message)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      throw new BadRequestException(errorMessage)
     }
   }
 
@@ -240,7 +242,7 @@ export class SourceService {
         state: json.state,
         connected: json.connected,
         initialized: json.initialized,
-        entrypoint: json.entrypoint,
+        entrypoint: json.entrypoint || undefined,
         createdAt: json.createdAt.toJSON(),
         updatedAt: json.updatedAt.toJSON(),
       }

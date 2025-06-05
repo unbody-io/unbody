@@ -4,7 +4,6 @@ import { ImageBlockCollection } from 'src/lib/collections'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   FileParserPlugin,
-  FileParserPluginContext,
   ParseFileParams,
   ParseFileResult,
   ProcessFileRecordParams,
@@ -16,8 +15,10 @@ import { Config, Context } from './plugin.types'
 
 const configSchema = z.object({})
 
-export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+export class ImageFileParser
+  implements PluginLifecycle<Context, Config>, FileParserPlugin<Context>
+{
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
     config: configSchema,
@@ -34,7 +35,7 @@ export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
   destroy = async (ctx: Context) => {}
 
   parseFile = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ParseFileParams,
   ): Promise<ParseFileResult> => {
     const fileBuffer = Buffer.isBuffer(params.file)
@@ -47,7 +48,7 @@ export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
 
     const record = ImageBlockCollection.createPayload({
       originalName: originalName,
-      alt: params.metadata.alt || '',
+      alt: params.metadata['alt'] || '',
       title: '',
       caption: '',
       classNames: [],
@@ -55,7 +56,7 @@ export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
       size: metadata.size,
       width: metadata.width,
       height: metadata.height,
-      mimeType: params.metadata.mimeType,
+      mimeType: params.metadata['mimeType'],
     })
 
     return {
@@ -65,7 +66,7 @@ export class ImageFileParser implements PluginLifecycle, FileParserPlugin {
   }
 
   processFileRecord = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ProcessFileRecordParams,
   ): Promise<ProcessFileRecordResult> => {
     return {

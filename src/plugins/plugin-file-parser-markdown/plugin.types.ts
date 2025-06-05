@@ -1,5 +1,5 @@
-import { PluginContext } from 'src/lib/plugins-common'
+import { FileParserPluginContext } from 'src/lib/plugins-common/file-parser'
 
 export type Config = {}
 
-export type Context = PluginContext
+export type Context = FileParserPluginContext

@@ -2,6 +2,7 @@ import {
   ProviderContextSourceData,
   ProviderPluginContext,
 } from 'src/lib/plugins-common/provider'
+import { DatabaseAPI } from 'src/lib/plugins-common/resources'
 
 export type Config = {}
 

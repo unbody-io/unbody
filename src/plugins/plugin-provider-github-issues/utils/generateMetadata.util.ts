@@ -158,7 +158,7 @@ export const generateNodeMetadata = async (
     const metadata: GithubPullRequestReviewThreadMetadata = {
       id: thread.id,
       url: thread.pullRequest.url,
-      author: thread.comments?.nodes[0]?.pullRequestReview?.author,
+      author: thread.comments?.nodes[0]?.pullRequestReview?.author || null,
       diffSide: thread.diffSide,
       isResolved: thread.isResolved,
       isOutdated: thread.isOutdated,
@@ -172,9 +172,12 @@ export const generateNodeMetadata = async (
 
       threadId: thread.pullRequest.id,
 
-      submittedAt: thread.comments?.nodes[0]?.pullRequestReview?.submittedAt,
-      createdAt: thread.comments?.nodes[0]?.pullRequestReview?.createdAt,
-      modifiedAt: thread.comments?.nodes[0]?.pullRequestReview?.updatedAt,
+      submittedAt:
+        thread.comments?.nodes[0]?.pullRequestReview?.submittedAt || null,
+      createdAt:
+        thread.comments?.nodes[0]?.pullRequestReview?.createdAt || null,
+      modifiedAt:
+        thread.comments?.nodes[0]?.pullRequestReview?.updatedAt || null,
 
       type: 'pull_request_review',
     }

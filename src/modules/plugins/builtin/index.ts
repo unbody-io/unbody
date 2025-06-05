@@ -1,3 +1,4 @@
+import * as BuiltinPlugin from 'src/lib/plugins/builtin'
 import type { Config as WeaviateConfig } from 'src/plugins/plugin-database-weaviate/plugin.types'
 import type { Config as SummarizerConfig } from 'src/plugins/plugin-enhancer-summarizer/plugin.types'
 import type {
@@ -10,7 +11,6 @@ import type {
   Model as Text2VecOpenAIModel,
 } from 'src/plugins/plugin-text2vec-openai/plugin.types'
 import { UnbodyPlugins } from '../../../lib/core-types'
-import * as BuiltinPlugin from 'src/lib/plugins/builtin'
 
 interface Registration extends UnbodyPlugins.Registration {
   alias: BuiltinPlugin.Alias
@@ -21,9 +21,9 @@ const pluginPath = (plugin: string) => {
   return require.resolve(`../../../plugins/${plugin}`)
 }
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || ''
-const OPENAI_PROJECT = process.env.OPENAI_PROJECT || ''
-const OPENAI_ORGANIZATION = process.env.OPENAI_ORGANIZATION || ''
+const OPENAI_API_KEY = process.env['OPENAI_API_KEY'] || ''
+const OPENAI_PROJECT = process.env['OPENAI_PROJECT'] || ''
+const OPENAI_ORGANIZATION = process.env['OPENAI_ORGANIZATION'] || ''
 
 const text2VecOpenAIPlugin = ({
   alias,
@@ -53,7 +53,7 @@ const text2VecOpenAIPlugin = ({
   }
 }
 
-const COHERE_API_KEY = process.env.COHERE_API_KEY || ''
+const COHERE_API_KEY = process.env['COHERE_API_KEY'] || ''
 
 const multi2vecCoherePlugin = ({
   alias,
@@ -95,11 +95,11 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
       return {
         connection: {
           httpHost:
-            process.env.PLUGIN_DATABASE_WEAVIATE_HTTP_HOST || defaultHost,
+            process.env['PLUGIN_DATABASE_WEAVIATE_HTTP_HOST'] || defaultHost,
           httpPort:
-            process.env.PLUGIN_DATABASE_WEAVIATE_HTTP_PORT || defaultPort,
+            process.env['PLUGIN_DATABASE_WEAVIATE_HTTP_PORT'] || defaultPort,
           grpcHost:
-            process.env.PLUGIN_DATABASE_WEAVIATE_GRPC_HOST || defaultHost,
+            process.env['PLUGIN_DATABASE_WEAVIATE_GRPC_HOST'] || defaultHost,
         },
       } as WeaviateConfig
     },
@@ -113,7 +113,7 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
     alias: BuiltinPlugin.ImageVectorizer.Img2Vec.neural,
     path: pluginPath('plugin-img2vec-neural'),
     config: async () => ({
-      baseURL: process.env.IMG2VEC_BASE_URL,
+      baseURL: process.env['IMG2VEC_BASE_URL'],
     }),
   },
   {
@@ -192,10 +192,10 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
     alias: BuiltinPlugin.Storage.local,
     config: async () =>
       ({
-        publicRootDir: process.env.LOCAL_STORAGE_PUBLIC_ROOT_DIR,
-        privateRootDir: process.env.LOCAL_STORAGE_PRIVATE_ROOT_DIR,
-        publicBaseUrl: process.env.LOCAL_STORAGE_PUBLIC_BASE_URL,
-        privateBaseUrl: process.env.LOCAL_STORAGE_PRIVATE_BASE_URL,
+        publicRootDir: process.env['LOCAL_STORAGE_PUBLIC_ROOT_DIR'],
+        privateRootDir: process.env['LOCAL_STORAGE_PRIVATE_ROOT_DIR'],
+        publicBaseUrl: process.env['LOCAL_STORAGE_PUBLIC_BASE_URL'],
+        privateBaseUrl: process.env['LOCAL_STORAGE_PRIVATE_BASE_URL'],
       }) as LocalStorageConfig,
     errorResolutionSuggestion: `Please check if the following environment variables are set correctly, and that the corresponding directories exist:
   - LOCAL_STORAGE_PUBLIC_ROOT_DIR

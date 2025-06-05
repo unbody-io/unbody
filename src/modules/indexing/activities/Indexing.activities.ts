@@ -230,13 +230,22 @@ export class IndexingActivities {
       try {
         await provider.registerObserver!({})
       } catch (err) {
-        throw new ApplicationFailure(
-          err.message,
-          'observer_registration_failed',
-          false,
-          null,
-          err,
-        )
+        if (err instanceof Error) {
+          throw new ApplicationFailure(
+            err.message,
+            'observer_registration_failed',
+            false,
+            null,
+            err,
+          )
+        } else {
+          throw new ApplicationFailure(
+            'Unknown error while registering observer',
+            'observer_registration_failed',
+            false,
+            null,
+          )
+        }
       }
     }
 

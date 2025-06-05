@@ -1,5 +1,5 @@
 import { getMetadataObject } from '../helpers/metadata.helpers'
-import { CollectionType } from './Collection.decorator'
+import { Collection, CollectionType } from './Collection.decorator'
 import { symbols } from './symbols'
 
 export type PropertyAttributes = Record<string, any>
@@ -16,66 +16,64 @@ export const PropertyAttributes =
   }
 
 PropertyAttributes.getAttributes = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
 ): PropertyAttributes => {
   return (
-    getMetadataObject(schemaClass.prototype, propertyName)[
+    getMetadataObject(Collection.getPrototype(collection), propertyName)[
       symbols.property.attributes
     ] || {}
   )
 }
 
 PropertyAttributes.setAttributes = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
   attributes: PropertyAttributes,
 ) => {
   Reflect.defineMetadata(
     symbols.property.attributes,
     { ...attributes },
-    schemaClass.prototype,
+    Collection.getPrototype(collection),
     propertyName,
   )
 }
 
 PropertyAttributes.getAttribute = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
   attribute: string,
 ) => {
-  return PropertyAttributes.getAttributes(schemaClass, propertyName)?.[
-    attribute
-  ]
+  return PropertyAttributes.getAttributes(collection, propertyName)?.[attribute]
 }
 
 PropertyAttributes.setAttribute = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
   attribute: string,
   value: any,
 ) => {
-  PropertyAttributes.setAttributes(schemaClass, propertyName, {
-    ...(PropertyAttributes.getAttributes(schemaClass, propertyName) || {}),
+  PropertyAttributes.setAttributes(collection, propertyName, {
+    ...(PropertyAttributes.getAttributes(collection, propertyName) || {}),
     [attribute]: value,
   })
 }
 
 PropertyAttributes.deleteAttribute = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
   attribute: string,
 ) => {
   const attributes = {
-    ...(PropertyAttributes.getAttributes(schemaClass, propertyName) || {}),
+    ...(PropertyAttributes.getAttributes(collection, propertyName) || {}),
   }
   delete attributes[attribute]
-  PropertyAttributes.setAttributes(schemaClass, propertyName, attributes)
+  PropertyAttributes.setAttributes(collection, propertyName, attributes)
 }
 
 PropertyAttributes.deleteAttributes = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
 ) => {
-  PropertyAttributes.setAttributes(schemaClass, propertyName, {})
+  PropertyAttributes.setAttributes(collection, propertyName, {})
 }

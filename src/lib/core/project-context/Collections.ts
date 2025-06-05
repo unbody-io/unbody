@@ -159,9 +159,15 @@ export class Collections {
           (prop) => prop.name === ref.name,
         )
 
-        const factory = CollectionFactory.fromCollection(
-          this._collectionsMap[meta.name],
-        )
+        const CollectionClass = this._collectionsMap[meta.name]
+        if (!CollectionClass)
+          throw new Error(
+            'Collection class not found for ' +
+              meta.name +
+              '. Collection Map may not be initialized correctly.',
+          )
+
+        const factory = CollectionFactory.fromCollection(CollectionClass)
 
         factory.addProperty(ref.name, ref.options, ref.attributes, {
           type: () => {
@@ -174,10 +180,18 @@ export class Collections {
                 property: ref.property,
               })),
               ...(extended ? extended.refs : []),
-            ].map(({ collection, property }) => ({
-              collection: this._collectionsMap[collection],
-              property,
-            }))
+            ].map(({ collection, property }) => {
+              const targetCollectionClass = this._collectionsMap[collection]
+              if (!targetCollectionClass)
+                throw new Error(
+                  `Collection "${collection}" not found in collections map.`,
+                )
+
+              return {
+                collection: targetCollectionClass,
+                property,
+              }
+            })
           },
           onUpdate: ref.referenceOptions?.onUpdate,
           onDelete: ref.referenceOptions?.onDelete,
@@ -188,9 +202,13 @@ export class Collections {
     }
 
     for (const collection of this.settings.customSchema?.collections || []) {
-      const factory = CollectionFactory.fromCollection(
-        this._collectionsMap[collection.name],
-      )
+      const CollectionClass = this._collectionsMap[collection.name]
+      if (!CollectionClass)
+        throw new Error(
+          `Collection "${collection.name}" not found in collections map.`,
+        )
+
+      const factory = CollectionFactory.fromCollection(CollectionClass)
 
       const referenceProperties = collection.properties.filter(
         (prop) => prop.type === 'cref',
@@ -203,10 +221,18 @@ export class Collections {
           {},
           {
             type: () =>
-              ref.refs.map(({ collection, property }) => ({
-                collection: this._collectionsMap[collection],
-                property,
-              })),
+              ref.refs.map(({ collection, property }) => {
+                const targetCollectionClass = this._collectionsMap[collection]
+                if (!targetCollectionClass)
+                  throw new Error(
+                    `Collection "${collection}" not found in collections map.`,
+                  )
+
+                return {
+                  collection: targetCollectionClass,
+                  property,
+                }
+              }),
             onUpdate: ref.onUpdate,
             onDelete: ref.onDelete,
           },

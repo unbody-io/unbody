@@ -1,10 +1,12 @@
-import { Formatter } from './Formattter'
 import * as jsonpath from 'jsonpath'
+import { Formatter } from './Formattter'
 
-export class JsonPathFormatter extends Formatter<{}> {
-  public name: string = 'jsonpath'
+export class JsonPathFormatter extends Formatter<{
+  expression: string
+}> {
+  public override name: string = 'jsonpath'
 
-  public format = async (
+  public override format = async (
     expression: string,
     data: Record<string, any> | Record<string, any>[],
     args: Record<string, any>,
@@ -21,5 +23,6 @@ export class JsonPathFormatter extends Formatter<{}> {
     return res
   }
 
-  public validateOptions = async (options: { expression: string }) => ({})
+  public override validateOptions = async (options: { expression: string }) =>
+    options
 }

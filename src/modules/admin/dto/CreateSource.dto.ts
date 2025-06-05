@@ -7,7 +7,7 @@ export class CreateSourceDto {
     example: 'google_drive',
   })
   @IsString()
-  provider: string
+  provider!: string
 
   @ApiProperty({
     example: 'Google Drive source',
@@ -19,5 +19,5 @@ export class CreateSourceDto {
     message:
       'The name should only include letters, numbers, underscores, spaces, and hyphens.',
   })
-  name: string
+  name!: string
 }

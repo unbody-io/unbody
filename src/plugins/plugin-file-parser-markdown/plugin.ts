@@ -9,7 +9,6 @@ import { isInvalidDate, settleSync } from 'src/lib/core-utils'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   FileParserPlugin,
-  FileParserPluginContext,
   ParseFileParams,
   ParseFileResult,
   ProcessFileRecordParams,
@@ -62,10 +61,10 @@ const getAttribute = <T = any>(
 }
 
 const metadataFromAttributes = (attributes: Record<string, any>) => {
-  const title = attributes?.title
-  const subtitle = attributes?.subtitle
-  const description = attributes?.description
-  const summary = attributes?.summary
+  const title = attributes?.['title']
+  const subtitle = attributes?.['subtitle']
+  const description = attributes?.['description']
+  const summary = attributes?.['summary']
 
   const createdAt = getAttribute(
     attributes,
@@ -110,8 +109,10 @@ const metadataFromAttributes = (attributes: Record<string, any>) => {
   }
 }
 
-export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+export class MarkdownFileParser
+  implements PluginLifecycle<Context, Config>, FileParserPlugin<Context>
+{
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
     config: z.object({}),
@@ -129,7 +130,7 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
   destroy = async (ctx: Context) => {}
 
   parseFile = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ParseFileParams,
   ): Promise<ParseFileResult> => {
     const fileBuffer = Buffer.isBuffer(params.file)
@@ -151,11 +152,13 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
     for (const element of parsed.childNodes) {
       if (!(element instanceof htmlParser.HTMLElement)) continue
 
-      elements.push(element)
       if (element.childNodes.length === 1 && !!element.querySelector('img')) {
         const img = element.querySelector('img')!!
         const { src, alt, title } = img.attributes
 
+        if (!src) continue
+
+        elements.push(element)
         blocks.push({
           __typename: 'ImageBlock',
           url: src,
@@ -188,6 +191,7 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
           }
         }
 
+        elements.push(element)
         blocks.push({
           tagName: tagName,
           html: current.outerHTML,
@@ -217,9 +221,11 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
             blockIndex: index,
             title: element.text,
             tag: tagName,
-            level: Number.parseInt(tagName[1], 10),
+            level: Number.parseInt(tagName[1]!, 10),
           }
         }
+
+        return null
       })
       .filter((item) => !!item)
 
@@ -242,8 +248,9 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
         : '')
     doc.summary = metadata.summary || ''
     doc.authors = metadata.authors || ''
-    doc.createdAt = metadata.createdAt || params.metadata?.createdAt || null
-    doc.modifiedAt = metadata.modifiedAt || params.metadata?.modifiedAt || null
+    doc.createdAt = metadata.createdAt || params.metadata?.['createdAt'] || null
+    doc.modifiedAt =
+      metadata.modifiedAt || params.metadata?.['modifiedAt'] || null
     doc.tags = metadata.tags || []
     doc.toc = JSON.stringify(tableOfContents)
     doc.blocks = blocks.map((block, index) => ({
@@ -258,7 +265,7 @@ export class MarkdownFileParser implements PluginLifecycle, FileParserPlugin {
   }
 
   processFileRecord = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ProcessFileRecordParams,
   ): Promise<ProcessFileRecordResult> => {
     const record = params.record as JsonRecord<'TextDocument'>

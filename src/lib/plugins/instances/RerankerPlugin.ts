@@ -14,14 +14,14 @@ export class RerankerPluginInstance extends PluginInstance<RerankerPluginInstanc
   static methods: Array<keyof RerankerPlugin> = ['rerank']
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: RerankerPluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: RerankerPluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, RerankerPluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.Reranker
   }
 }

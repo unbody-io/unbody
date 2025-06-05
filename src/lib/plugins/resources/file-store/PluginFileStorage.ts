@@ -64,7 +64,7 @@ export class PluginFileStorage {
 
       const size = await fs.promises.stat(filename).then((stat) => stat.size)
 
-      const file = files[0]
+      const file = files[0]!
       await file.updateOne({ size: size }, { session })
 
       return {
@@ -101,7 +101,7 @@ export class PluginFileStorage {
 
     if (!file) throw new Error(`File not found: ${params.key}`)
 
-    await fs.promises.unlink(file.payload.filename)
+    await fs.promises.unlink(file.payload['filename'])
     await file.deleteOne()
   }
 
@@ -142,7 +142,7 @@ export class PluginFileStorage {
 
     if (!file) throw new Error(`File not found: ${params.key}`)
 
-    return fs.createReadStream(file.payload.filename)
+    return fs.createReadStream(file.payload['filename'])
   }
 
   private getPluginDir = (() => {

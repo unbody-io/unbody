@@ -32,8 +32,6 @@ type InsertPayload = {
   }>
 }
 
-type PatchPayload = InsertPayload & {}
-
 export class Database {
   public schemaManager: SchemaManager
 
@@ -48,7 +46,7 @@ export class Database {
     }[]
   > = new Map()
 
-  private _collections: Record<string, CollectionConfig>
+  private _collections!: Record<string, CollectionConfig>
   private _graphQLPaths: Record<string, string> = {}
   private _graphql: GraphQLClient
 
@@ -81,7 +79,9 @@ export class Database {
     const path: string[] = []
     path.push('_additional { id }')
 
-    for (const property of this.collections[collection].properties) {
+    const properties = this.collections[collection]?.properties || []
+
+    for (const property of properties) {
       if (property.type === 'cref') {
         const paths = property.refs.map(
           (ref) => `... on ${ref.collection} { __typename _additional {id} }`,
@@ -238,7 +238,14 @@ export class Database {
     return null
   }
 
-  getObject = async (collection: string, objectId: string) => {
+  getObject = async (
+    collection: string,
+    objectId: string,
+  ): Promise<{
+    __typename: string
+    id: string
+    [key: string]: any
+  } | null> => {
     const path = this.getGraphQLPath(collection)
     const res = await this.v2.graphql
       .get()
@@ -254,15 +261,22 @@ export class Database {
     const obj = res.data?.Get?.[collection]?.[0]
     if (!obj) return null
 
-    const result: Record<string, any> = {
+    const result = {
       id: obj.id,
       __typename: collection,
+    } as {
+      __typename: string
+      id: string
+      [key: string]: any
     }
+
+    const collectionConfig = this.collections[collection]
+    if (!collectionConfig) throw new Error(`Unknown collection: ${collection}`)
 
     for (const key in obj) {
       if (key === '_additional') continue
 
-      const property = this.collections[collection].properties.find(
+      const property = collectionConfig.properties.find(
         (prop) => prop.name === key,
       )
 
@@ -296,7 +310,7 @@ export class Database {
     if (!record['id'] && record['remoteId']) {
       record['id'] = Database.getObjectId(sourceId, record['remoteId'])
     }
-    const objectId = record.id
+    const objectId = record['id']
 
     const properties: Record<string, any> = {}
 
@@ -306,8 +320,13 @@ export class Database {
 
       if (property.type === 'cref') {
         const references = record[key] as Array<
-          | { __typename: string; id: string }
-          | { __typename: string; [key: string]: any }
+          | { __typename: string; id: string; remoteId?: string | undefined }
+          | {
+              __typename: string
+              id?: string | undefined
+              remoteId: string
+              [key: string]: any
+            }
         >
 
         let index = -1
@@ -325,11 +344,12 @@ export class Database {
           }
 
           if (
-            Object.keys(reference).every((key) =>
-              ['id', '__typename', 'remoteId'].includes(key),
-            )
+            Object.keys(reference).length === 3 &&
+            typeof reference.id !== 'undefined' &&
+            typeof reference.__typename !== 'undefined' &&
+            typeof reference.remoteId !== 'undefined'
           ) {
-            const refId = reference.id
+            const refId = reference.id!
 
             payload.references.push({
               fromUuid: objectId,
@@ -423,7 +443,7 @@ export class Database {
     if (!record['id'] && record['remoteId'])
       record['id'] = Database.getObjectId(sourceId, record['remoteId'])
 
-    const objectId = record.id
+    const objectId = record['id']
 
     const { objects, references } = this._createInsertPayload(
       [],
@@ -438,7 +458,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.insertMany(
-          grouped[collectionName].map(({ id, properties, vectors }) => ({
+          grouped[collectionName]!.map(({ id, properties, vectors }) => ({
             id,
             vectors,
             properties: {
@@ -455,7 +475,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.referenceAddMany(
-          grouped[collectionName].map(({ fromUuid, fromProperty, to }) => ({
+          grouped[collectionName]!.map(({ fromUuid, fromProperty, to }) => ({
             fromProperty,
             fromUuid,
             to,
@@ -586,7 +606,7 @@ export class Database {
       }
     }
 
-    const rootObj = objects[objects.length - 1]
+    const rootObj = objects[objects.length - 1]!
     const rest = objects.slice(0, -1)
 
     {
@@ -594,7 +614,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.insertMany(
-          grouped[collectionName].map(({ id, properties, vectors }) => ({
+          grouped[collectionName]!.map(({ id, properties, vectors }) => ({
             id,
             vectors,
             properties,
@@ -614,7 +634,7 @@ export class Database {
       for (const collectionName in grouped) {
         const collection = this.v3.collections.use(collectionName)
         await collection.data.referenceAddMany(
-          grouped[collectionName].map(({ fromUuid, fromProperty, to }) => ({
+          grouped[collectionName]!.map(({ fromUuid, fromProperty, to }) => ({
             fromProperty,
             fromUuid,
             to,

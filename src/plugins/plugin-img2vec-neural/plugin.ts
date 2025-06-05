@@ -10,9 +10,11 @@ import * as uuid from 'uuid'
 import { Config, Context } from './plugin.types'
 import { schemas } from './schemas'
 
-export class Img2VecNeural implements PluginLifecycle, ImageVectorizerPlugin {
-  private config: Config
-  private client: AxiosInstance
+export class Img2VecNeural
+  implements PluginLifecycle<Context, Config>, ImageVectorizerPlugin<Context>
+{
+  private config!: Config
+  private client!: AxiosInstance
 
   schemas: ImageVectorizerPlugin['schemas'] = schemas
 
@@ -31,7 +33,7 @@ export class Img2VecNeural implements PluginLifecycle, ImageVectorizerPlugin {
 
   vectorize = async (
     ctx: Context,
-    params: VectorizeParams<{}>,
+    params: VectorizeParams,
   ): Promise<VectorizeResult> => {
     const res = await Promise.all(
       params.image.map(async (image) => {

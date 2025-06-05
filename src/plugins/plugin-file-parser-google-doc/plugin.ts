@@ -18,7 +18,6 @@ import { settleSync } from 'src/lib/core-utils'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   FileParserPlugin,
-  FileParserPluginContext,
   ParseFileParams,
   ParseFileResult,
   ProcessFileRecordParams,
@@ -36,8 +35,10 @@ export const slugify = (
 ) =>
   _slugify(text, { strict: true, trim: true, lower: true, ...(options ?? {}) })
 
-export class GoogleDocFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+export class GoogleDocFileParser
+  implements PluginLifecycle<Context, Config>, FileParserPlugin<Context>
+{
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = {
     config: z.object({}),
@@ -55,7 +56,7 @@ export class GoogleDocFileParser implements PluginLifecycle, FileParserPlugin {
   destroy = async (ctx: Context) => {}
 
   parseFile = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ParseFileParams,
   ): Promise<ParseFileResult> => {
     const fileBuffer = Buffer.isBuffer(params.file)
@@ -126,7 +127,7 @@ export class GoogleDocFileParser implements PluginLifecycle, FileParserPlugin {
   }
 
   processFileRecord = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ProcessFileRecordParams,
   ): Promise<ProcessFileRecordResult> => {
     const record = params.record as JsonRecord<'GoogleDoc'>
@@ -230,7 +231,7 @@ const translateInlineStyles = (html: HTMLElement) => {
     if (!parsed.stylesheet || parsed.stylesheet.rules?.length === 0) continue
 
     const rule = parsed.stylesheet.rules[0]
-    if (!('declarations' in rule)) continue
+    if (!rule || !('declarations' in rule)) continue
 
     const declarations = (rule.declarations || []) as css.Declaration[]
 
@@ -345,7 +346,7 @@ export const sanitizerGDocHTML = async (
   const transformAnchorElements: Transformer = (_, attribs) => {
     const { href, ...rest } = attribs
 
-    const [url] = settleSync(() => new URL(href))
+    const [url] = settleSync(() => new URL(href || ''))
     const q = url && url.searchParams.get('q')
     const [newUrl] = settleSync(() => q && new URL(q))
 
@@ -543,6 +544,8 @@ export const parseSanitizedGDocHTML = async (
       ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(block.tagName)
     ) {
       const element = blockElements[index]
+      if (!element) return
+
       const id = slugify(block.text!)
       element.setAttribute('id', id)
       const level = Number.parseInt(block.tagName.slice(1), 10)

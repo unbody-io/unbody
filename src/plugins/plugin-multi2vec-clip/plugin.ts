@@ -10,10 +10,12 @@ import { Config, Context } from './plugin.types'
 import { schemas } from './schemas'
 
 export class CohereMultimodalVectorizer
-  implements PluginLifecycle, MultimodalVectorizerPlugin
+  implements
+    PluginLifecycle<Context, Config>,
+    MultimodalVectorizerPlugin<Context, {}>
 {
-  private client: AxiosInstance
-  private config: Config
+  private client!: AxiosInstance
+  private config!: Config
 
   schemas: MultimodalVectorizerPlugin['schemas'] = schemas
 

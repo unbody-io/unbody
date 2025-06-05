@@ -1,6 +1,6 @@
 import { manifest } from './manifest'
-import { Summarizer } from './plugin'
+import { StructuredOutputGenerator } from './plugin'
 
 export { manifest }
 
-export default Summarizer
+export default StructuredOutputGenerator

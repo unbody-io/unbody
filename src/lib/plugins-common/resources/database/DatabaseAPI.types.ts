@@ -13,37 +13,34 @@ export interface DatabaseAPI {
 
   listCollections(): Promise<string[]>
 
-  getCollection(name: string): Promise<DatabaseCollectionAPI>
+  getCollection<T extends DatabaseAPI.Document = DatabaseAPI.Document>(
+    name: string,
+  ): Promise<DatabaseCollectionAPI<T>>
 
   withTransaction: mongodb.ClientSession['withTransaction']
 }
 
-export interface DatabaseCollectionAPI {
-  find: mongodb.Collection['find']
-
-  findOne: mongodb.Collection['findOne']
-
-  findOneAndUpdate: mongodb.Collection['findOneAndUpdate']
-
-  insertOne: mongodb.Collection['insertOne']
-
-  insertMany: mongodb.Collection['insertMany']
-
-  updateOne: mongodb.Collection['updateOne']
-
-  updateMany: mongodb.Collection['updateMany']
-
-  deleteOne: mongodb.Collection['deleteOne']
-
-  deleteMany: mongodb.Collection['deleteMany']
-
-  countDocuments: mongodb.Collection['countDocuments']
-
-  createIndex: mongodb.Collection['createIndex']
-
-  dropIndex: mongodb.Collection['dropIndex']
-
-  listIndexes: mongodb.Collection['listIndexes']
-
-  bulkWrite: mongodb.Collection['bulkWrite']
+export namespace DatabaseAPI {
+  export type Collection<T extends Document = Document> = mongodb.Collection<T>
+  export type Document = mongodb.Document
 }
+
+export type DatabaseCollectionAPI<
+  T extends DatabaseAPI.Document = DatabaseAPI.Document,
+> = Pick<
+  mongodb.Collection<T>,
+  | 'find'
+  | 'findOne'
+  | 'findOneAndUpdate'
+  | 'insertOne'
+  | 'insertMany'
+  | 'updateOne'
+  | 'updateMany'
+  | 'deleteOne'
+  | 'deleteMany'
+  | 'countDocuments'
+  | 'createIndex'
+  | 'dropIndex'
+  | 'listIndexes'
+  | 'bulkWrite'
+>

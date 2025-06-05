@@ -99,7 +99,7 @@ export async function parseFileWorkflow(params: ParseFileWorkflowParams) {
       const { publicUrl } = await makeAttachmentPublic({
         sourceId: params.sourceId,
         recordId: params.recordId,
-        fileId: res!.attachments[index].id,
+        fileId: res!.attachments[index]!.id,
       })
 
       return {
@@ -108,7 +108,7 @@ export async function parseFileWorkflow(params: ParseFileWorkflowParams) {
           ...attachment.record,
           url: publicUrl,
         },
-        raw: res!.attachments[index],
+        raw: res!.attachments[index]!,
       }
     }),
   )

@@ -5,6 +5,7 @@ import {
   ConfigureDatabaseResult,
   CountSourceRecordsParams,
   CountSourceRecordsResult,
+  DatabasePlugin,
   DeleteRecordParams,
   DeleteRecordResult,
   EraseDatabaseParams,
@@ -71,11 +72,13 @@ const v3Client = async (config: ClientParams) => {
   }
 }
 
-export class WeaviateDatabase implements PluginLifecycle {
-  private config: Config
+export class WeaviateDatabase
+  implements PluginLifecycle<Context, Config>, DatabasePlugin<Context>
+{
+  private config!: Config
 
-  private v3: WeaviateClient
-  private v2: ReturnType<typeof weaviateV2.client>
+  private v3!: WeaviateClient
+  private v2!: ReturnType<typeof weaviateV2.client>
 
   schemas: FileParserPlugin['schemas'] = {
     config: configSchema,
@@ -213,10 +216,13 @@ export class WeaviateDatabase implements PluginLifecycle {
     )
 
     if (err) {
-      if (err['response']) {
+      const errorResponse = (err as any)['response'] as
+        | Record<string, unknown>
+        | undefined
+      if (errorResponse) {
         return {
           result: {
-            errors: err['response']['errors'],
+            errors: errorResponse['errors'] as unknown[],
           },
         }
       }
@@ -245,11 +251,7 @@ export class WeaviateDatabase implements PluginLifecycle {
     }
 
     return {
-      record: {
-        __typename: record.__typename,
-        id: record.id,
-        ...record,
-      },
+      record,
     }
   }
 

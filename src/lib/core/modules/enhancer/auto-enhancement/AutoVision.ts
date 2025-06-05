@@ -84,15 +84,15 @@ const DEFAULT_PROMPT = `For the given image, provide the following information:
 `
 
 export class AutoVision extends AutoEnhancer {
-  get name() {
+  override get name() {
     return 'AutoVision'
   }
 
-  get enabled() {
+  override get enabled() {
     return this.collection === 'ImageBlock' && !!this.settings.autoVision?.name
   }
 
-  get pipelines() {
+  override get pipelines() {
     const settings = this.settings.autoVision
     if (!settings) return []
 
@@ -103,8 +103,8 @@ export class AutoVision extends AutoEnhancer {
       collection: this.collection,
       if: this.cond(
         (ctx) =>
-          typeof ctx.record.url === 'string' &&
-          !!ctx.record.url.match(/^http(s)?:\/\/.+/)?.[0],
+          typeof ctx.record['url'] === 'string' &&
+          !!ctx.record['url'].match(/^http(s)?:\/\/.+/)?.[0],
       ),
       steps: [
         {
@@ -119,8 +119,8 @@ export class AutoVision extends AutoEnhancer {
                 ]),
               ),
               temperature: this.arg(0.7),
-              model: this.arg(settings.options?.model || 'openai-gpt-4o'),
-              prompt: this.arg(settings.options?.prompt || DEFAULT_PROMPT),
+              model: this.arg(settings.options?.['model'] || 'openai-gpt-4o'),
+              prompt: this.arg(settings.options?.['prompt'] || DEFAULT_PROMPT),
               schema: this.arg((ctx, { z }) => {
                 return z.object({
                   caption: z.string().nullable().default(''),
@@ -130,15 +130,15 @@ export class AutoVision extends AutoEnhancer {
               }),
               images: this.arg((ctx) => [
                 {
-                  url: ctx.record.url,
+                  url: ctx.record['url'],
                 },
               ]),
             },
           },
           output: {
-            autoOCR: this.arg((ctx) => ctx.result.json.text || ''),
-            autoCaption: this.arg((ctx) => ctx.result.json.caption || ''),
-            autoTypes: this.arg((ctx) => ctx.result.json.types || []),
+            autoOCR: this.arg((ctx) => ctx.result['json']['text'] || ''),
+            autoCaption: this.arg((ctx) => ctx.result['json']['caption'] || ''),
+            autoTypes: this.arg((ctx) => ctx.result['json']['types'] || []),
           },
         },
       ],

@@ -33,8 +33,10 @@ const decodeFilename = (file: string) => {
   return [id, filename]
 }
 
-export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
-  private config: Config
+export class LocalStoragePlugin
+  implements PluginLifecycle<Context, Config>, StoragePlugin<Context>
+{
+  private config!: Config
   private tree: Record<
     string,
     {
@@ -119,13 +121,18 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
 
     await this._loadTree()
 
-    return this._getFile(sourceId, recordId, id)
+    const result = await this._getFile(sourceId, recordId, id)
+    if (!result) throw new Error(`Failed to retrieve stored file with id ${id}`)
+
+    return result
   }
 
   deleteFile = async (ctx: Context, params: DeleteFileParams) => {
     const { id, recordId, sourceId } = params
 
     const file = await this._getFile(sourceId, recordId, id)
+    if (!file) return
+
     const rootDir =
       file.visibility === 'public'
         ? this.config.publicRootDir
@@ -150,6 +157,11 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
         params.recordId,
         params.id,
       )
+
+      if (!file) {
+        throw new Error(`File with id ${params.id} not found`)
+      }
+
       const oldVisibility = file.visibility
       if (oldVisibility === params.visibility) {
         return {
@@ -259,8 +271,8 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
 
   private async _getFile(sourceId: string, recordId: string, id: string) {
     return (
-      this.tree[sourceId].records[recordId].public[id] ||
-      this.tree[sourceId].records[recordId].private[id]
+      this.tree[sourceId]?.records[recordId]?.public?.[id] ||
+      this.tree[sourceId]?.records[recordId]?.private?.[id]
     )
   }
 
@@ -269,8 +281,8 @@ export class LocalStoragePlugin implements PluginLifecycle, StoragePlugin {
     recordId: string,
   ): Promise<StoreFileResult[]> {
     return [
-      ...Object.values(this.tree[sourceId].records[recordId].public),
-      ...Object.values(this.tree[sourceId].records[recordId].private),
+      ...Object.values(this.tree[sourceId]?.records[recordId]?.public || {}),
+      ...Object.values(this.tree[sourceId]?.records[recordId]?.private || {}),
     ]
   }
 

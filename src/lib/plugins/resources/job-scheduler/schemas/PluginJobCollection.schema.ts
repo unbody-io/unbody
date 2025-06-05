@@ -7,19 +7,19 @@ import { Document, SchemaTypes } from 'mongoose'
 })
 export class PluginJobCollectionSchema {
   @Prop()
-  name: string
+  name!: string
 
   @Prop()
-  pluginId: string
+  pluginId!: string
 
   @Prop()
-  scope: 'global' | 'source'
+  scope!: 'global' | 'source'
 
   @Prop()
   sourceId?: string
 
   @Prop()
-  schedule: string
+  schedule!: string
 
   @Prop()
   every?: string
@@ -27,7 +27,7 @@ export class PluginJobCollectionSchema {
   @Prop({
     type: SchemaTypes.Mixed,
   })
-  retryOptions: {
+  retryOptions!: {
     maxRetries?: number
     retryDelay?: number
     backoffFactor?: number
@@ -37,18 +37,18 @@ export class PluginJobCollectionSchema {
     type: SchemaTypes.Mixed,
     default: {},
   })
-  payload: Record<string, any>
+  payload!: Record<string, any>
 
   @Prop({
     type: SchemaTypes.Mixed,
   })
-  jobId: string
+  jobId!: string
 
   @Prop()
-  createdAt: Date
+  createdAt!: Date
 
   @Prop()
-  updatedAt: Date
+  updatedAt!: Date
 }
 
 export type PluginJobCollectionDocument = PluginJobCollectionSchema & Document

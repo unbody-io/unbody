@@ -117,7 +117,8 @@ export class PluginJobScheduler {
           ...(await this.engine.getInfo(job.jobId)),
         })),
       ),
-      cursor: jobs.length ? (jobs[jobs.length - 1]._id as string) : undefined,
+      cursor:
+        jobs.length > 0 ? (jobs[jobs.length - 1]!._id as string) : undefined,
     }
   }
 

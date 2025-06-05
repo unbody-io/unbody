@@ -7,16 +7,16 @@ import {
 } from '@temporalio/client'
 import { Model } from 'mongoose'
 import { UnbodySourceDoc } from 'src/lib/core-types'
+import { Result } from 'src/lib/core-utils/result'
 import { Unbody } from 'src/lib/core/Unbody'
 import { SourceSchemaClass } from 'src/modules/admin/schemas/Source.schema'
 import { TEMPORAL_CLIENT } from 'src/modules/shared/tokens'
 import * as uuid from 'uuid'
+import { IndexingFailure, IndexingFailures } from '../types/index'
 import type {
   DeleteSourceResourcesWorkflowParams,
   IndexSourceWorkflowParams,
 } from '../workflows/indexing.workflows'
-import { Result } from 'src/lib/core-utils/result'
-import { IndexingFailures, IndexingFailure } from '../types/index'
 
 @Injectable()
 export class IndexingService {
@@ -37,7 +37,7 @@ export class IndexingService {
         query: `WorkflowType = 'indexSourceWorkflow' AND ExecutionStatus = 'Running' AND sourceId = '${params.sourceId}'`,
       })
 
-    if (executions.length > 0) {
+    if (executions[0]) {
       const execution = executions[0]
       const handle = this.temporal.workflow.getHandle(
         execution.execution!.workflowId!,
@@ -146,10 +146,10 @@ export class IndexingService {
       connected: source.connected,
       initialized: source.initialized,
 
-      entrypoint: source.entrypoint,
+      entrypoint: source.entrypoint || undefined,
       credentials: source.credentials,
       providerState: source.providerState,
-      entrypointOptions: source.entrypointOptions,
+      entrypointOptions: source.entrypointOptions || undefined,
 
       createdAt: source.createdAt.toJSON(),
       updatedAt: source.updatedAt.toJSON(),

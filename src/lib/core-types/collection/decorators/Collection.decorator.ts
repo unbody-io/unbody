@@ -24,6 +24,10 @@ export const Collection =
     )
   }
 
+Collection.getPrototype = (collection: CollectionType) => {
+  return collection['prototype']
+}
+
 Collection.create = (
   name: string,
   options: CollectionOptions,
@@ -48,7 +52,7 @@ Collection.getMetadata = (collection: CollectionType): CollectionMetadata => {
   const { [symbols.class.options]: options } = getMetadataObject(collection)
 
   const { [symbols.class.propertyKeys]: propertyKeys } = getMetadataObject(
-    collection.prototype,
+    Collection.getPrototype(collection),
   )
 
   return {

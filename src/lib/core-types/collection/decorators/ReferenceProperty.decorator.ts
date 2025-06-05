@@ -1,5 +1,5 @@
 import { getMetadataObject } from '../helpers/metadata.helpers'
-import { CollectionType } from './Collection.decorator'
+import { Collection, CollectionType } from './Collection.decorator'
 import { symbols } from './symbols'
 
 export type ReferencePropertyOptions = {
@@ -60,12 +60,13 @@ export type ReferencePropertyMetadata = {
 }
 
 export const getReferencePropertyMetadata = (
-  schemaClass: CollectionType,
+  collection: CollectionType,
   propertyName: string,
 ): ReferencePropertyMetadata | undefined => {
-  const options = getMetadataObject(schemaClass.prototype, propertyName)[
-    symbols.property.referenceOptions
-  ]
+  const options = getMetadataObject(
+    Collection.getPrototype(collection),
+    propertyName,
+  )[symbols.property.referenceOptions]
 
   if (options)
     return {

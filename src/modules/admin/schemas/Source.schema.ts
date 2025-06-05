@@ -16,61 +16,61 @@ export class SourceSchemaClass {
     default: () => uuid.v4().toString(),
     cast: String,
   })
-  _id: string
+  _id!: string
 
   @Prop({
     required: true,
   })
-  name: string
+  name!: string
 
   @Prop({})
-  provider: string
+  provider!: string
 
   @Prop({
     default: UnbodySourceStates.Idle,
     enum: Object.values(UnbodySourceStates),
   })
-  state: UnbodySourceState
+  state!: UnbodySourceState
 
   @Prop({
     default: false,
   })
-  connected: boolean
+  connected!: boolean
 
   @Prop({
     default: false,
   })
-  initialized: boolean
+  initialized!: boolean
 
   @Prop({
     default: () => ({}),
     type: SchemaTypes.Mixed,
   })
-  credentials: Record<string, any>
+  credentials!: Record<string, any>
 
   @Prop({
     default: () => ({}),
     type: SchemaTypes.Mixed,
   })
-  providerState: Record<string, any>
+  providerState!: Record<string, any>
 
   @Prop({
     default: null,
     type: SchemaTypes.Mixed,
   })
-  entrypoint: Record<string, any>
+  entrypoint!: Record<string, any> | null
 
   @Prop({
     default: null,
     type: SchemaTypes.Mixed,
   })
-  entrypointOptions: Record<string, any>
+  entrypointOptions!: Record<string, any> | null
 
   @Prop({})
-  createdAt: Date
+  createdAt!: Date
 
   @Prop({})
-  updatedAt: Date
+  updatedAt!: Date
 }
 
 export const SourceSchema = SchemaFactory.createForClass(SourceSchemaClass)

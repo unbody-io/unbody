@@ -42,14 +42,16 @@ const providers: Provider[] = [
         client.once('error', (err) => {
           if (err.message.includes('ECONNREFUSED')) {
             err.message = `Failed to connect to REDIS: ${err.message}`
-            logger.userMessage(UserMessage.error({
-              error: err,
-              suggestion: `Please ensure that:
+            logger.userMessage(
+              UserMessage.error({
+                error: err,
+                suggestion: `Please ensure that:
 1. Redis is running
 2. The following environment variable is set correctly:
 - REDIS_URI
 `,
-            }))
+              }),
+            )
           }
           process.exit(1)
         })
@@ -73,16 +75,19 @@ const providers: Provider[] = [
           },
         })
       } catch (e) {
+        const error = e instanceof Error ? e : new Error('Unknown error')
         const temporalAddress = configService.get('services.temporal.address')
-        e.message = `Failed not connect to temporal server: ${e.message}`
-        logger.userMessage(UserMessage.error({
-          error: e,
-          suggestion: `Please ensure that:
+        error.message = `Failed not connect to temporal server: ${error.message}`
+        logger.userMessage(
+          UserMessage.error({
+            error: error,
+            suggestion: `Please ensure that:
 - temporal server is running 
 - The following environment variables are set correctly:
 - TEMPORAL_ADDRESS (currently set to: ${temporalAddress})
 `,
-        }))
+          }),
+        )
         process.exit(1)
       }
     },
@@ -113,5 +118,5 @@ const providers: Provider[] = [
   exports: [ConfigService, LoggerService, ...providers],
 })
 export class SharedModule {
-  constructor() { }
+  constructor() {}
 }

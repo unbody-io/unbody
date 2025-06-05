@@ -17,7 +17,7 @@ export class WebPage {
     tokenization: 'field',
     description: 'The source identifier',
   })
-  sourceId: string
+  sourceId!: string
 
   @Property({
     type: 'text',
@@ -45,7 +45,7 @@ export class WebPage {
     vectorize: false,
     required: true,
   })
-  url: string
+  url!: string
 
   @Property({
     type: 'text',
@@ -53,7 +53,7 @@ export class WebPage {
     required: true,
     tokenization: 'field',
   })
-  originalName: string
+  originalName!: string
 
   @Property({
     type: 'text',
@@ -61,7 +61,7 @@ export class WebPage {
     vectorize: false,
     tokenization: 'field',
   })
-  mimeType: string
+  mimeType!: string
 
   @Property({
     type: 'text',
@@ -69,13 +69,13 @@ export class WebPage {
     vectorize: false,
     required: true,
   })
-  ext: string
+  ext!: string
 
   @Property({
     type: 'int',
     required: true,
   })
-  size: number
+  size!: number
 
   @Property({
     type: 'text',
@@ -84,7 +84,7 @@ export class WebPage {
     vectorize: false,
     tokenization: 'field',
   })
-  path: string[]
+  path!: string[]
 
   @Property({
     type: 'text',
@@ -93,25 +93,25 @@ export class WebPage {
     vectorize: false,
     tokenization: 'field',
   })
-  pathString: string
+  pathString!: string
 
   @Property({
     type: 'text',
     required: true,
   })
-  slug: string
+  slug!: string
 
   @Property({
     type: 'text',
     required: true,
   })
-  title: string
+  title!: string
 
   @Property({
     type: 'text',
     required: true,
   })
-  description: string
+  description!: string
 
   @Property({
     type: 'text',
@@ -128,7 +128,7 @@ export class WebPage {
     array: true,
     required: true,
   })
-  keywords: string[]
+  keywords!: string[]
 
   @Property({
     type: 'text',
@@ -169,7 +169,7 @@ export class WebPage {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  blocks: Array<ImageBlock | TextBlock>
+  blocks!: Array<ImageBlock | TextBlock>
 
   @Property({
     type: 'cref',
@@ -185,7 +185,7 @@ export class WebPage {
     onDelete: 'REMOVE_REFERENCE',
     onUpdate: 'UPDATE_REFERENCE',
   })
-  document: Array<Website>
+  document!: Array<Website>
 
   @Property({
     type: 'text',

@@ -5,7 +5,6 @@ import {
   RerankParams,
   RerankResult,
   RerankerPlugin,
-  RerankerPluginContext,
 } from 'src/lib/plugins-common/reranker/Reranker.interface'
 import { z } from 'zod'
 import { Config, Context } from './plugin.types'
@@ -14,9 +13,11 @@ const configSchema = z.object({
   baseURL: z.string().url(),
 })
 
-export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
-  private config: Config
-  private client: AxiosInstance
+export class RerankerTransformers
+  implements PluginLifecycle<Context, Config>, RerankerPlugin<Context>
+{
+  private config!: Config
+  private client!: AxiosInstance
 
   schemas: RerankerPlugin['schemas'] = {
     config: configSchema,
@@ -37,7 +38,7 @@ export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
   destroy = async (ctx: Context) => {}
 
   rerank = async (
-    ctx: RerankerPluginContext,
+    ctx: Context,
     params: RerankParams,
   ): Promise<RerankResult> => {
     const { query, documents } = params

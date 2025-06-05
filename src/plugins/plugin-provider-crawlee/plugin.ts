@@ -73,7 +73,7 @@ const entrypointSchema = z.object({
 })
 
 export class CrawleeProvider
-  implements PluginLifecycle<PluginContext, Config>, ProviderPlugin<Context>
+  implements PluginLifecycle<Context, Config>, ProviderPlugin<Context>
 {
   config!: Config
 
@@ -546,8 +546,8 @@ export class CrawleeProvider
           type: pageMetadata.type,
           properties: JSON.stringify(pageMetadata.properties || {}),
           url: rootPage.url,
-          createdAt: params.metadata.createdAt,
-          modifiedAt: params.metadata.updatedAt,
+          createdAt: params.metadata['createdAt'],
+          modifiedAt: params.metadata['updatedAt'],
           pages: pages.map(
             (pageId) =>
               ({
@@ -563,8 +563,8 @@ export class CrawleeProvider
       record: {
         ...params.content,
         ...params.metadata,
-        url: params.metadata.url,
-        remoteId: params.metadata.id,
+        url: params.metadata['url'],
+        remoteId: params.metadata['id'],
       },
     }
   }
@@ -584,6 +584,8 @@ export class CrawleeProvider
   }
 
   private _pageCollection = async (ctx: Context) => {
-    return ctx.getResource('database').then((db) => db.getCollection('pages'))
+    return ctx
+      .getResource('database')
+      .then((db) => db.getCollection<PageDocument>('pages'))
   }
 }

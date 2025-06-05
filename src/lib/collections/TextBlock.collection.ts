@@ -17,7 +17,7 @@ export class TextBlock {
     tokenization: 'field',
     description: 'The source identifier',
   })
-  sourceId: string
+  sourceId!: string
 
   @Property({
     type: 'text',
@@ -44,12 +44,12 @@ export class TextBlock {
     type: 'int',
     required: true,
   })
-  order: number
+  order!: number
 
   @Property({
     type: 'text',
   })
-  tagName: string
+  tagName!: string
 
   @Property({
     type: 'text',
@@ -61,13 +61,13 @@ export class TextBlock {
     type: 'text',
     vectorize: true,
   })
-  text: string
+  text!: string
 
   @Property({
     type: 'text',
     vectorize: false,
   })
-  html: string
+  html!: string
 
   @Property({
     type: 'cref',
@@ -90,7 +90,7 @@ export class TextBlock {
     onUpdate: 'UPDATE_REFERENCE',
     onDelete: 'REMOVE_REFERENCE',
   })
-  document: Array<GoogleDoc | TextDocument>
+  document!: Array<GoogleDoc | TextDocument>
 }
 
 export const TextBlockCollection = new RecordCollection<TextBlock>(TextBlock)

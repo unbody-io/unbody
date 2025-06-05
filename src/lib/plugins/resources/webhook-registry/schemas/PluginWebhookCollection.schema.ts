@@ -13,16 +13,16 @@ export class PluginWebhookCollectionSchema {
     default: () => uuid.v4().toString(),
     cast: String,
   })
-  _id: string
+  _id!: string
 
   @Prop()
-  key: string
+  key!: string
 
   @Prop()
-  pluginId: string
+  pluginId!: string
 
   @Prop()
-  scope: 'global' | 'source'
+  scope!: 'global' | 'source'
 
   @Prop()
   sourceId?: string
@@ -30,25 +30,25 @@ export class PluginWebhookCollectionSchema {
   @Prop({
     default: '',
   })
-  description: string
+  description!: string
 
   @Prop({
     type: SchemaTypes.Mixed,
     default: {},
   })
-  metadata: Record<string, any>
+  metadata!: Record<string, any>
 
   @Prop()
-  url: string
+  url!: string
 
   @Prop()
-  secretSalt: string
+  secretSalt!: string
 
   @Prop()
-  createdAt: Date
+  createdAt!: Date
 
   @Prop()
-  updatedAt: Date
+  updatedAt!: Date
 }
 
 export type PluginWebhookCollectionDocument = PluginWebhookCollectionSchema &

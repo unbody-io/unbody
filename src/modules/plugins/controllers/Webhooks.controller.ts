@@ -1,4 +1,10 @@
-import { Controller, Param, Post, Req } from '@nestjs/common'
+import {
+  Controller,
+  NotImplementedException,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common'
 import { Request } from 'express'
 
 @Controller('/plugins/webhooks')
@@ -9,16 +15,19 @@ export class WebhooksController {
   async callback(
     @Param('pluginId') pluginId: string,
     @Param('uid') uid: string,
-    @Req() request: Request,
+    @Req() request: Request & { rawBody: string },
   ) {
     const rawBody = request['rawBody']
-    const headers = request.rawHeaders.reduce((acc, val, index) => {
-      if (index % 2 === 0) {
-        acc[val] = request.rawHeaders[index + 1]
-      }
-      return acc
-    }, {})
+    const headers = request.rawHeaders.reduce(
+      (acc, val, index) => {
+        if (index % 2 === 0) {
+          acc[val] = request.rawHeaders[index + 1] || ''
+        }
+        return acc
+      },
+      {} as Record<string, string>,
+    )
 
-    return {}
+    throw new NotImplementedException()
   }
 }

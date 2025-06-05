@@ -8,7 +8,6 @@ import {
   EnhanceParams,
   EnhanceResult,
   EnhancerPlugin,
-  EnhancerPluginContext,
 } from 'src/lib/plugins-common/enhancer'
 import { Config, Context, EnhancerArgs, EnhancerResult } from './plugin.types'
 import { schemas } from './schemas'
@@ -77,8 +76,12 @@ const downloadImage = async (url: string) => {
     })
 }
 
-export class Summarizer implements PluginLifecycle, EnhancerPlugin {
-  private config: Config
+export class StructuredOutputGenerator
+  implements
+    PluginLifecycle<Context, Config>,
+    EnhancerPlugin<Context, EnhancerArgs>
+{
+  private config!: Config
 
   schemas: EnhancerPlugin['schemas'] = schemas
 
@@ -93,7 +96,7 @@ export class Summarizer implements PluginLifecycle, EnhancerPlugin {
   destroy = async (ctx: Context) => {}
 
   enhance = async (
-    ctx: EnhancerPluginContext,
+    ctx: Context,
     params: EnhanceParams<EnhancerArgs>,
   ): Promise<EnhanceResult<EnhancerResult>> => {
     const res = await this._generate(params.args)

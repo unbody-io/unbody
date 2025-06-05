@@ -7,22 +7,22 @@ export class AutoSummary extends AutoEnhancer {
     (collection) => collection.name,
   ).filter((collection) => !['TextBlock', 'ImageBlock'].includes(collection))
 
-  get name() {
+  override get name() {
     return 'AutoSummary'
   }
 
-  get enabled() {
+  override get enabled() {
     return (
       AutoSummary.COLLECTIONS.includes(this.collection) &&
       !!this.settings.autoSummary?.name
     )
   }
 
-  get pipelines() {
+  override get pipelines() {
     return []
   }
 
-  get steps() {
+  override get steps() {
     const steps: UnbodyProjectSettings.Enhancement.Step[] = []
 
     const settings = this.settings.autoSummary
@@ -39,9 +39,9 @@ export class AutoSummary extends AutoEnhancer {
               this.arg(value),
             ]),
           ),
-          model: this.arg(settings.options?.model || 'openai-gpt-4o'),
+          model: this.arg(settings.options?.['model'] || 'openai-gpt-4o'),
           metadata: this.arg((ctx) => {
-            const collection = ctx.vars.collection
+            const collection = ctx.vars['collection']
             const record = ctx.record as any
             let metadata: Record<string, any> = {}
 
@@ -70,7 +70,7 @@ export class AutoSummary extends AutoEnhancer {
             return JSON.stringify(metadata)
           }),
           text: this.arg((ctx) => {
-            const collection = ctx.vars.collection
+            const collection = ctx.vars['collection']
             switch (collection) {
               case 'TextDocument':
               case 'GoogleDoc': {
@@ -78,23 +78,23 @@ export class AutoSummary extends AutoEnhancer {
                 const text = record?.text || ''
                 const images = (record?.blocks || [])
                   .filter(
-                    (b) =>
+                    (b: any) =>
                       b.__typename === 'ImageBlock' &&
                       typeof b.autoOCR === 'string',
                   )
-                  .map((b) => b.autoOCR)
+                  .map((b: any) => b.autoOCR)
                   .join('\n\n')
                 return [text, images].filter((x) => x.length > 0).join('\n\n')
               }
 
               default:
-                return ctx.record.text || ''
+                return ctx.record['text'] || ''
             }
           }),
         },
       },
       output: {
-        autoSummary: this.arg((ctx) => ctx.result.summary || ''),
+        autoSummary: this.arg((ctx) => ctx.result['summary'] || ''),
       },
     })
 

@@ -19,7 +19,7 @@ export class RecordCollection<T extends { __typename: string }> {
 
     for (const prop of this.properties) {
       const { name } = prop
-      const value = json[name]
+      const value = (json as Record<string, unknown>)[name]
       payload[name] = value
     }
 

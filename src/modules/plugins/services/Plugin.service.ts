@@ -15,5 +15,7 @@ export class PluginService {
     if (BuiltinPlugins.isBuiltInPlugin(alias)) {
       return BuiltinPlugins.plugins[alias].errorResolutionSuggestion
     }
+
+    return undefined
   }
 }

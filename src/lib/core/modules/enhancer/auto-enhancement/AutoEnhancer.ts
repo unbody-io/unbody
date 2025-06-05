@@ -28,7 +28,18 @@ export class AutoEnhancer {
     return []
   }
 
-  protected arg(value: ((ctx: PipelineContext) => any) | any) {
+  protected arg(
+    value:
+      | number
+      | string
+      | boolean
+      | ((
+          ctx: PipelineContext,
+          helpers: {
+            z: typeof import('zod')
+          },
+        ) => any),
+  ) {
     if (typeof value === 'function') {
       return {
         type: 'computed',

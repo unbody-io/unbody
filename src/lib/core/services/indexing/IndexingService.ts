@@ -24,6 +24,10 @@ export class IndexingService {
     return this._modules.database.getDatabase(params)
   }
 
+  async getStorage(params: {}) {
+    return this._modules.storage.getStorage(params)
+  }
+
   async vectorizeRecord(params: { record: Record<string, any> }) {
     return this._modules.vectorizer.vectorizeObjects(params.record)
   }
@@ -98,6 +102,12 @@ export class IndexingService {
       existing.record.__typename,
     )
 
+    if (!collection) {
+      throw new Error(
+        `Unknown collection name "${existing.record.__typename}".`,
+      )
+    }
+
     const final: Record<string, any> = {
       ...existing,
     }
@@ -128,7 +138,7 @@ export class IndexingService {
     collection: string
   }) {
     const db = await this.getDatabase({})
-    const storage = await this._modules.storage.getStorage({})
+    const storage = await this.getStorage({})
 
     await storage.deleteRecordFiles({
       recordId: params.recordId,
@@ -156,6 +166,11 @@ export class IndexingService {
     }
 
     const collection = this._ctx.collections.getCollection(params.collection)
+
+    if (!collection) {
+      throw new Error(`Unknown collection name "${params.collection}".`)
+    }
+
     const final: Record<string, any> = {
       __typename: params.collection,
     }
@@ -244,11 +259,10 @@ export class IndexingService {
       source: params.source,
     })
 
-    const database = await this._modules.database.getDatabase({})
+    const database = await this.getDatabase({})
     await database.eraseSourceRecords({ sourceId: params.source.id })
 
-    const storage = await this._modules.storage.getStorage({})
-
+    const storage = await this.getStorage({})
     await storage.deleteSourceFiles({ sourceId: params.source.id })
 
     const webhookRegistry = provider.webhookRegistry
@@ -284,14 +298,14 @@ export class IndexingService {
       res = await fs.download(key)
     }
 
-    const storage = await this._modules.storage.getStorage({})
+    const storage = await this.getStorage({})
 
     const file = await storage.storeFile({
       file: res,
       sourceId: params.source.id,
       id: params.recordId,
       recordId: params.recordId,
-      filename: result.metadata.originalName || 'file',
+      filename: result.metadata['originalName'] || 'file',
       mimeType: result.fileReference.mimeType,
       visibility: 'private',
     })
@@ -327,7 +341,7 @@ export class IndexingService {
       res = await provider.fileStorage.download(attachment.file.key)
     }
 
-    const storage = await this._modules.storage.getStorage({})
+    const storage = await this.getStorage({})
 
     const file = await storage.storeFile({
       file: res,
@@ -343,7 +357,7 @@ export class IndexingService {
   }
 
   async changeFileVisibility(params: ChangeFileVisibilityParams) {
-    const storage = await this._modules.storage.getStorage({})
-    return storage.changeFileVisibility(params).then((res) => res.files[0])
+    const storage = await this.getStorage({})
+    return storage.changeFileVisibility(params).then((res) => res.files[0]!)
   }
 }

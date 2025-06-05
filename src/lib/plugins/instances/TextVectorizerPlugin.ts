@@ -1,3 +1,4 @@
+import { PluginTypes } from 'src/lib/plugins-common'
 import { TextVectorizerPlugin } from 'src/lib/plugins-common/text-vectorizer'
 import { PluginResources } from '../resources/PluginResources'
 import { LoadedPlugin } from '../shared.types'
@@ -6,7 +7,6 @@ import {
   PluginInstanceBaseConfig,
   PluginInstanceMethods,
 } from './PluginInstance'
-import { PluginTypes } from 'src/lib/plugins-common'
 
 export type TextVectorizerPluginInstanceConfig = PluginInstanceBaseConfig & {}
 
@@ -14,14 +14,14 @@ export class TextVectorizerPluginInstance extends PluginInstance<TextVectorizerP
   static methods: Array<keyof TextVectorizerPlugin> = ['vectorize']
 
   constructor(
-    protected plugin: LoadedPlugin,
-    protected config: TextVectorizerPluginInstanceConfig,
-    protected resources: PluginResources,
+    protected override plugin: LoadedPlugin,
+    protected override config: TextVectorizerPluginInstanceConfig,
+    protected override resources: PluginResources,
   ) {
     super(config, plugin, resources, TextVectorizerPluginInstance.methods)
   }
 
-  get type() {
+  override get type() {
     return this.plugin.manifest.type as typeof PluginTypes.TextVectorizer
   }
 }

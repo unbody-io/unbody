@@ -4,15 +4,15 @@ import { IsArray, IsOptional, IsString } from 'class-validator'
 export class RerankDto {
   @ApiProperty({})
   @IsString()
-  query: string
+  query!: string
 
   @ApiProperty({})
   @IsArray()
   @IsString({ each: true })
-  documents: string[]
+  documents: string[] = []
 
   @ApiProperty({})
   @IsString()
   @IsOptional()
-  property: string
+  property: string | undefined = undefined
 }

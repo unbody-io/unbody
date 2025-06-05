@@ -140,7 +140,8 @@ export class Unbody {
 
       const schemas = await Promise.all(
         plugins.map(async (key) => {
-          const plugin = pluginRegistry.fileParsers[key]
+          const plugin = pluginRegistry.fileParsers[key]!
+
           const options = await plugin.runner.getSchema('parseFileOptions')
           if (!options)
             return z.object({
@@ -186,7 +187,7 @@ export class Unbody {
       const schemas: z.ZodObject<any>[] = []
 
       for (const key of plugins) {
-        const plugin = pluginRegistry.enhancers[key]
+        const plugin = pluginRegistry.enhancers[key]!
         const args = await plugin.runner.getSchema('args')
 
         schemas.push(
@@ -247,17 +248,14 @@ export class Unbody {
                   .superRefine((steps, ctx) => {
                     const stepNames: Record<string, number> = {}
                     for (const step of steps) {
-                      if (stepNames[step.name]) {
-                        stepNames[step.name]++
-                      } else {
-                        stepNames[step.name] = 1
-                      }
+                      stepNames[step.name] = (stepNames[step.name] || 0) + 1
                     }
 
                     for (let i = 0; i < steps.length; i++) {
-                      const step = steps[i]
+                      const step = steps[i]!
+                      const occurrences = stepNames[step.name] || 0
 
-                      if (stepNames[step.name] > 1)
+                      occurrences > 1 &&
                         ctx.addIssue({
                           code: z.ZodIssueCode.custom,
                           fatal: true,
@@ -271,17 +269,18 @@ export class Unbody {
             .optional()
             .default([])
             .superRefine((value, ctx) => {
-              const byCollection = value.reduce((acc, pipeline) => {
-                if (!acc[pipeline.collection]) {
-                  acc[pipeline.collection] = []
-                }
-                acc[pipeline.collection].push(pipeline.name)
-                return acc
-              }, {})
+              const byCollection = value.reduce(
+                (acc, pipeline) => {
+                  if (!acc[pipeline.collection]) acc[pipeline.collection] = []
+                  acc[pipeline.collection]!.push(pipeline.name)
+                  return acc
+                },
+                {} as Record<string, string[]>,
+              )
 
               for (let i = 0; i < value.length; i++) {
-                const pipeline = value[i]
-                const count = byCollection[pipeline.collection].filter(
+                const pipeline = value[i]!
+                const count = byCollection[pipeline.collection]!.filter(
                   (name) => name === pipeline.name,
                 ).length
 
@@ -302,7 +301,7 @@ export class Unbody {
       const customCollectionProperty = (
         type: PropertyType,
         reservedNames: string[] = [],
-      ) => {
+      ): z.ZodObject<any, any> => {
         const base = () =>
           z.object({
             type: z.literal(type),
@@ -531,11 +530,11 @@ export class Unbody {
                         ),
                       ])
                       .superRefine((value, ctx) => {
-                        if (value.type === PropertyTypes.cref) {
+                        if (value['type'] === PropertyTypes.cref) {
                           const prop = value as CrossReferencePropertyConfig
                           const refs = prop.refs
                           for (let i = 0; i < refs.length; i++) {
-                            const ref = refs[i]
+                            const ref = refs[i]!
                             const collectionClass =
                               Collections.BUILTIN_COLLECTIONS.find(
                                 (col) =>
@@ -565,19 +564,19 @@ export class Unbody {
                   .superRefine((value, ctx) => {
                     const propertyNames: Record<string, number> = {}
                     for (const property of value) {
-                      propertyNames[property.name] =
-                        (propertyNames[property.name] || 0) + 1
+                      propertyNames[property['name']] =
+                        (propertyNames[property['name']] || 0) + 1
                     }
 
                     for (let i = 0; i < value.length; i++) {
-                      const property = value[i]
-                      if (propertyNames[property.name] > 1) {
+                      const property = value[i]!
+                      const occurrences = propertyNames[property['name']] || 0
+                      occurrences > 1 &&
                         ctx.addIssue({
                           code: z.ZodIssueCode.custom,
                           path: [i, 'name'],
-                          message: `Duplicate property name: "${property.name}"`,
+                          message: `Duplicate property name: "${property['name']}"`,
                         })
-                      }
                     }
                   }),
               }),
@@ -625,14 +624,14 @@ export class Unbody {
                     }
 
                     for (let i = 0; i < value.length; i++) {
-                      const property = value[i]
-                      if (propertyNames[property.name] > 1) {
+                      const property = value[i]!
+                      const occurrences = propertyNames[property.name] || 0
+                      occurrences > 1 &&
                         ctx.addIssue({
                           code: z.ZodIssueCode.custom,
                           path: [i, 'name'],
                           message: `Duplicate property name: "${property.name}"`,
                         })
-                      }
                     }
                   }),
               }),
@@ -660,7 +659,7 @@ export class Unbody {
 
           for (const collection of collections) {
             const crefs = collection.properties.filter(
-              (prop) => prop.type === PropertyTypes.cref,
+              (prop) => prop['type'] === PropertyTypes.cref,
             )
             for (const cref of crefs) {
               const property = cref as CrossReferencePropertyConfig

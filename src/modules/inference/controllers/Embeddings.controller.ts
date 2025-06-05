@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  InternalServerErrorException,
   Param,
   Post,
   SetMetadata,
@@ -35,13 +36,22 @@ export class EmbeddingsController {
   @Post('/image/:model')
   @SetMetadata(SkipFormatResponseInterceptor, true)
   async vectorizeImage(@Param('model') model: string, @Body() body: any) {
-    return this.embeddingsService
-      .vectorizeImage({ model, image: [body.image] })
-      .then((res) => ({
-        id: body.id,
-        vector: res.vectors[0].vector,
-        dim: res.vectors[0].vector.length,
-      }))
+    const result = await this.embeddingsService.vectorizeImage({
+      model,
+      image: [body.image],
+    })
+
+    if (!result.vectors || !result.vectors[0]) {
+      throw new InternalServerErrorException(
+        'Failed to vectorize image. No vectors returned from the model.',
+      )
+    }
+
+    return {
+      id: body.id,
+      vector: result.vectors[0].vector,
+      dim: result.vectors[0].vector.length,
+    }
   }
 
   @Post('/multimodal/:model')

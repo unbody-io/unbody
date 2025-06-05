@@ -45,7 +45,7 @@ export class Generative {
       for (const model of models) {
         if (!this._models[model.name]) this._models[model.name] = []
 
-        this._models[model.name].push({
+        this._models[model.name]!.push({
           provider: plugin.alias,
           model,
         })
@@ -74,7 +74,7 @@ export class Generative {
     const defaultProviderModel = models.find((m) => m.provider === config.name)
     if (defaultProviderModel) return this._getPlugin(config.name)
 
-    const model = models[0]
+    const model = models[0]!
     return this._getPlugin(model.provider)
   }
 
@@ -85,8 +85,11 @@ export class Generative {
       if (validated.model && !this._models[validated.model])
         throw new Error(`unknown model: ${validated.model}`)
 
-      if (!validated.model && this._ctx.settings?.generative?.options?.model) {
-        validated.model = this._ctx.settings.generative.options.model
+      if (
+        !validated.model &&
+        this._ctx.settings?.generative?.options?.['model']
+      ) {
+        validated.model = this._ctx.settings.generative.options['model']
       }
 
       return validated
@@ -201,13 +204,11 @@ export class Generative {
     ]
   }
 
-  private formatMessage = async (
+  private async formatMessage(
     data: any,
     vars: Record<string, any>,
     message: Exclude<GenerateTextInput, { type: 'prompt' }>['messages'][0],
-  ): Promise<
-    Exclude<GenerateTextInput, { type: 'prompt' }>['messages'][0][]
-  > => {
+  ): Promise<Exclude<GenerateTextInput, { type: 'prompt' }>['messages'][0][]> {
     const text =
       !message.type || message.type === 'text'
         ? message.content
@@ -253,6 +254,7 @@ export class Generative {
       ]
     } else {
       const expr = expressions[0]
+      if (!expr) return [message]
 
       let values = this.resolveVar(data, vars, expr.expression)
       if (!values) return [message]

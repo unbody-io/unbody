@@ -10,9 +10,13 @@ import {
 import { Config, Context, RerankOptions } from './plugin.types'
 import { schemas } from './schemas'
 
-export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
-  private config: Config
-  private client: AxiosInstance
+export class RerankerTransformers
+  implements
+    PluginLifecycle<Context, Config>,
+    RerankerPlugin<Context, RerankOptions>
+{
+  private config!: Config
+  private client!: AxiosInstance
 
   schemas: RerankerPlugin['schemas'] = schemas
 
@@ -33,7 +37,7 @@ export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
   destroy = async (ctx: Context) => {}
 
   rerank = async (
-    ctx: RerankerPluginContext,
+    ctx: Context,
     params: RerankParams<RerankOptions>,
   ): Promise<RerankResult> => {
     const { query, documents } = params
@@ -56,7 +60,7 @@ export class RerankerTransformers implements PluginLifecycle, RerankerPlugin {
     })
 
     const scores: DocumentScore[] = response.data.results.map((result) => ({
-      document: documents[result.index],
+      document: documents[result.index]!,
       score: result.relevance_score,
     }))
 

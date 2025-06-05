@@ -1,14 +1,12 @@
 import * as marked from 'marked'
 import * as htmlParser from 'node-html-parser'
 import * as path from 'path'
-import * as sanitizeHtml from 'sanitize-html'
 import _slugify from 'slugify'
 import { ImageBlock, TextBlock } from 'src/lib/collections'
 import { JsonRecord } from 'src/lib/collections/types'
 import { PluginLifecycle } from 'src/lib/plugins-common'
 import {
   FileParserPlugin,
-  FileParserPluginContext,
   ParseFileParams,
   ParseFileResult,
   ProcessFileRecordParams,
@@ -21,6 +19,8 @@ import { schemas } from './schemas'
 
 // @ts-ignore
 import * as turndownPluginGfm from 'turndown-plugin-gfm'
+// @ts-ignore
+import * as sanitizeHtml from 'sanitize-html'
 
 const turndown = new Turndown({
   headingStyle: 'atx',
@@ -43,8 +43,10 @@ export const slugify = (
 ) =>
   _slugify(text, { strict: true, trim: true, lower: true, ...(options ?? {}) })
 
-export class HTMLFileParser implements PluginLifecycle, FileParserPlugin {
-  private config: Config
+export class HTMLFileParser
+  implements PluginLifecycle<Context, Config>, FileParserPlugin<Context>
+{
+  private config!: Config
 
   schemas: FileParserPlugin['schemas'] = schemas
 
@@ -59,7 +61,7 @@ export class HTMLFileParser implements PluginLifecycle, FileParserPlugin {
   destroy = async (ctx: Context) => {}
 
   parseFile = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ParseFileParams,
   ): Promise<ParseFileResult> => {
     const fileBuffer = Buffer.isBuffer(params.file)
@@ -165,7 +167,7 @@ export class HTMLFileParser implements PluginLifecycle, FileParserPlugin {
   }
 
   processFileRecord = async (
-    ctx: FileParserPluginContext,
+    ctx: Context,
     params: ProcessFileRecordParams,
   ): Promise<ProcessFileRecordResult> => {
     const record = params.record as JsonRecord<'WebPage'>

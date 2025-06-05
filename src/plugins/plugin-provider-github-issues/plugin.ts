@@ -83,12 +83,12 @@ const configSchema = z
 
 export class GithubIssuesProvider
   implements
-    PluginLifecycle<PluginContext, Config>,
+    PluginLifecycle<Context, Config>,
     ProviderPlugin<Context>,
     WebhookConsumer<Context>
 {
   config!: Config
-  private app: App
+  private app!: App
 
   schemas: ProviderPlugin['schemas'] = {
     config: configSchema,
@@ -235,8 +235,8 @@ export class GithubIssuesProvider
       !entrypoint ||
       entrypoint.type !== 'option' ||
       !entrypoint.option?.id ||
-      !entrypoint.option?.extra?.installationId ||
-      !entrypoint.option?.extra?.accountId
+      !entrypoint.option?.extra?.['installationId'] ||
+      !entrypoint.option?.extra?.['accountId']
     )
       throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
         'Invalid entrypoint',
@@ -258,8 +258,8 @@ export class GithubIssuesProvider
     {
       const [_res, err] = await settle(() =>
         this.app.octokit.rest.apps.getRepoInstallation({
-          owner: entrypoint.option.extra?.owner,
-          repo: entrypoint.option.extra?.repo,
+          owner: entrypoint.option.extra?.['owner'],
+          repo: entrypoint.option.extra?.['repo'],
         }),
       )
 
@@ -268,7 +268,8 @@ export class GithubIssuesProvider
       const res = _res as any
 
       if (
-        res?.data?.id !== parseInt(entrypoint.option.extra.installationId, 10)
+        res?.data?.id !==
+        parseInt(entrypoint.option.extra['installationId'], 10)
       )
         throw new ProviderPlugin.Exceptions.InvalidEntrypoint(
           'Invalid installation ID',
@@ -280,8 +281,8 @@ export class GithubIssuesProvider
 
     const [_res, err] = await settle(() =>
       client.rest.repos.get({
-        owner: entrypoint.option.extra?.owner,
-        repo: entrypoint.option.extra?.repo,
+        owner: entrypoint.option.extra?.['owner'],
+        repo: entrypoint.option.extra?.['repo'],
       }),
     )
 
@@ -297,9 +298,9 @@ export class GithubIssuesProvider
     return {
       entrypoint: {
         id: parseInt(entrypoint.option.id, 10),
-        repo: entrypoint.option.extra.repo,
-        owner: entrypoint.option.extra.owner,
-        installationId: parseInt(entrypoint.option.extra.installationId, 10),
+        repo: entrypoint.option.extra['repo'],
+        owner: entrypoint.option.extra['owner'],
+        installationId: parseInt(entrypoint.option.extra['installationId'], 10),
       },
     }
   }
@@ -396,9 +397,9 @@ export class GithubIssuesProvider
     if (params.payload) {
       const [res, err] = await settle(() =>
         this.app.oauth.createToken({
-          code: params.payload!.code,
-          state: params.payload!.state,
-          redirectUrl: params.payload!.redirectUrl,
+          code: params.payload!['code'],
+          state: params.payload!['state'],
+          redirectUrl: params.payload!['redirectUrl'],
         }),
       )
 
@@ -578,9 +579,9 @@ export class GithubIssuesProvider
             (r) =>
               ({
                 _id: r._id.toHexString(),
-                sourceId: r.id,
-                payload: r.payload,
-                timestamp: r.timestamp,
+                sourceId: r['id'],
+                payload: r['payload'],
+                timestamp: r['timestamp'],
               }) as EventDocument,
           ),
         )
@@ -781,9 +782,11 @@ export class GithubIssuesProvider
     ctx: Context,
     params: ProcessRecordParams,
   ): Promise<ProcessRecordResult> => {
-    if (params.metadata.type !== GithubIssuesEntities.PullRequestReviewThread) {
+    if (
+      params.metadata['type'] !== GithubIssuesEntities.PullRequestReviewThread
+    ) {
       const { blocks, html } = processIssueContent(
-        params.content.bodyHTML,
+        params.content['bodyHTML'],
         params.attachments.processed,
       )
 
@@ -882,7 +885,7 @@ export class GithubIssuesProvider
         .digest('hex')
       const trusted = Buffer.from(`sha256=${signature}`, 'ascii')
       const untrusted = Buffer.from(
-        event.headers['x-hub-signature-256'],
+        event.headers['x-hub-signature-256'] || '',
         'ascii',
       )
       if (!crypto.timingSafeEqual(trusted, untrusted)) return

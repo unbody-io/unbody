@@ -7,13 +7,14 @@ export type RerankerPluginContext = PluginContext & {
 
 export interface RerankerPlugin<
   C extends PluginContext = RerankerPluginContext,
+  A extends Record<string, any> = Record<string, any>,
 > {
   schemas: {
     config: z.ZodObject<any, any, any>
     rerankOptions?: z.ZodObject<any, any, any>
   }
 
-  rerank: (ctx: C, params: RerankParams) => Promise<RerankResult>
+  rerank: (ctx: C, params: RerankParams<A>) => Promise<RerankResult>
 }
 
 export type RerankParams<T extends Record<string, any> = Record<string, any>> =
