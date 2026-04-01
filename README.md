@@ -12,7 +12,7 @@ Building AI features today is a complex and fragmented process. Unbody fixes tha
 - Node.js LTS (20 or 22)
 - Docker and Docker Compose
 - yarn (npm won’t install dependencies correctly)
-- OpenAI API key
+- OpenAI API key (or [MiniMax API key](https://www.minimax.io/) for the MiniMax generative plugin)
 
 ### Installation
 
@@ -34,6 +34,7 @@ yarn
 cp .env.example .env.local
 
 # Edit with your preferred editor, add your OpenAI API key
+# Optionally set MINIMAX_API_KEY to use MiniMax models (MiniMax-M2.7, MiniMax-M2.5, etc.)
 vim .env.local
 ```
 

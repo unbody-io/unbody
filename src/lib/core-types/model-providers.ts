@@ -1,3 +1,14 @@
+export namespace MiniMax {
+  export const Models = {
+    m2_7: 'MiniMax-M2.7',
+    m2_7Highspeed: 'MiniMax-M2.7-highspeed',
+    m2_5: 'MiniMax-M2.5',
+    m2_5Highspeed: 'MiniMax-M2.5-highspeed',
+  } as const
+  export const allModels = [...Object.values(Models)] as const
+  export type Model = (typeof allModels)[number]
+}
+
 export namespace OpenAI {
   export const Models = {
     gpt3_5Turbo: 'gpt-3.5-turbo',
