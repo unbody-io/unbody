@@ -104,10 +104,12 @@ export namespace Reranker {
 
 export namespace Generative {
   export const openAI = 'generative-openai' as const
-  export const all = [openAI] as const
+  export const minimax = 'generative-minimax' as const
+  export const all = [openAI, minimax] as const
   export type Alias = (typeof all)[number]
-  export type Model = ModelProviders.OpenAI.Model
+  export type Model = ModelProviders.OpenAI.Model | ModelProviders.MiniMax.Model
   export const OpenAI = ModelProviders.OpenAI.Models
+  export const MiniMax = ModelProviders.MiniMax.Models
 }
 
 export const aliases = [

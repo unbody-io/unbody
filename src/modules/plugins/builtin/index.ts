@@ -1,4 +1,5 @@
 import * as BuiltinPlugin from 'src/lib/plugins/builtin'
+import type { Config as MiniMaxConfig } from 'src/plugins/plugin-generative-minimax/plugin.types'
 import type { Config as WeaviateConfig } from 'src/plugins/plugin-database-weaviate/plugin.types'
 import type { Config as SummarizerConfig } from 'src/plugins/plugin-enhancer-summarizer/plugin.types'
 import type {
@@ -24,6 +25,8 @@ const pluginPath = (plugin: string) => {
 const OPENAI_API_KEY = process.env['OPENAI_API_KEY'] || ''
 const OPENAI_PROJECT = process.env['OPENAI_PROJECT'] || ''
 const OPENAI_ORGANIZATION = process.env['OPENAI_ORGANIZATION'] || ''
+
+const MINIMAX_API_KEY = process.env['MINIMAX_API_KEY'] || ''
 
 const text2VecOpenAIPlugin = ({
   alias,
@@ -137,6 +140,19 @@ export const plugins: Record<BuiltinPlugin.Alias, Registration> = [
     }),
     errorResolutionSuggestion: `Please check if the following environment variables are set correctly:
   - OPENAI_API_KEY
+  `,
+  },
+  {
+    alias: BuiltinPlugin.Generative.minimax,
+    path: pluginPath('plugin-generative-minimax'),
+    config: async () =>
+      ({
+        clientSecret: {
+          apiKey: MINIMAX_API_KEY,
+        },
+      }) satisfies MiniMaxConfig,
+    errorResolutionSuggestion: `Please check if the following environment variables are set correctly:
+  - MINIMAX_API_KEY
   `,
   },
   text2VecOpenAIPlugin({
